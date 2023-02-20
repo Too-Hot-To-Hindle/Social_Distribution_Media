@@ -1,4 +1,3 @@
-/build/
 # /staticfiles/
 
 *.pyc
@@ -26,13 +25,13 @@ node_modules/
 npm-debug.log
 
 # Webpack
-/frontend/bundles/*
-/frontend/webpack_bundles/*
+# /frontend/bundles/*
+# /frontend/webpack_bundles/*
 /webpack-stats.json
 
 # Sass
 .sass-cache
-*.map
+# *.map
 
 # General
 /venv/
