@@ -19,7 +19,13 @@ jobs:
         working-directory: ./frontend
         run: npm run relocate
 
+      - name: Check if changed
+      - id: diff
+      - run: |
+          git diff --quiet . || echo "changed=true" >> $GITHUB_OUTPUT
+
       - name: Commit built files
+        if: steps.diff.outputs.changed == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
