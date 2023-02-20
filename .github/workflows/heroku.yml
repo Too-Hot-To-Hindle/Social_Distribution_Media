@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.TEMP_TOKEN }}
       
       - name: Install dependencies
         working-directory: ./frontend
@@ -26,8 +28,6 @@ jobs:
 
       - name: Commit built files
         if: steps.diff.outputs.changed == 'true'
-        with:
-          token: ${{ secrets.TEMP_TOKEN }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
