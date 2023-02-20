@@ -20,8 +20,8 @@ jobs:
         run: npm run relocate
 
       - name: Check if changed
-      - id: diff
-      - run: |
+        id: diff
+        run: |
           git diff --quiet . || echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: Commit built files
