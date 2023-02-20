@@ -33,5 +33,5 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           branch: heroku
-          github_token: ${{ secrets.TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           force: true
