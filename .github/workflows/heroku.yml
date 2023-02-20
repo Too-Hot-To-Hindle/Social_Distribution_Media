@@ -25,7 +25,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git add .
           git commit -m "Build app for Heroku deployment"
-          git push -M main
+          git push
 
       - uses: akhileshns/heroku-deploy@v3.12.13 # This is the action
         with:
