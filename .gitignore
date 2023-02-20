@@ -1,11 +1,11 @@
-# /staticfiles/
-
 *.pyc
 *.sqlite3
 .DS_Store
 .env
 */settings/local.py
-# /staticfiles/*
+/staticfiles/*
+/frontend/build/*
+/build/*
 /mediafiles/*
 __pycache__/
 /.vscode/
@@ -25,8 +25,8 @@ node_modules/
 npm-debug.log
 
 # Webpack
-# /frontend/bundles/*
-# /frontend/webpack_bundles/*
+/frontend/bundles/*
+/frontend/webpack_bundles/*
 /webpack-stats.json
 
 # Sass
