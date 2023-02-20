@@ -26,6 +26,8 @@ jobs:
 
       - name: Commit built files
         if: steps.diff.outputs.changed == 'true'
+        with:
+          token: ${{ secrets.TEMP_TOKEN }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
