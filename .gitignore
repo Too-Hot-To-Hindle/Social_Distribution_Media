@@ -4,7 +4,7 @@
 .env
 */settings/local.py
 backend/staticfiles/*
-# /frontend/build/* - We allow the build folder so our heroku deployment works
+/frontend/build/*
 /build/*
 /mediafiles/*
 __pycache__/
