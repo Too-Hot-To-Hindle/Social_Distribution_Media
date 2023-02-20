@@ -3,8 +3,8 @@
 .DS_Store
 .env
 */settings/local.py
-/staticfiles/*
-# /frontend/build/* - We allow the build folder so our heroku deployment works
+backend/staticfiles/*
+/frontend/build/*
 /build/*
 /mediafiles/*
 __pycache__/
