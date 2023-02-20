@@ -1,12 +1,12 @@
 /build/
-/staticfiles/
+# /staticfiles/
 
 *.pyc
 *.sqlite3
 .DS_Store
 .env
 */settings/local.py
-/staticfiles/*
+# /staticfiles/*
 /mediafiles/*
 __pycache__/
 /.vscode/
