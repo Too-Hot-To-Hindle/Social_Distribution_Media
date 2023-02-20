@@ -27,10 +27,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git add .
           git commit -m "Build app for Heroku deployment"
-
-      - name: Push to Heroku branch
-        uses: ad-m/github-push-action@master
-        with:
-          branch: heroku
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          force: true
+          git push -M main
