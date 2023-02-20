@@ -8,7 +8,7 @@
 # testing
 /coverage
 
-# production
+# production - We allow the build folder so our heroku deployment works
 # /build
 
 # misc
