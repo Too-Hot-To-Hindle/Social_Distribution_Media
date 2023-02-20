@@ -8,8 +8,8 @@
 # testing
 /coverage
 
-# production
-/build
+# production - We allow the build folder so our heroku deployment works
+# /build
 
 # misc
 .DS_Store

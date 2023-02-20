@@ -1,12 +1,11 @@
-/build/
-/staticfiles/
-
 *.pyc
 *.sqlite3
 .DS_Store
 .env
 */settings/local.py
 /staticfiles/*
+# /frontend/build/* - We allow the build folder so our heroku deployment works
+/build/*
 /mediafiles/*
 __pycache__/
 /.vscode/
@@ -32,7 +31,7 @@ npm-debug.log
 
 # Sass
 .sass-cache
-*.map
+# *.map
 
 # General
 /venv/
