@@ -34,8 +34,8 @@ npm-debug.log
 # *.map
 
 # General
-/venv/
-/env/
+venv/
+env/
 /output/
 /cache/
 

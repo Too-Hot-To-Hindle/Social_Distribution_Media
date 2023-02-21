@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 from django.shortcuts import render
 
 # NOTE: From https://medium.com/codex/deploying-react-through-djangos-static-files-part-1-dev-setup-8a3a7b93c809
@@ -26,6 +26,7 @@ def render_react(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('service/', include('api.urls')),
     re_path(r"^$", render_react),
     re_path(r"^(?:.*)/?$", render_react),
 ]
