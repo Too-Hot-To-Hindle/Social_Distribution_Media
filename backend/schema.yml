@@ -1,0 +1,502 @@
+openapi: 3.0.3
+info:
+  title: Your Project API
+  version: 1.0.0
+  description: Your project description
+paths:
+  /service/authors:
+    get:
+      operationId: root_retrieve
+      description: |-
+        Get all authors
+
+        TODO: Query params, paging
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /service/authors/{author_id}:
+    get:
+      operationId: root_retrieve_2
+      description: Get details for an author
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: root_create
+      description: |-
+        Update details for an author
+        TODO: This must only be useable as a 'local' user
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /service/authors/{author_id}/followers:
+    get:
+      operationId: followers_retrieve
+      description: Get a list of authors following the user given by author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - followers
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /service/authors/{author_id}/followers/{foreign_author_id}:
+    get:
+      operationId: followers_retrieve_2
+      description: Check if foreign_author_id is a follower of author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: foreign_author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - followers
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: followers_update
+      description: Add foreign_author_id as a follower of author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: foreign_author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - followers
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: followers_destroy
+      description: Remove foreign_author_id as a follower of author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: foreign_author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - followers
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /service/authors/{author_id}/inbox:
+    get:
+      operationId: inbox_retrieve
+      description: Get list of posts sent to author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - inbox
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: inbox_create
+      description: Send a post to author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - inbox
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: inbox_destroy
+      description: Clear author_id's inbox
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - inbox
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /service/authors/{author_id}/inbox/:
+    post:
+      operationId: inbox_create_2
+      description: Like a post (like object in body) from author_id's inbox
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - inbox
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /service/authors/{author_id}/liked:
+    get:
+      operationId: liked_retrieve
+      description: Get list of posts author_id has liked
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - liked
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /service/authors/{author_id}/posts:
+    get:
+      operationId: posts_retrieve
+      description: Get paginated list of posts by author_id, ordered by post date
+        with most recent first
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: posts_create
+      description: Create a post (post object in body) for author_id, but generate
+        the ID (compare to PUT in PostDetail)
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /service/authors/{author_id}/posts/{post_id}:
+    get:
+      operationId: posts_retrieve_2
+      description: Get post_id posted by author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: post_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: posts_create_2
+      description: Update post_id posted by author_id (post object in body)
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: post_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: posts_update
+      description: Create a post (post object in body) for author_id with id post_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: post_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: posts_destroy
+      description: Delete post_id posted by author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: post_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /service/authors/{author_id}/posts/{post_id}/comments:
+    get:
+      operationId: posts_comments_retrieve
+      description: Get all comments on post_id posted by author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: post_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: posts_comments_create
+      description: Add a comment (comment object in body) to post_id posted by author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: post_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /service/authors/{author_id}/posts/{post_id}/comments/{comment_id}/likes:
+    get:
+      operationId: posts_comments_likes_retrieve
+      description: Get a list of likes on comment_id for post_id posted by author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: comment_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: post_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /service/authors/{author_id}/posts/{post_id}/image:
+    get:
+      operationId: posts_image_retrieve
+      description: Get post_id posted by author_id, converted to an image
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: post_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /service/authors/{author_id}/posts/{post_id}/likes:
+    get:
+      operationId: posts_likes_retrieve
+      description: Get a list of likes on post_id posted by author_id
+      parameters:
+      - in: path
+        name: author_id
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: post_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - posts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
