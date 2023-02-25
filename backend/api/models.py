@@ -12,6 +12,7 @@ class Author(models.Model):
     url = models.URLField()
     github = models.URLField()
     profile_image = models.URLField()
+    followers = models.JSONField(default=list)
 
     def __str__(self):
         return self.display_name
