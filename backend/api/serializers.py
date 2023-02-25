@@ -4,4 +4,4 @@ from .models import Author
 class AuthorSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Author
-        fields = ('type', 'id', 'host', 'display_name', 'url', 'github', 'profile_image')
+        fields = ('type', 'id', 'host', 'displayName', 'url', 'github', 'profileImage', 'followers')
