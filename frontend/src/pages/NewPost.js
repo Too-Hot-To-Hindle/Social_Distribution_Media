@@ -24,7 +24,16 @@ const NewPost = () => {
 
     // image specific state hooks
     const [imageType, setImageType] = useState("upload");
+    const [imageFile, setImageFile] = useState(null);
+    const [uploadedImagePreview, setUploadedImagePreview] = useState(null)
     const [imageURL, setImageURL] = useState("");
+
+    const handleFileSelect = (event) => {
+        setImageFile(event.target.files[0]);
+
+        const imageObjectURL = URL.createObjectURL(event.target.files[0]);
+        setUploadedImagePreview(imageObjectURL);
+    };
 
     const handlePrivacyChange = (event) => {
         setSelectedPrivacy(event.target.value);
@@ -104,7 +113,30 @@ const NewPost = () => {
                             {imageType === "upload" && (
                                 <>
                                     <Grid item xs={12}>
-                                        <Button variant="contained" fullWidth>Upload Image</Button>
+                                        {imageFile === null ? (
+                                            <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <NoPhotographyIcon sx={{ marginRight: "10px" }} />
+                                                <Typography variant="body2" align="center">No image uploaded</Typography>
+                                            </Box>
+                                        ) : (
+                                            <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <img src={uploadedImagePreview} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                            </Box>
+                                        )}
+                                    </Grid>
+
+                                    <Grid item xs={12}>
+                                        <Button variant="contained" fullWidth component="label">
+                                            Upload Image
+                                            <input
+                                                type="file"
+                                                onChange={handleFileSelect}
+                                                hidden
+                                                accept="image/*"
+                                                multiple={false}
+                                                id="upload-image-input"
+                                            />
+                                        </Button>
                                     </Grid>
 
                                     <Grid item xs={12}>
@@ -122,18 +154,18 @@ const NewPost = () => {
                                     <Grid item xs={12}>
                                         {imageURL === "" ? (
                                             <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                <NoPhotographyIcon sx={{marginRight: "10px"}}/>
+                                                <NoPhotographyIcon sx={{ marginRight: "10px" }} />
                                                 <Typography variant="body2" align="center">No image URL set</Typography>
                                             </Box>
                                         ) : (
                                             <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                <img src={imageURL} alt="Image Preview" style={{maxHeight: "90%", maxWidth: "90%", borderRadius: "5px"}} />
+                                                <img src={imageURL} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
                                             </Box>
                                         )}
                                     </Grid>
 
                                     <Grid item xs={12}>
-                                        <TextField fullWidth label="Image URL" placeholder="Enter URL" value={imageURL} onChange={(event) => {setImageURL(event.target.value)}}/>
+                                        <TextField fullWidth label="Image URL" placeholder="Enter URL" value={imageURL} onChange={(event) => { setImageURL(event.target.value) }} />
                                     </Grid>
 
                                     <Grid item xs={12}>
@@ -153,7 +185,7 @@ const NewPost = () => {
                                         <CircularProgress size={30} sx={{ margin: "5px" }} />
                                     </Button>
                                 ) : (
-                                    imageURL === '' ? (
+                                    (imageURL === '' && imageFile === null) ? (
                                         <Button variant="contained" fullWidth disabled>Post</Button>
                                     ) : (
                                         <Button variant="contained" fullWidth onClick={() => { uploadImagePost() }}>Post</Button>
