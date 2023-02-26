@@ -71,6 +71,7 @@ const NewPost = () => {
                     )}
 
                     {/* Image Post */}
+                    {/* TODO: show preview of image once uploaded/linked */}
                     {postType === 'Image' && (
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
