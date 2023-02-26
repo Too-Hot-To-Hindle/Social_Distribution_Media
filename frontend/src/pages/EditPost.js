@@ -16,7 +16,7 @@ const EditPost = () => {
     const navigate = useNavigate();
 
     const [postData, setPostData] = useState("null");
-    const [belongsToUser, setBelongsToUser] = useState(true);
+    const [belongsToUser, setBelongsToUser] = useState(false);
     const [uploading, setUpload] = useState(false);
     const [postType, setPostType] = useState("Text");
     const [postContent, setPostContent] = useState(`Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla augue nisi, pharetra at risus et, gravida tempus purus. Ut euismod elit eget nisl luctus, eget euismod sapien fermentum. Mauris bibendum, felis eget lacinia auctor, tortor odio ornare orci, sit amet volutpat arcu eros ac est. Pellentesque non purus vel lectus dictum gravida quis a felis. In sed quam nulla. Sed sollicitudin mi felis, sed molestie sem dignissim in. Etiam nec blandit mi. Curabitur vel feugiat velit. Sed bibendum purus eu nunc vulputate, sed auctor nisl fermentum. Vivamus laoreet ex mauris, at interdum arcu vehicula nec. Donec sodales tortor a dui placerat, sit amet pharetra elit aliquam. Praesent eget urna mauris. Nunc varius lectus quis sodales posuere. Suspendisse bibendum ex id dolor lacinia, in consectetur ipsum pellentesque. Aliquam imperdiet pulvinar metus vitae bibendum. Curabitur ut elementum augue, eget interdum libero.`);

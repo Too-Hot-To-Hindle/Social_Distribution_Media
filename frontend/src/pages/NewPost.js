@@ -6,11 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import Layout from "../components/layouts/Layout";
 
 // Material UI components
-import { CircularProgress, Card, CardActionArea, Typography, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Divider } from "@mui/material";
+import { Box, CircularProgress, Card, CardActionArea, Typography, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Divider } from "@mui/material";
 
 // Material UI icons
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import ImageIcon from '@mui/icons-material/Image';
+import NoPhotographyIcon from '@mui/icons-material/NoPhotography';
 
 const NewPost = () => {
 
@@ -20,6 +21,10 @@ const NewPost = () => {
     const [postType, setPostType] = useState(null);
     const [postContent, setPostContent] = useState('');
     const [selectedPrivacy, setSelectedPrivacy] = useState('Public');
+
+    // image specific state hooks
+    const [imageType, setImageType] = useState("upload");
+    const [imageURL, setImageURL] = useState("");
 
     const handlePrivacyChange = (event) => {
         setSelectedPrivacy(event.target.value);
@@ -75,7 +80,7 @@ const NewPost = () => {
                     {postType === 'Image' && (
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
-                                <Typography variant="h6" align="left" onChange={(event) => { setPostContent(event.target.value) }}>Upload an image</Typography>
+                                <Typography variant="h6" align="left">Post an image</Typography>
                             </Grid>
 
                             <Grid item xs={12}>
@@ -96,13 +101,46 @@ const NewPost = () => {
                                 <Divider />
                             </Grid>
 
-                            <Grid item xs={12}>
-                                <Button variant="contained" fullWidth>Upload Image</Button>
-                            </Grid>
+                            {imageType === "upload" && (
+                                <>
+                                    <Grid item xs={12}>
+                                        <Button variant="contained" fullWidth>Upload Image</Button>
+                                    </Grid>
 
-                            <Grid item xs={12}>
-                                <Button>Or, set an image URL</Button>
-                            </Grid>
+                                    <Grid item xs={12}>
+                                        <Button onClick={() => { setImageType("url") }}>Or, set an image URL</Button>
+                                    </Grid>
+                                </>
+                            )}
+
+                            {imageType === "url" && (
+                                <>
+                                    <Grid item xs={12}>
+                                        <Typography variant="body1" fontWeight="500" align="left">Image Preview</Typography>
+                                    </Grid>
+
+                                    <Grid item xs={12}>
+                                        {imageURL === "" ? (
+                                            <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <NoPhotographyIcon sx={{marginRight: "10px"}}/>
+                                                <Typography variant="body2" align="center">No image URL set</Typography>
+                                            </Box>
+                                        ) : (
+                                            <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <img src={imageURL} alt="Image Preview" style={{maxHeight: "90%", maxWidth: "90%", borderRadius: "5px"}} />
+                                            </Box>
+                                        )}
+                                    </Grid>
+
+                                    <Grid item xs={12}>
+                                        <TextField fullWidth label="Image URL" placeholder="Enter URL" value={imageURL} onChange={(event) => {setImageURL(event.target.value)}}/>
+                                    </Grid>
+
+                                    <Grid item xs={12}>
+                                        <Button onClick={() => { setImageType("upload") }}>Or, upload an image</Button>
+                                    </Grid>
+                                </>
+                            )}
 
                             <Grid item xs={12}>
                                 <Divider />
@@ -115,7 +153,11 @@ const NewPost = () => {
                                         <CircularProgress size={30} sx={{ margin: "5px" }} />
                                     </Button>
                                 ) : (
-                                    <Button variant="contained" fullWidth onClick={() => { uploadImagePost() }}>Post</Button>
+                                    imageURL === '' ? (
+                                        <Button variant="contained" fullWidth disabled>Post</Button>
+                                    ) : (
+                                        <Button variant="contained" fullWidth onClick={() => { uploadImagePost() }}>Post</Button>
+                                    )
                                 )}
                             </Grid>
                         </Grid>
@@ -147,7 +189,7 @@ const NewPost = () => {
                             </Grid>
 
                             <Grid item xs={12}>
-                                <TextField fullWidth multiline rows={6} placeholder="Write your post here..."  onChange={(event) => {setPostContent(event.target.value) }}/>
+                                <TextField fullWidth multiline rows={6} placeholder="Write your post here..." onChange={(event) => { setPostContent(event.target.value) }} />
                             </Grid>
 
                             <Grid item xs={12}>

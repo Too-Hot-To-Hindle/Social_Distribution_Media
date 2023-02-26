@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 
 // Material UI components
-import { Card, Typography, Grid, List, ListItem, ListItemIcon, ListItemText, Divider, IconButton } from "@mui/material";
+import { Card, Typography, Grid, Divider, IconButton } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
