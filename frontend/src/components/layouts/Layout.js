@@ -17,7 +17,7 @@ const theme = createTheme({
 
     palette: {
         mode: 'dark',
-      },
+    },
 
     typography: {
         h1: {
@@ -105,8 +105,8 @@ const Layout = ({ children }) => {
 
     const navigate = useNavigate();
 
-    const pages = ["Stream", "Friends", "New Post"]
-    const paths = ["/stream", "/friends", "/post"]
+    const pages = ["Stream", "Friends", "New Post", "Post Details"]
+    const paths = ["/stream", "/friends", "/post", "/post/:id"]
     const icons = [<DynamicFeedRoundedIcon sx={{ fontSize: "32px" }} />, <PeopleAltRoundedIcon sx={{ fontSize: "32px" }} />]
 
     const pathname = window.location.pathname
@@ -114,7 +114,7 @@ const Layout = ({ children }) => {
 
     return (
         <ThemeProvider theme={theme}>
-            <Container maxWidth="lg" sx={{ marginTop: "10px" }}>
+            <Container maxWidth="lg" sx={{ marginTop: "20px" }}>
                 <Grid container spacing={2}>
                     <Grid item xs={4}>
                         <div style={{ position: "sticky", top: "10px" }}>
@@ -129,7 +129,7 @@ const Layout = ({ children }) => {
                                     {pages.map((page, index) => {
                                         // if (pathname === paths[index]), then make icon blue and text blue + bold
                                         if (pathname === paths[index]) {
-                                            if (page !== "New Post") {
+                                            if (page !== "New Post" && page !== "Post Details") {
                                                 return (
                                                     <ListItem disablePadding key={page}>
                                                         <ListItemButton>
@@ -143,7 +143,7 @@ const Layout = ({ children }) => {
                                             }
                                         }
                                         else {
-                                            if (page !== "New Post") {
+                                            if (page !== "New Post" && page !== "Post Details") {
                                                 return (
                                                     <ListItem disablePadding key={page}>
                                                         <ListItemButton onClick={() => { navigate(paths[index]) }}>
@@ -156,6 +156,11 @@ const Layout = ({ children }) => {
                                                 )
                                             }
                                         }
+
+                                        return (
+                                            <>
+                                            </>
+                                        )
                                     })}
                                 </List>
 
@@ -181,9 +186,13 @@ const Layout = ({ children }) => {
                     </Grid>
 
                     <Grid item xs={8}>
-                        <Container sx={{ paddingTop: "30px" }}>
-                            <Typography variant="h4" align="left" fontWeight="500">{currentPage}</Typography>
-                            <br />
+                        <Container>
+                            {currentPage &&
+                                <>
+                                    <Typography variant="h4" align="left" fontWeight="500">{currentPage}</Typography>
+                                    <br />
+                                </>
+                            }
                             {children}
                         </Container>
                     </Grid>
