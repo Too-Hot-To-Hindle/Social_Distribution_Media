@@ -1,5 +1,7 @@
 # Social_Distribution_Media
 
+[Deployed App](https://social-distribution-media.herokuapp.com/) | [API Documentation](https://social-distribution-media.herokuapp.com/api/schema/swagger-ui/)
+
 [Project implementation](https://github.com/abramhindle/CMPUT404-project-socialdistribution/blob/master/project.org) of a social network using the inbox model.
 
 ## Running Instructions
