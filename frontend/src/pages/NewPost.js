@@ -21,6 +21,7 @@ const NewPost = () => {
     const [postType, setPostType] = useState(null);
     const [postContent, setPostContent] = useState('');
     const [selectedPrivacy, setSelectedPrivacy] = useState('Public');
+    const [specificAuthors, setSpecificAuthors] = useState("");
 
     // image specific state hooks
     const [imageType, setImageType] = useState("upload");
@@ -38,6 +39,22 @@ const NewPost = () => {
     const handlePrivacyChange = (event) => {
         setSelectedPrivacy(event.target.value);
     };
+
+    const validateSharedAuthors = () => {
+        if  (selectedPrivacy === "Specific Authors Only") {
+            if (specificAuthors === "") {
+                return false;
+            }
+
+            else {
+                return true
+            }
+        }
+
+        else {
+            return true
+        }
+    }
 
     const uploadTextPost = async () => {
         setUpload(true);
@@ -102,9 +119,23 @@ const NewPost = () => {
                                     >
                                         <MenuItem value={'Public'}>Public</MenuItem>
                                         <MenuItem value={'Friends Only'}>Friends Only</MenuItem>
+                                        <MenuItem value={'Specific Authors Only'}>Specific Authors Only</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
+
+                            {selectedPrivacy === "Specific Authors Only" && (
+                                <Grid item xs={12}>
+                                    <TextField
+                                        fullWidth
+                                        label="Author IDs"
+                                        variant="outlined"
+                                        placeholder="Enter author IDs separated by commas"
+                                        value={specificAuthors}
+                                        onChange={(event) => { setSpecificAuthors(event.target.value) }}
+                                    />
+                                </Grid>
+                            )}
 
                             <Grid item xs={12}>
                                 <Divider />
@@ -185,7 +216,7 @@ const NewPost = () => {
                                         <CircularProgress size={30} sx={{ margin: "5px" }} />
                                     </Button>
                                 ) : (
-                                    (imageURL === '' && imageFile === null) ? (
+                                    ((imageURL === '' && imageFile === null) || !validateSharedAuthors()) ? (
                                         <Button variant="contained" fullWidth disabled>Post</Button>
                                     ) : (
                                         <Button variant="contained" fullWidth onClick={() => { uploadImagePost() }}>Post</Button>
@@ -212,9 +243,23 @@ const NewPost = () => {
                                     >
                                         <MenuItem value={'Public'}>Public</MenuItem>
                                         <MenuItem value={'Friends Only'}>Friends Only</MenuItem>
+                                        <MenuItem value={'Specific Authors Only'}>Specific Authors Only</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
+
+                            {selectedPrivacy === "Specific Authors Only" && (
+                                <Grid item xs={12}>
+                                    <TextField
+                                        fullWidth
+                                        label="Author IDs"
+                                        variant="outlined"
+                                        placeholder="Enter author IDs separated by commas"
+                                        value={specificAuthors}
+                                        onChange={(event) => { setSpecificAuthors(event.target.value) }}
+                                    />
+                                </Grid>
+                            )}
 
                             <Grid item xs={12}>
                                 <Divider />
@@ -232,7 +277,7 @@ const NewPost = () => {
                                     </Button>
                                 ) : (
                                     // If postContent is empty, disable button
-                                    postContent === '' ? (
+                                    (postContent === '' || !validateSharedAuthors()) ? (
                                         <Button variant="contained" fullWidth disabled>Post</Button>
                                     ) : (
                                         <Button variant="contained" fullWidth onClick={() => { uploadTextPost() }}>Post</Button>
