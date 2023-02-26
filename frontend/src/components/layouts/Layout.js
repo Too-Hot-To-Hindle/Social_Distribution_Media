@@ -11,6 +11,8 @@ import PublicRoundedIcon from '@mui/icons-material/PublicRounded';
 import DynamicFeedRoundedIcon from '@mui/icons-material/DynamicFeedRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import PersonIcon from '@mui/icons-material/Person';
+import ExploreIcon from '@mui/icons-material/Explore';
 
 
 const theme = createTheme({
@@ -105,9 +107,9 @@ const Layout = ({ children }) => {
 
     const navigate = useNavigate();
 
-    const pages = ["Stream", "Friends", "New Post", "Post Details"]
-    const paths = ["/stream", "/friends", "/post", "/post/:id"]
-    const icons = [<DynamicFeedRoundedIcon sx={{ fontSize: "32px" }} />, <PeopleAltRoundedIcon sx={{ fontSize: "32px" }} />]
+    const pages = ["Stream", "Explore", "Friends", "Profile", "New Post", "Post Details"]
+    const paths = ["/stream", "/", "/friends", "/profile", "/post", "/post/:id"]
+    const icons = [<DynamicFeedRoundedIcon sx={{ fontSize: "32px" }} />, <ExploreIcon sx={{ fontSize: "32px" }}/>, <PeopleAltRoundedIcon sx={{ fontSize: "32px" }} />, <PersonIcon sx={{ fontSize: "32px" }} />]
 
     const pathname = window.location.pathname
     const currentPage = pages[paths.indexOf(pathname)]
@@ -169,16 +171,22 @@ const Layout = ({ children }) => {
                             </Card>
 
                             <Card>
-                                <List disablePadding>
-                                    <ListItem disablePadding>
-                                        <ListItemButton>
-                                            <ListItemIcon>
-                                                <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5" }} />
-                                            </ListItemIcon>
-                                            <ListItemText primary="John Smith" primaryTypographyProps={{ fontSize: "24px", color: "#F5F5F5" }} secondary="@johnsmith" secondaryTypographyProps={{ color: "#F5F5F5" }} />
-                                        </ListItemButton>
-                                    </ListItem>
-                                </List>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <List disablePadding>
+                                            <ListItem>
+                                                <ListItemIcon>
+                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5" }} />
+                                                </ListItemIcon>
+                                                <ListItemText primary="John Smith" primaryTypographyProps={{ fontSize: "24px", color: "#F5F5F5" }} secondary="@johnsmith" secondaryTypographyProps={{ color: "#F5F5F5" }} />
+                                            </ListItem>
+                                        </List>
+                                    </Grid>
+
+                                    <Grid item xs={12}>
+                                        <Button variant="contained" fullWidth onClick={() => { }}>Sign out</Button>
+                                    </Grid>
+                                </Grid>
                             </Card>
                         </div>
 

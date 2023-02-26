@@ -1,17 +1,24 @@
 // React helpers
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Material UI components
-import { Card, Typography, Grid, Divider, IconButton } from "@mui/material";
+import { CircularProgress, Card, Typography, Grid, Divider, IconButton, Button } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import EditIcon from '@mui/icons-material/Edit';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import CommentIcon from '@mui/icons-material/Comment';
+import RepeatIcon from '@mui/icons-material/Repeat';
 
-const Post = ({ hideDetailsButton, hideEditButton }) => {
+const Post = ({ hideDetailsButton, hideEditButton, hideLikeButton, hideCommentButton, hideShareButton }) => {
 
     const navigate = useNavigate();
+
+    const [liked, setLiked] = useState(false);
 
     return (
         <>
@@ -59,6 +66,34 @@ const Post = ({ hideDetailsButton, hideEditButton }) => {
                             Suspendisse bibendum ex id dolor lacinia, in consectetur ipsum pellentesque. Aliquam imperdiet pulvinar metus vitae bibendum. Curabitur
                             ut elementum augue, eget interdum libero.
                         </Typography>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <Divider />
+                    </Grid>
+
+                    {/* Post actions */}
+                    <Grid item xs={12}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+
+                            {!hideLikeButton &&
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <Button startIcon={liked ? <FavoriteIcon /> : <FavoriteBorderIcon />} onClick={() => { setLiked(!liked) }}>Like</Button>
+                            </div>
+                            }
+
+                            {!hideCommentButton &&
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <Button startIcon={<CommentIcon />}>Comment</Button>
+                            </div>
+                            }
+
+                            {!hideShareButton &&
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <Button startIcon={<RepeatIcon />}>Share</Button>
+                            </div>
+                            }
+                        </div>
                     </Grid>
 
                 </Grid>
