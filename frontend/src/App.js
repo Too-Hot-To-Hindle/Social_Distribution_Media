@@ -9,6 +9,11 @@ import PostDetails from './pages/PostDetails';
 import EditPost from './pages/EditPost';
 
 const router = createBrowserRouter([
+  // need to change to splash screen/login
+  {
+    path: "/",
+    element: <Stream/>,
+  },
   {
     path: "/stream",
     element: <Stream/>,
