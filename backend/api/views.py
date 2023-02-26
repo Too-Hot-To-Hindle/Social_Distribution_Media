@@ -2,8 +2,8 @@ from rest_framework import status, renderers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .serializers import AuthorSerializer
-from .models import Author
+from .serializers import AuthorSerializer, PostSerializer
+from .models import Author, Post
 
 class Authors(APIView):
 
@@ -12,12 +12,17 @@ class Authors(APIView):
         Get all authors
 
         TODO: Query params, paging
+
+        See below for adding new fields (not in model) to response:
+
+        https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
         try:
             authors = Author.objects.all()
             serializer = AuthorSerializer(authors, many=True)  # Must include many=True because it is a list of authors
             return Response(serializer.data)
-        except:
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 class AuthorDetail(APIView):
@@ -30,7 +35,8 @@ class AuthorDetail(APIView):
             author = Author.objects.get(pk=author_id)
             serializer = AuthorSerializer(author)
             return Response(serializer.data)
-        except:
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id):
@@ -46,6 +52,7 @@ class AuthorDetail(APIView):
                 serializer = AuthorSerializer(author)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
+                print(e)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -55,13 +62,20 @@ class Followers(APIView):
     def get(self, request, author_id):
         """
         Get a list of authors following the user given by author_id
+
+        TODO: Paging? Query params?
+
+        See below for adding new fields (not in model) to response:
+
+        https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
         try:
             author = Author.objects.get(pk=author_id)
             followers = Author.objects.filter(pk__in=author.followers)
             serializer = AuthorSerializer(followers, many=True)
             return Response(serializer.data)
-        except:
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
         
 class FollowersDetail(APIView):
@@ -77,7 +91,8 @@ class FollowersDetail(APIView):
             else:
                 # Return 404 if foreign_author_id does not exist in author_id's followers
                 return Response(status=status.HTTP_404_NOT_FOUND)
-        except:
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, author_id, foreign_author_id):
@@ -88,7 +103,8 @@ class FollowersDetail(APIView):
                 author.followers.append(foreign_author_id)
                 author.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except:
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request, author_id, foreign_author_id):
@@ -97,14 +113,30 @@ class FollowersDetail(APIView):
             author = Author.objects.get(pk=author_id)
             response = {'isFollower': bool(foreign_author_id in author.followers)}
             return Response(response, status=status.HTTP_200_OK)
-        except:
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 class Posts(APIView):
 
     def get(self, request, author_id):
-        """Get paginated list of posts by author_id, ordered by post date with most recent first"""
-        pass
+        """
+        Get paginated list of posts by author_id, ordered by post date with most recent first
+        
+        TODO: Query params, paging
+
+        See below for adding new fields (not in model) to response:
+
+        https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
+        """
+        try:
+            posts = Post.objects.all()
+            print(posts)
+            serializer = PostSerializer(posts, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id):
         """Create a post (post object in body) for author_id, but generate the ID (compare to PUT in PostDetail)"""
@@ -114,7 +146,13 @@ class PostDetail(APIView):
 
     def get(self, request, author_id, post_id):
         """Get post_id posted by author_id"""
-        pass
+        try:
+            post = Post.objects.get(pk=post_id)  # NOTE: Should we do anything with author_id?
+            serializer = PostSerializer(post)
+            return Response(serializer.data)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id, post_id):
         """Update post_id posted by author_id (post object in body)"""
