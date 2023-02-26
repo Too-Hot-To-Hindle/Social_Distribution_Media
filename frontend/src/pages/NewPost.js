@@ -1,17 +1,19 @@
 // React helpers
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 
 // Layout component
 import Layout from "../components/layouts/Layout";
 
 // Material UI components
-import { Box, CircularProgress, Card, CardActionArea, Typography, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Divider } from "@mui/material";
+import { Alert, Box, CircularProgress, Card, CardActionArea, Typography, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Divider } from "@mui/material";
 
 // Material UI icons
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import ImageIcon from '@mui/icons-material/Image';
 import NoPhotographyIcon from '@mui/icons-material/NoPhotography';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 
 const NewPost = () => {
 
@@ -218,6 +220,35 @@ const NewPost = () => {
 
                             <Grid item xs={12}>
                                 <Divider />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Typography variant="body1" fontWeight="500" align="left">Content Preview</Typography>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                {postContent === "" ? (
+                                    <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <DriveFileRenameOutlineIcon sx={{ marginRight: "10px" }} />
+                                        <Typography variant="body2" align="center">Start writing to preview your post</Typography>
+                                    </Box>
+                                ) : (
+                                    <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", paddingLeft: "10px", paddingRight: "10px", overflowY: "scroll" }}>
+                                        <Typography align="left">
+                                            <ReactMarkdown>{postContent}</ReactMarkdown>
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Alert severity="info">
+                                    You can use CommonMark to format your post. <a href="https://commonmark.org/help/" target="_blank" style={{color: "#499BE9"}}>Click here</a> to learn more.
+                                </Alert>
                             </Grid>
 
                             <Grid item xs={12}>
