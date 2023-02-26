@@ -46,7 +46,9 @@ const PostDetails = () => {
                         </Grid>        
 
                         <Grid item xs={12}>
-                            <Button variant="contained" fullWidth disabled={commentUploading} onClick={handleCommentUpload}>{commentUploading ? <CircularProgress size={21} sx={{ margin: "5px" }} /> : "Comment"}</Button>
+                            {(commentBody === "") 
+                            ? <Button variant="contained" fullWidth disabled>Comment</Button> 
+                            : <Button variant="contained" fullWidth disabled={commentUploading} onClick={handleCommentUpload}>{commentUploading ? <CircularProgress size={21} sx={{ margin: "5px" }} /> : "Comment"}</Button>}
                         </Grid>                
 
                         <Grid item xs={12}>
