@@ -71,7 +71,7 @@ class Post(models.Model):
     description = models.TextField(blank=True)
     contentType = models.TextField(choices=CONTENT_TYPES, default=PLAINTEXT)
     content = models.TextField(blank=True)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, blank=True)
     categories = models.JSONField(default=list, null=False, blank=True)
     count = models.IntegerField(default=0, editable=False)
     comments = models.URLField(blank=True)
