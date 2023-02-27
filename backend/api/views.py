@@ -89,33 +89,6 @@ class Followers(APIView):
         
 class FollowersDetail(APIView):
 
-    def delete(self, request, author_id, foreign_author_id):
-        """Remove foreign_author_id as a follower of author_id"""
-        try:
-            author = Author.objects.get(pk=author_id)
-            if foreign_author_id in author.followers:
-                author.followers.remove(foreign_author_id)
-                author.save()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            else:
-                # Return 404 if foreign_author_id does not exist in author_id's followers
-                return Response(status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            print(e)
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-    def put(self, request, author_id, foreign_author_id):
-        """Add foreign_author_id as a follower of author_id"""
-        try:
-            author = Author.objects.get(pk=author_id)
-            if foreign_author_id not in author.followers:
-                author.followers.append(foreign_author_id)
-                author.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Exception as e:
-            print(e)
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
     def get(self, request, author_id, foreign_author_id):
         """Check if foreign_author_id is a follower of author_id"""
         try:
@@ -128,6 +101,37 @@ class FollowersDetail(APIView):
         except Exception as e:
             print(e)
             print(traceback.print_exc())
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, author_id, foreign_author_id):
+        """
+        Remove foreign_author_id as a follower of author_id
+        
+        NOTE: Might be a better way to do this
+        """
+        try:
+            author = Author.objects.get(pk=author_id)
+            follower = Author.objects.get(id=foreign_author_id)
+            author.followers.remove(follower)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Author.DoesNotExist:
+            return Response(f'The author {author_id} or {foreign_author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, author_id, foreign_author_id):
+        """Add foreign_author_id as a follower of author_id"""
+        try:
+            serializer = AuthorSerializer(data=request.POST.dict())
+            if serializer.is_valid():
+                author = Author.objects.get(pk=author_id)
+                author.followers.add(**serializer.data)
+            else:
+                print(serializer.error_messages)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class Posts(APIView):
@@ -214,7 +218,7 @@ class PostDetail(APIView):
         try:
             serializer = PostSerializer(data=request.POST.dict())
             if serializer.is_valid():
-                post = Post.objects.create(**serializer.data, pk=post_id, author_id=uuid.uuid4())
+                post = Post.objects.create(**serializer.data, pk=post_id, author_id=author_id)
                 serializer = PostSerializer(post)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
