@@ -21,6 +21,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "relocate": "react-scripts build && rm -rf ../backend/build && mv -f build ../backend",
+    "relocate-win": "react-scripts build & rd /s /q ..\\backend\\build & move build ..\\backend",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
