@@ -22,6 +22,7 @@ export default function SignInSide() {
 
   return (
     <Grid container component="main" sx={{ height: '100vh' }}>
+        {/* Keep this in for now just in-case we wanna spice up the login later? */}
         <Grid
             item
             xs={false}
@@ -36,7 +37,18 @@ export default function SignInSide() {
                 backgroundPosition: 'center',
             }}
         />
-        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+        <Grid item 
+            xs={12} 
+            sm={8} 
+            md={5} 
+            component={Paper} 
+            elevation={6} 
+            square 
+            sx={{
+                display: 'flex', 
+                justifyContent: 'center'
+            }}
+        >
             <Box
                 sx={{
                     my: 8,
@@ -44,10 +56,8 @@ export default function SignInSide() {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    alignContent: 'center',
                     justifyContent: 'center',
-                    width: '90%',
-                    height: '70%'
+                    width: '80%'
                 }}
             >
                 <Typography component="h1" variant="h5">
