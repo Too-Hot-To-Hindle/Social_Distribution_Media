@@ -8,13 +8,18 @@ import Stream from './pages/Stream';
 import NewPost from './pages/NewPost';
 import PostDetails from './pages/PostDetails';
 import EditPost from './pages/EditPost';
-import Login from './pages/Login'
+import Login from './pages/Login';
+import SignUp from './pages/SignUp'
 
 const router = createBrowserRouter([
   // need to change to splash screen/login
   {
     path: "/",
     element: <Login/>,
+  },
+  {
+    path: "/signup",
+    element: <SignUp/>,
   },
   {
     path: "/stream",
