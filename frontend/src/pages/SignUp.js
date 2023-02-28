@@ -6,16 +6,31 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { useNavigate } from 'react-router';
 
 
 export default function SignUp() {
-  const handleSubmit = (event) => {
+    const navigate = useNavigate();
+
+    const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      username: data.get('username'),
-      password: data.get('password'),
-    });
+    let payload = {
+        username: data.get('username'),
+        password: data.get('password'),
+    };
+
+    createAPIEndpoint(ENDPOINTS.author)
+        .post(payload)
+        .then(res => {
+            console.log(res)
+            navigate("/stream")
+        })
+        .catch(err => {
+            // TODO: Add in error handling
+            console.log(err)
+        });
   };
 
   return (
