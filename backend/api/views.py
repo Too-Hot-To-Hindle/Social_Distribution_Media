@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
 # from django.contrib.auth import authenticate, login
 
 from .serializers import AuthorSerializer, PostSerializer
@@ -31,7 +32,8 @@ class Authors(APIView):
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
-        
+    
+    @csrf_exempt
     def post(self, request, username, password):
         """
         register a new user
