@@ -3,6 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+# from django.contrib.auth import authenticate, login
 
 from .serializers import AuthorSerializer, PostSerializer
 from .models import Author, Post
@@ -25,6 +27,22 @@ class Authors(APIView):
         try:
             authors = Author.objects.all()
             serializer = AuthorSerializer(authors, many=True)  # Must include many=True because it is a list of authors
+            return Response(serializer.data)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+    def post(self, request, username, password):
+        """
+        register a new user
+        """
+        try:
+            # create our user and an author, and link it with the author.
+            user = User.objects.create_user(username=username, password=password)
+            # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
+            # to use for creating authors...
+            author = Author.objects.create(user=user, displayName=username)
+            serializer = AuthorSerializer(author)
             return Response(serializer.data)
         except Exception as e:
             print(e)
@@ -169,8 +187,7 @@ class Posts(APIView):
             return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             print(e)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
 
 class PostDetail(APIView):
 

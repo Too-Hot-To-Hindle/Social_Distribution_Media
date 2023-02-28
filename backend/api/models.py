@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.auth.models import User
 import uuid
 
 SERVICE_ADDRESS = "https://social-distribution-media.herokuapp.com"
@@ -21,6 +22,8 @@ class Author(models.Model):
     # https://docs.djangoproject.com/en/4.1/ref/models/fields/#django.db.models.ManyToManyField.symmetrical
     # NOTE: Can't specify on_delete for this, but the default behaviour is CASCADE which is correct for us :)
     followers = models.ManyToManyField("self", symmetrical=False, blank=True)
+    # store a default User object for leveraging Django's built-in auth
+    user = models.OneToOneField(User, on_delete= models.CASCADE)
 
     def __str__(self):
         return self.displayName
