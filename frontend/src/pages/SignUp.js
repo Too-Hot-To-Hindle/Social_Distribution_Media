@@ -49,6 +49,7 @@ export default function SignUp() {
                 </Typography>
                 <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3, height: '100%', alignItems: 'center', }}>
                     <Grid container spacing={2}>
+                        { /*TODO: Do we need more info? */}
                         {/* <Grid item xs={12} sm={6}>
                             <TextField
                                 autoComplete="given-name"
