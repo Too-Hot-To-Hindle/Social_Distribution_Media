@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
 # from django.contrib.auth import authenticate, login
 
 from .serializers import AuthorSerializer, PostSerializer
@@ -33,7 +35,6 @@ class Authors(APIView):
             print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
     
-    @csrf_exempt
     def post(self, request, username, password):
         """
         register a new user
@@ -302,3 +303,7 @@ class Inbox(APIView):
     def delete(self, request, author_id):
         """Clear author_id's inbox"""
         pass
+
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({})

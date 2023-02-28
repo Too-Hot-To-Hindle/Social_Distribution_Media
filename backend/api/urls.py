@@ -17,5 +17,6 @@ urlpatterns = [
     path('authors/<author_id>/inbox', views.Inbox.as_view()),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui')
+    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('csrf/', views.csrf)
 ]

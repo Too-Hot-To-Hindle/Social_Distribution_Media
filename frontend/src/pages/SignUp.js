@@ -9,7 +9,6 @@ import Paper from '@mui/material/Paper';
 import { createAPIEndpoint, ENDPOINTS } from '../api';
 import { useNavigate } from 'react-router';
 
-
 export default function SignUp() {
     const navigate = useNavigate();
 
