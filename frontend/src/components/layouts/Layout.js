@@ -1,10 +1,12 @@
 // React helpers
 import React from "react"
 import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
 
 // Material UI elements
-import { Card, Container, Grid, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Button } from "@mui/material"
-// import { createTheme, ThemeProvider } from "@mui/material/styles"
+import { Card, Container, Grid, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Button, TextField, InputAdornment } from "@mui/material"
+import { createTheme, ThemeProvider } from "@mui/material/styles"
+
 
 // Material UI icons
 import PublicRoundedIcon from '@mui/icons-material/PublicRounded';
@@ -13,62 +15,85 @@ import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PersonIcon from '@mui/icons-material/Person';
 import ExploreIcon from '@mui/icons-material/Explore';
-
+import SearchIcon from '@mui/icons-material/Search';
 
 const Layout = ({ children }) => {
 
     const navigate = useNavigate();
 
-    const pages = ["Stream", "Explore", "Friends", "Profile", "New Post", "Post Details"]
-    const paths = ["/stream", "/", "/friends", "/profile", "/post", "/post/:id"]
-    const icons = [<DynamicFeedRoundedIcon sx={{ fontSize: "32px" }} />, <ExploreIcon sx={{ fontSize: "32px" }}/>, <PeopleAltRoundedIcon sx={{ fontSize: "32px" }} />, <PersonIcon sx={{ fontSize: "32px" }} />]
+    const pages = ["Stream", "Explore", "Friends", "Profile", "New Post", "Post Details", "Search Results"]
+    const paths = ["/stream", "/", "/friends", "/profile", "/post", "/post/:id", "/searchresults"]
+    const icons = [<DynamicFeedRoundedIcon sx={{ fontSize: "32px" }} />, <ExploreIcon sx={{ fontSize: "32px" }} />, <PeopleAltRoundedIcon sx={{ fontSize: "32px" }} />, <PersonIcon sx={{ fontSize: "32px" }} />]
 
     const pathname = window.location.pathname
     const currentPage = pages[paths.indexOf(pathname)]
 
-    return (
-        <Container maxWidth="lg" sx={{ marginTop: "20px" }}>
-            <Grid container spacing={2}>
-                <Grid item xs={4}>
-                    <div style={{ position: "sticky", top: "10px" }}>
-                        <Card>
-                            <List>
-                                <ListItem>
-                                    <ListItemIcon>
-                                        <PublicRoundedIcon sx={{ fontSize: "40px", color: "#499BE9" }} />
-                                    </ListItemIcon>
-                                </ListItem>
+    const [searchQuery, setSearchQuery] = useState("");
 
-                                {pages.map((page, index) => {
-                                    // if (pathname === paths[index]), then make icon blue and text blue + bold
-                                    if (pathname === paths[index]) {
-                                        if (page !== "New Post" && page !== "Post Details") {
-                                            return (
-                                                <ListItem disablePadding key={page}>
-                                                    <ListItemButton>
-                                                        <ListItemIcon sx={{ color: "#499BE9" }}>
-                                                            {icons[index]}
-                                                        </ListItemIcon>
-                                                        <ListItemText primary={page} primaryTypographyProps={{ fontSize: "24px", fontWeight: "500", color: "#499BE9" }} />
-                                                    </ListItemButton>
-                                                </ListItem>
-                                            )
+    return (
+        <ThemeProvider theme={theme}>
+            <Container maxWidth="lg" sx={{ marginTop: "20px" }}>
+                <Grid container spacing={2}>
+                    <Grid item xs={4}>
+                        <div style={{ position: "sticky", top: "10px" }}>
+                            <Card>
+                                <List>
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <PublicRoundedIcon sx={{ fontSize: "40px", color: "#499BE9" }} />
+                                        </ListItemIcon>
+                                    </ListItem>
+
+                                    <ListItem>
+                                        <TextField
+                                            fullWidth
+                                            value={searchQuery}
+                                            onChange={(ev) => setSearchQuery(ev.target.value)}
+                                            placeholder="Search all..."
+                                            style={{ backgroundColor: '#F4F4F4', borderRadius: "40px" }}
+                                            variant="outlined"
+                                            InputProps={{ style: { color: 'black', borderRadius: "40px" }, startAdornment: (<InputAdornment position="start"><SearchIcon sx={{ color: "black" }} /></InputAdornment>) }}
+                                            onKeyDown={(ev) => {
+                                                if (ev.key === 'Enter') {
+                                                    setSearchQuery(ev.target.value)
+                                                    navigate("/searchresults")
+                                                    setSearchQuery("")
+                                                }
+                                            }}></TextField>
+                                    </ListItem>
+
+                                    {pages.map((page, index) => {
+                                        // if (pathname === paths[index]), then make icon blue and text blue + bold
+                                        if (pathname === paths[index]) {
+                                            if (page !== "New Post" && page !== "Post Details" && page !== "Search Results") {
+                                                return (
+                                                    <ListItem disablePadding key={page}>
+                                                        <ListItemButton>
+                                                            <ListItemIcon sx={{ color: "#499BE9" }}>
+                                                                {icons[index]}
+                                                            </ListItemIcon>
+                                                            <ListItemText primary={page} primaryTypographyProps={{ fontSize: "24px", fontWeight: "500", color: "#499BE9" }} />
+                                                        </ListItemButton>
+                                                    </ListItem>
+                                                )
+                                            }
                                         }
-                                    }
-                                    else {
-                                        if (page !== "New Post" && page !== "Post Details") {
-                                            return (
-                                                <ListItem disablePadding key={page}>
-                                                    <ListItemButton onClick={() => { navigate(paths[index]) }}>
-                                                        <ListItemIcon sx={{ color: "#F5F5F5" }}>
-                                                            {icons[index]}
-                                                        </ListItemIcon>
-                                                        <ListItemText primary={page} primaryTypographyProps={{ fontSize: "24px", color: "#F5F5F5" }} />
-                                                    </ListItemButton>
-                                                </ListItem>
-                                            )
+                                        else {
+                                            if (page !== "New Post" && page !== "Post Details" && page !== "Search Results") {
+                                                return (
+                                                    <ListItem disablePadding key={page}>
+                                                        <ListItemButton onClick={() => { navigate(paths[index]) }}>
+                                                            <ListItemIcon sx={{ color: "#F5F5F5" }}>
+                                                                {icons[index]}
+                                                            </ListItemIcon>
+                                                            <ListItemText primary={page} primaryTypographyProps={{ fontSize: "24px", color: "#F5F5F5" }} />
+                                                        </ListItemButton>
+                                                    </ListItem>
+                                                )
+                                            }
+
                                         }
-                                    }
+                                    
 
                                     return (
                                         <>

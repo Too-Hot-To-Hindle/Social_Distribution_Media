@@ -15,7 +15,7 @@ import CommentIcon from '@mui/icons-material/Comment';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
-const Post = ({ hideDetailsButton, hideEditButton, hideLikeButton, hideCommentButton, hideShareButton, hideDeleteButton, hideLink }) => {
+const SharedPost = ({ hideDetailsButton, hideEditButton, hideLikeButton, hideCommentButton, hideShareButton, hideDeleteButton, hideLink }) => {
 
     const navigate = useNavigate();
 
@@ -73,6 +73,27 @@ const Post = ({ hideDetailsButton, hideEditButton, hideLikeButton, hideCommentBu
                         <Divider />
                     </Grid>
 
+                    {/* Share details */}
+                    <Grid item xs={12}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+
+                                <div>
+                                    <Typography variant="body1" align="left">shared from:</Typography>
+                                    <Typography variant="h6" align="left">Jane Doe</Typography>
+                                    <Typography variant="body1" align="left">@janedoe</Typography>
+                                </div>
+                            </div>
+
+                            <Button>See Original</Button>
+                        </div>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <Divider />
+                    </Grid>
+
                     {/* Post actions */}
                     <Grid item xs={12}>
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -115,4 +136,4 @@ const Post = ({ hideDetailsButton, hideEditButton, hideLikeButton, hideCommentBu
     )
 }
 
-export default Post;
+export default SharedPost;

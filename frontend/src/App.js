@@ -8,6 +8,10 @@ import Stream from './pages/Stream';
 import NewPost from './pages/NewPost';
 import PostDetails from './pages/PostDetails';
 import EditPost from './pages/EditPost';
+import Friends from './pages/Friends';
+import Profile from './pages/Profile';
+import SearchResults from './pages/SearchResults';
+import Auth from './pages/Auth';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp'
 
@@ -36,6 +40,22 @@ const router = createBrowserRouter([
   {
     path: "/post/:id/edit",
     element: <EditPost/>,
+  },
+  {
+    path: "/friends",
+    element: <Friends/>,
+  },
+  {
+    path: "/profile",
+    element: <Profile/>,
+  },
+  {
+    path: "/searchresults",
+    element: <SearchResults/>,
+  },
+  {
+    path: "/auth",
+    element: <Auth/>,
   }
 ]);
 
