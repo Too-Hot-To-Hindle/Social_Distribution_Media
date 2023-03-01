@@ -1,9 +1,19 @@
-from rest_framework import status, renderers
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.db.utils import IntegrityError
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+# from django.contrib.auth import authenticate, login
 
-from .serializers import AuthorSerializer
-from .models import Author
+from .serializers import AuthorSerializer, PostSerializer
+from .models import Author, Post
+
+import traceback
+import uuid
 
 class Authors(APIView):
 
@@ -12,12 +22,33 @@ class Authors(APIView):
         Get all authors
 
         TODO: Query params, paging
+
+        See below for adding new fields (not in model) to response:
+
+        https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
         try:
             authors = Author.objects.all()
             serializer = AuthorSerializer(authors, many=True)  # Must include many=True because it is a list of authors
             return Response(serializer.data)
-        except:
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, username, password):
+        """
+        register a new user
+        """
+        try:
+            # create our user and an author, and link it with the author.
+            user = User.objects.create_user(username=username, password=password)
+            # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
+            # to use for creating authors...
+            author = Author.objects.create(user=user, displayName=username)
+            serializer = AuthorSerializer(author)
+            return Response(user)
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 class AuthorDetail(APIView):
@@ -30,7 +61,8 @@ class AuthorDetail(APIView):
             author = Author.objects.get(pk=author_id)
             serializer = AuthorSerializer(author)
             return Response(serializer.data)
-        except:
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id):
@@ -41,13 +73,16 @@ class AuthorDetail(APIView):
         try:
             serializer = AuthorSerializer(data=request.POST.dict())
             if serializer.is_valid():
-                author, created = Author.objects.update_or_create(serializer.data)
-                # Serialize and return the updated or created author
-                serializer = AuthorSerializer(author)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                updated = Author.objects.filter(pk=author_id).update(**serializer.data)
+                if updated > 0:
+                    return Response(status=status.HTTP_204_NO_CONTENT)
+                else:
+                    return Response('author_id does not exist', status=status.HTTP_404_NOT_FOUND)
             else:
+                print(serializer.error_messages)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class Followers(APIView):
@@ -55,78 +90,168 @@ class Followers(APIView):
     def get(self, request, author_id):
         """
         Get a list of authors following the user given by author_id
+
+        TODO: Paging? Query params?
+
+        See below for adding new fields (not in model) to response:
+
+        https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
         try:
             author = Author.objects.get(pk=author_id)
-            followers = Author.objects.filter(pk__in=author.followers)
-            serializer = AuthorSerializer(followers, many=True)
+            serializer = AuthorSerializer(author.followers, many=True)
             return Response(serializer.data)
-        except:
+        except Author.DoesNotExist:
+            return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_404_NOT_FOUND)
         
 class FollowersDetail(APIView):
-
-    def delete(self, request, author_id, foreign_author_id):
-        """Remove foreign_author_id as a follower of author_id"""
-        try:
-            author = Author.objects.get(pk=author_id)
-            if foreign_author_id in author.followers:
-                author.followers.remove(foreign_author_id)
-                author.save()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            else:
-                # Return 404 if foreign_author_id does not exist in author_id's followers
-                return Response(status=status.HTTP_404_NOT_FOUND)
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-    def put(self, request, author_id, foreign_author_id):
-        """Add foreign_author_id as a follower of author_id"""
-        try:
-            author = Author.objects.get(pk=author_id)
-            if foreign_author_id not in author.followers:
-                author.followers.append(foreign_author_id)
-                author.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request, author_id, foreign_author_id):
         """Check if foreign_author_id is a follower of author_id"""
         try:
             author = Author.objects.get(pk=author_id)
-            response = {'isFollower': bool(foreign_author_id in author.followers)}
+            response = {'isFollower': author.followers.filter(pk=foreign_author_id).exists()}
             return Response(response, status=status.HTTP_200_OK)
-        except:
+        except ValidationError as e:
+            print(e)
+            return Response('author_id or foreign_author_id is not a valid uuid')
+        except Exception as e:
+            print(e)
+            print(traceback.print_exc())
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, author_id, foreign_author_id):
+        """
+        Remove foreign_author_id as a follower of author_id
+        
+        NOTE: Might be a better way to do this
+        """
+        try:
+            author = Author.objects.get(pk=author_id)
+            follower = Author.objects.get(id=foreign_author_id)
+            author.followers.remove(follower)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Author.DoesNotExist:
+            return Response(f'The author {author_id} or {foreign_author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, author_id, foreign_author_id):
+        """Add foreign_author_id as a follower of author_id"""
+        try:
+            serializer = AuthorSerializer(data=request.POST.dict())
+            if serializer.is_valid():
+                author = Author.objects.get(pk=author_id)
+                author.followers.add(**serializer.data)
+            else:
+                print(serializer.error_messages)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class Posts(APIView):
 
     def get(self, request, author_id):
-        """Get paginated list of posts by author_id, ordered by post date with most recent first"""
-        pass
+        """
+        Get paginated list of posts by author_id, ordered by post date with most recent first
+        
+        TODO: Query params, paging
+
+        See below for adding new fields (not in model) to response:
+
+        https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
+        """
+        try:
+            posts = Post.objects.filter(author___id=author_id).all()
+            serializer = PostSerializer(posts, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id):
         """Create a post (post object in body) for author_id, but generate the ID (compare to PUT in PostDetail)"""
-        pass
+        try:
+            serializer = PostSerializer(data=request.POST.dict())
+            if serializer.is_valid():
+                post = Post.objects.create(**serializer.data, author_id=author_id)
+                serializer = PostSerializer(post)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                print(serializer.errors)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Author.DoesNotExist:
+            return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
 
 class PostDetail(APIView):
 
     def get(self, request, author_id, post_id):
         """Get post_id posted by author_id"""
-        pass
+        try:
+            post = Post.objects.get(pk=post_id)  # NOTE: Should we do anything with author_id?
+            serializer = PostSerializer(post)
+            return Response(serializer.data)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id, post_id):
         """Update post_id posted by author_id (post object in body)"""
-        pass
+        try:
+            serializer = PostSerializer(data=request.POST.dict())
+            if serializer.is_valid():
+                updated = Post.objects.filter(pk=post_id, author___id=author_id).update(**serializer.data)
+                if updated > 0:
+                    return Response(status=status.HTTP_204_NO_CONTENT)
+                else:
+                    return Response('post_id or author_id does not exist', status=status.HTTP_404_NOT_FOUND)
+            else:
+                print(serializer.errors)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, author_id, post_id):
         """Delete post_id posted by author_id"""
-        pass
+        try:
+            deleted = Post.objects.filter(pk=post_id, author___id=author_id).delete()
+            if deleted[0] > 0:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def put(self, request, author_id, post_id):
         """Create a post (post object in body) for author_id with id post_id"""
-        pass
+        try:
+            serializer = PostSerializer(data=request.POST.dict())
+            if serializer.is_valid():
+                post = Post.objects.create(**serializer.data, pk=post_id, author_id=author_id)
+                serializer = PostSerializer(post)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                print(serializer.errors)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Author.DoesNotExist:
+            return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
+        except IntegrityError:
+            return Response(f'post_id {post_id} already exists.', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ImagePosts(APIView):
 
@@ -178,3 +303,8 @@ class Inbox(APIView):
     def delete(self, request, author_id):
         """Clear author_id's inbox"""
         pass
+
+class Csrf(APIView):
+    @method_decorator(ensure_csrf_cookie, name='dispatch')
+    def get(self, request):
+        return JsonResponse({})

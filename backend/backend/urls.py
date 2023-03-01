@@ -26,7 +26,7 @@ def render_react(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('service/', include('api.urls')),
+    path('api/', include('api.urls')),
     re_path(r"^$", render_react),
     re_path(r"^(?:.*)/?$", render_react),
 ]
