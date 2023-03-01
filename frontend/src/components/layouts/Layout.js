@@ -30,6 +30,94 @@ const Layout = ({ children }) => {
 
     const [searchQuery, setSearchQuery] = useState("");
 
+    const theme = createTheme({
+
+        palette: {
+            mode: 'dark',
+        },
+
+        typography: {
+            h1: {
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+                color: "#F5F5F5"
+            },
+            h2: {
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+                color: "#F5F5F5"
+            },
+            h3: {
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+                color: "#F5F5F5"
+            },
+            h4: {
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+                color: "#F5F5F5"
+            },
+            h5: {
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+                color: "#F5F5F5"
+            },
+            h6: {
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+                color: "#F5F5F5"
+            },
+            subtitle1: {
+                fontFamily: 'Roboto',
+            },
+            subtitle2: {
+                fontFamily: 'Roboto',
+            },
+            body1: {
+                fontFamily: 'Roboto',
+            },
+            body2: {
+                fontFamily: 'Roboto',
+            },
+            button: {
+                fontFamily: 'Roboto',
+            },
+            caption: {
+                fontFamily: 'Roboto',
+            },
+            overline: {
+                fontFamily: 'Roboto',
+            }
+        },
+
+        components: {
+            MuiCard: {
+                styleOverrides: {
+                    root: {
+                        background: "#444653",
+                        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
+                        marginBottom: "10px",
+                        padding: "20px",
+                        transition: "box-shadow .3s",
+                        ":hover": {
+                            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.50)"
+                        }
+                    }
+                }
+            },
+
+            MuiButton: {
+                styleOverrides: {
+                    root: {
+                        borderRadius: "30px",
+                        textTransform: 'none',
+                        fontSize: "18px"
+                    }
+                }
+            }
+        }
+    });
+
     return (
         <ThemeProvider theme={theme}>
             <Container maxWidth="lg" sx={{ marginTop: "20px" }}>
@@ -93,55 +181,57 @@ const Layout = ({ children }) => {
                                             }
 
                                         }
-                                    
 
-                                    return (
-                                        <>
-                                        </>
-                                    )
-                                })}
-                            </List>
 
-                            <Button variant="contained" fullWidth onClick={() => { navigate("/post") }}>Make a Post</Button>
+                                        return (
+                                            <>
+                                            </>
+                                        )
+                                    })}
+                                </List>
 
-                        </Card>
+                                <Button variant="contained" fullWidth onClick={() => { navigate("/post") }}>Make a Post</Button>
 
-                        <Card>
-                            <Grid container spacing={2}>
-                                <Grid item xs={12}>
-                                    <List disablePadding>
-                                        <ListItem>
-                                            <ListItemIcon>
-                                                <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5" }} />
-                                            </ListItemIcon>
-                                            <ListItemText primary="John Smith" primaryTypographyProps={{ fontSize: "24px", color: "#F5F5F5" }} secondary="@johnsmith" secondaryTypographyProps={{ color: "#F5F5F5" }} />
-                                        </ListItem>
-                                    </List>
+                            </Card>
+
+                            <Card>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <List disablePadding>
+                                            <ListItem>
+                                                <ListItemIcon>
+                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5" }} />
+                                                </ListItemIcon>
+                                                <ListItemText primary="John Smith" primaryTypographyProps={{ fontSize: "24px", color: "#F5F5F5" }} secondary="@johnsmith" secondaryTypographyProps={{ color: "#F5F5F5" }} />
+                                            </ListItem>
+                                        </List>
+                                    </Grid>
+
+                                    <Grid item xs={12}>
+                                        <Button variant="contained" fullWidth onClick={() => { }}>Sign out</Button>
+                                    </Grid>
                                 </Grid>
+                            </Card>
+                        </div>
 
-                                <Grid item xs={12}>
-                                    <Button variant="contained" fullWidth onClick={() => { }}>Sign out</Button>
-                                </Grid>
-                            </Grid>
-                        </Card>
-                    </div>
 
+                    </Grid>
+
+                    <Grid item xs={8}>
+                        <Container>
+                            {currentPage &&
+                                <>
+                                    <Typography variant="h4" align="left" fontWeight="500">{currentPage}</Typography>
+                                    <br />
+                                </>
+                            }
+                            {children}
+                        </Container>
+                    </Grid>
 
                 </Grid>
-
-                <Grid item xs={8}>
-                    <Container>
-                        {currentPage &&
-                            <>
-                                <Typography variant="h4" align="left" fontWeight="500">{currentPage}</Typography>
-                                <br />
-                            </>
-                        }
-                        {children}
-                    </Container>
-                </Grid>
-            </Grid>
-        </Container>
+            </Container>
+        </ThemeProvider>
     )
 };
 
