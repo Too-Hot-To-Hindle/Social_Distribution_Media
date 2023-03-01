@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 import uuid
 
 SERVICE_ADDRESS = "https://social-distribution-media.herokuapp.com"
@@ -32,10 +33,6 @@ class Author(models.Model):
         if not self.url:
             self.url = f"{SERVICE_ADDRESS}/authors/{self._id}"
         return super().save(*args, **kwargs)
-
-class Follower:
-    def __init__(self):
-        pass
 
 class Post(models.Model):
 
@@ -81,7 +78,7 @@ class Post(models.Model):
     unlisted = models.BooleanField(default=False)
 
     def __str__(self) -> str:
-        return self.title
+        return f"Post by {Author.displayName}"
     
     def save(self, *args, **kwargs) -> None:
         # Set the id and url fields intially, using the generated id.
@@ -90,10 +87,57 @@ class Post(models.Model):
             self.comments = f"{self.id}/comments"
         return super().save(*args, **kwargs)
 
-class Comment:
-    def __init__(self):
-        pass
+class Comment(models.Model):
 
-class Inbox:
-    def __init__(self):
-        pass
+    MARKDOWN = 'text/markdown'
+    PLAINTEXT = 'text/plain'
+
+    CONTENT_TYPES = [
+        (MARKDOWN, 'Common mark'),
+        (PLAINTEXT, 'UTF-8 plain text'),
+    ]
+    
+    type = "comment"
+
+    _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.URLField(blank=True, default=None, editable=False)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    comment = models.TextField()
+    contentType = models.TextField(choices=CONTENT_TYPES)
+    published = models.DateTimeField(auto_now_add=True)  # Sets to timezone.now on first creation
+
+    def __str__(self) -> str:
+        return f"Comment by {Author.displayName}"
+    
+    def save(self, *args, **kwargs) -> None:
+        # Set the id and url fields intially, using the generated id.
+        if not self.id:
+            self.id = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
+            self.comments = f"{self.id}/comments"
+        return super().save(*args, **kwargs)
+
+class Like(models.Model):
+
+    type = 'Like'
+
+    summary = models.TextField()
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+
+    # These 3 properties let us define the object foreign key model generically
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.UUIDField()
+    object = GenericForeignKey('content_type', 'object_id')
+
+    def __str__(self) -> str:
+        return f"Like by {Author.displayName}"
+    
+class FriendRequest(models.Model):
+
+    type = 'request'
+
+    from_author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='friend_request_from')
+    to_author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='friend_request_to')
+
+    def __str__(self) -> str:
+        return f"Friend request from {self.from_author.displayName} to {self.to_author.displayName}"
