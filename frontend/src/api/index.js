@@ -6,7 +6,8 @@ const BASE_URL = 'http://127.0.0.1:8000'
 
 export const ENDPOINTS = {
     author: 'author',
-    authorAuth: 'author/authenticate'
+    authorAuth: 'author/authenticate',
+    csrf: 'csrf'
 }
 
 export const createAPIEndpoint = endpoint => {

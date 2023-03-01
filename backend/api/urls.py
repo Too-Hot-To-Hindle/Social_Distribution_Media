@@ -1,6 +1,7 @@
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from . import views
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('authors', views.Authors.as_view()),
@@ -18,5 +19,5 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('csrf/', views.csrf)
+    path('csrf/', views.Csrf.as_view())
 ]

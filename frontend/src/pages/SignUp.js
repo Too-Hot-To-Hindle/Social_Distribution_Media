@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { createAPIEndpoint, ENDPOINTS } from '../api';
 import { useNavigate } from 'react-router';
+import CSRFTOKEN from '../api/csrftoken';
 
 export default function SignUp() {
     const navigate = useNavigate();
@@ -62,6 +63,7 @@ export default function SignUp() {
                     Sign up
                 </Typography>
                 <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3, height: '100%', alignItems: 'center', }}>
+                    <CSRFTOKEN/>
                     <Grid container spacing={2}>
                         { /*TODO: Do we need more info? */}
                         {/* <Grid item xs={12} sm={6}>

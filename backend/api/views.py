@@ -34,7 +34,7 @@ class Authors(APIView):
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
-    
+
     def post(self, request, username, password):
         """
         register a new user
@@ -46,7 +46,7 @@ class Authors(APIView):
             # to use for creating authors...
             author = Author.objects.create(user=user, displayName=username)
             serializer = AuthorSerializer(author)
-            return Response(serializer.data)
+            return Response(user)
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -304,6 +304,7 @@ class Inbox(APIView):
         """Clear author_id's inbox"""
         pass
 
-@ensure_csrf_cookie
-def csrf(request):
-    return JsonResponse({})
+class Csrf(APIView):
+    @method_decorator(ensure_csrf_cookie, name='dispatch')
+    def get(self, request):
+        return JsonResponse({})
