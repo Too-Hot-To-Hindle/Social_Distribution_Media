@@ -42,3 +42,4 @@ env/
 .direnv
 .envrc
 .tool-versions
+ENV_DIR

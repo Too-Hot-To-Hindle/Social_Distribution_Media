@@ -1,3 +1,5 @@
+[![Deploy to Heroku](https://github.com/Too-Hot-To-Hindle/Social_Distribution_Media/actions/workflows/heroku.yml/badge.svg?branch=main)](https://github.com/Too-Hot-To-Hindle/Social_Distribution_Media/actions/workflows/heroku.yml)
+
 # Social_Distribution_Media
 
 [Deployed App](https://social-distribution-media.herokuapp.com/) | [API Documentation](https://social-distribution-media.herokuapp.com/api/schema/swagger-ui/)
