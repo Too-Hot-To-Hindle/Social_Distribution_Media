@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 # from django.contrib.auth import authenticate, login
 
-from .serializers import AuthorSerializer, PostSerializer
+from .serializers import UserSerializer, AuthorSerializer, PostSerializer
 from .models import Author, Post
 
 import traceback
@@ -35,21 +35,27 @@ class Authors(APIView):
             print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request, username, password):
+    def post(self, request):
         """
         register a new user
         """
         try:
             # create our user and an author, and link it with the author.
-            user = User.objects.create_user(username=username, password=password)
-            # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
-            # to use for creating authors...
-            author = Author.objects.create(user=user, displayName=username)
-            serializer = AuthorSerializer(author)
-            return Response(user)
+            serializer = UserSerializer(data=request.POST.dict())
+            if serializer.is_valid():
+                print(serializer.data)
+                user = serializer.data
+                user = User.objects.create_user(user['username'], password=user['password'])
+                # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
+                # to use for creating authors...
+                author = Author.objects.create(user=user, displayName=user.username)
+                return Response(user, status=status.HTTP_201_CREATED)
+            else:
+                print(serializer.error_messages)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(e)
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AuthorDetail(APIView):
 
