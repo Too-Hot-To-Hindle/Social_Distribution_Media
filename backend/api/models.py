@@ -24,7 +24,7 @@ class Author(models.Model):
     # NOTE: Can't specify on_delete for this, but the default behaviour is CASCADE which is correct for us :)
     followers = models.ManyToManyField("self", symmetrical=False, blank=True)
     # store a default User object for leveraging Django's built-in auth
-    user = models.OneToOneField(User, on_delete= models.CASCADE)
+    user = models.OneToOneField(User, on_delete= models.CASCADE, blank=True)
 
     def __str__(self):
         return self.displayName
