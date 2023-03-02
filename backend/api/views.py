@@ -36,27 +36,6 @@ class Authors(APIView):
             print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request):
-        """
-        register a new user
-        """
-        try:
-            # create our user and an author, and link it with the author.
-            serializer = UserSerializer(data=request.POST.dict())
-            print(request.POST.dict())
-            if serializer.is_valid():
-                user = serializer.data
-                user = User.objects.create_user(user['username'], password=user['password'])
-                # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
-                # to use for creating authors...
-                Author.objects.create(user=user, displayName=user.username)
-                return Response(user.username, status=status.HTTP_201_CREATED)
-            else:
-                print(serializer.error_messages)
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            print(e)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AuthorDetail(APIView):
 
@@ -318,6 +297,9 @@ class Csrf(APIView):
         return JsonResponse({})
     
 class Auth(APIView):
+    # make it so users logging in do not have to authenticate
+    authentication_classes = []
+    permission_classes = []
     def post(self, request):
         """
         login a user with a username and password
@@ -329,6 +311,32 @@ class Auth(APIView):
                 login(request, user)
                 return Response(user.username, status=status.HTTP_200_OK)
             else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AuthRegister(APIView):
+    # make it so users registering do not have to login
+    authentication_classes = []
+    permission_classes = []
+    def post(self, request):
+        """
+        register a new user
+        """
+        try:
+            # create our user and an author, and link it with the author.
+            serializer = UserSerializer(data=request.POST.dict())
+            print(request.POST.dict())
+            if serializer.is_valid():
+                user = serializer.data
+                user = User.objects.create_user(user['username'], password=user['password'])
+                # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
+                # to use for creating authors...
+                Author.objects.create(user=user, displayName=user.username)
+                return Response(user.username, status=status.HTTP_201_CREATED)
+            else:
+                print(serializer.error_messages)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(e)

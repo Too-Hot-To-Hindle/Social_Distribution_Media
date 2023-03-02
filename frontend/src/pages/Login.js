@@ -19,7 +19,7 @@ export default function SignInSide() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        createAPIEndpoint(ENDPOINTS.authorsAuth)
+        createAPIEndpoint(ENDPOINTS.auth)
             .post(data)
             .then(res => {
                 console.log(res)
