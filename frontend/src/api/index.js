@@ -2,8 +2,8 @@ import axios from 'axios'
 import Cookies from 'js-cookie'
 import { csrftoken } from './csrftoken';
 
-const BASE_URL = 'http://127.0.0.1:8000'
-// const BASE_URL = 'https://social-distribution-media.herokuapp.com'
+// const BASE_URL = 'http://127.0.0.1:8000'
+const BASE_URL = (process.env.NODE_ENV === 'production') ? 'https://social-distribution-media.herokuapp.com' : 'http://127.0.0.1:8000'
 
 export const BASIC_AUTH_COOKIE_NAME = 'X-SOCIAL-DISTRIBUTION-BASIC-AUTH';
 
