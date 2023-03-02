@@ -17,6 +17,9 @@ import traceback
 import uuid
 
 class Authors(APIView):
+    # this makes it so that authentication isn't required for base author views
+    authentication_classes = []
+    permission_classes = []
 
     def get(self, request, format=None):
         """
