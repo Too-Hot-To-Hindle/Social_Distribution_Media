@@ -6,7 +6,7 @@ const BASE_URL = 'http://127.0.0.1:8000'
 
 export const ENDPOINTS = {
     authors: 'authors',
-    authorsAuth: 'authors/authenticate',
+    authorsAuth: 'auth',
     csrf: 'csrf'
 }
 
