@@ -15,6 +15,7 @@ export const ENDPOINTS = {
 
 export const createAPIEndpoint = endpoint => {
     let url = BASE_URL + '/api/' + endpoint
+
     const requestOptions = {
         headers: authHeader(),
         credentials: "same-origin"

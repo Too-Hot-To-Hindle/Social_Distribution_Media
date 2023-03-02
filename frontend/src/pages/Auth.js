@@ -3,7 +3,6 @@ import { useState } from "react";
 import { createAPIEndpoint, ENDPOINTS, BASIC_AUTH_COOKIE_NAME } from '../api';
 import { useNavigate } from 'react-router';
 import Cookies from 'js-cookie';
-import {Buffer} from 'buffer';
 
 // Material UI elements
 import { Card, Typography, Grid, Button, Divider, TextField, InputAdornment, CircularProgress, IconButton } from "@mui/material";
@@ -35,7 +34,7 @@ const Auth = () => {
         createAPIEndpoint(ENDPOINTS.authorsAuth)
             .post(data)
             .then(res => {
-                let authData = Buffer.from((username + ':' + password), 'base64');
+                let authData = window.btoa(username + ':' + password);
                 Cookies.set(BASIC_AUTH_COOKIE_NAME, authData);
                 console.log(res)
                 navigate("/stream")
@@ -57,7 +56,7 @@ const Auth = () => {
         createAPIEndpoint(ENDPOINTS.authors)
             .post(data)
             .then(res => {
-                let authData = Buffer.from((username + ':' + password), 'base64');
+                let authData = window.btoa(username + ':' + password);
                 Cookies.set(BASIC_AUTH_COOKIE_NAME, authData);
                 console.log(res)
                 navigate("/stream")
