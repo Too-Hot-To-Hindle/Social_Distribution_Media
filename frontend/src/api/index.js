@@ -5,13 +5,13 @@ const BASE_URL = 'http://127.0.0.1:8000'
 // const BASE_URL = 'https://social-distribution-media.herokuapp.com'
 
 export const ENDPOINTS = {
-    author: 'author',
-    authorAuth: 'author/authenticate',
+    authors: 'authors',
+    authorsAuth: 'authors/authenticate',
     csrf: 'csrf'
 }
 
 export const createAPIEndpoint = endpoint => {
-    let url = BASE_URL + '/api/' + endpoint + '/'
+    let url = BASE_URL + '/api/' + endpoint
     const requestOptions = {
         headers: authHeader(),
         credentials: "same-origin"
