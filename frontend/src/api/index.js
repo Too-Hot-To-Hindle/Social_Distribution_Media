@@ -1,8 +1,11 @@
 import axios from 'axios'
+import Cookies from 'js-cookie'
 import { csrftoken } from './csrftoken';
 
 const BASE_URL = 'http://127.0.0.1:8000'
 // const BASE_URL = 'https://social-distribution-media.herokuapp.com'
+
+export const BASIC_AUTH_COOKIE_NAME = 'X-SOCIAL-DISTRIBUTION-BASIC-AUTH';
 
 export const ENDPOINTS = {
     authors: 'authors',
@@ -25,11 +28,11 @@ export const createAPIEndpoint = endpoint => {
 
 function authHeader() {
     // return authorization header with basic auth credentials
-    let authData = localStorage.getItem('authData');
+    let authData = Cookies.get(BASIC_AUTH_COOKIE_NAME);
     if (authData) {
         return { 
-            // 'Authorization': 'Basic ' + authData,
-            // 'X-CSRFToken': csrftoken
+            'Authorization': 'Basic ' + authData,
+            'X-CSRFToken': csrftoken
         };
     } else {
         return {
