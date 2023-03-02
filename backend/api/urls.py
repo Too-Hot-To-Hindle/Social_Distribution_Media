@@ -15,10 +15,11 @@ urlpatterns = [
     path('authors/<author_id>/posts/<post_id>/likes', views.PostLikes.as_view()),
     path('authors/<author_id>/posts/<post_id>/comments/<comment_id>/likes', views.CommentLikes.as_view()),
     path('authors/<author_id>/liked', views.LikedPosts.as_view()),
-    path('authors/<author_id>/inbox', views.Inbox.as_view()),
+    path('authors/<author_id>/inbox', views.InboxDetail.as_view()),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('csrf/', views.Csrf.as_view()),
     path('auth', views.Auth.as_view()),
+    path('auth/register', views.AuthRegister.as_view()),
 ]

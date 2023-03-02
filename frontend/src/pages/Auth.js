@@ -1,7 +1,8 @@
 // React helpers
 import { useState } from "react";
-import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { createAPIEndpoint, ENDPOINTS, BASIC_AUTH_COOKIE_NAME } from '../api';
 import { useNavigate } from 'react-router';
+import Cookies from 'js-cookie';
 
 // Material UI elements
 import { Card, Typography, Grid, Button, Divider, TextField, InputAdornment, CircularProgress, IconButton } from "@mui/material";
@@ -30,13 +31,19 @@ const Auth = () => {
         data.append('username', username)
         data.append('password', password)
 
-        createAPIEndpoint(ENDPOINTS.authorsAuth)
+        createAPIEndpoint(ENDPOINTS.auth)
             .post(data)
             .then(res => {
+
                 // TODO: instead of just setting the object, set a JWT token
                 // (and maybe store it somewhere better than local storage?)
                 localStorage.setItem('username', res.data.username); // capture logged in author username
                 localStorage.setItem('author_id', res.data.id); // capture logged in author id
+
+                let authData = window.btoa(username + ':' + password);
+                Cookies.set(BASIC_AUTH_COOKIE_NAME, authData);
+                console.log(res)
+
                 navigate("/stream")
             })
             .catch(err => {
@@ -53,14 +60,17 @@ const Auth = () => {
         data.append('username', username)
         data.append('password', password)
 
-        createAPIEndpoint(ENDPOINTS.authors)
+        createAPIEndpoint(ENDPOINTS.authRegister)
             .post(data)
             .then(res => {
+                let authData = window.btoa(username + ':' + password);
+                Cookies.set(BASIC_AUTH_COOKIE_NAME, authData);
                 console.log(res)
                 navigate("/stream")
             })
             .catch(err => {
                 // TODO: Add in error handling
+                setLoading(false);
                 console.log(err)
             });
     }

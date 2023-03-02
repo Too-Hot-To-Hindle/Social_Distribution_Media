@@ -17,7 +17,7 @@ export default function SignUp() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        createAPIEndpoint(ENDPOINTS.authors)
+        createAPIEndpoint(ENDPOINTS.authRegister)
             .post(data)
             .then(res => {
                 console.log(res)

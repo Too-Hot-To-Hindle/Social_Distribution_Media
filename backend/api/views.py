@@ -10,8 +10,8 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 # from django.contrib.auth import authenticate, login
 
-from .serializers import UserSerializer, AuthorSerializer, PostSerializer
-from .models import Author, Post
+from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer
+from .models import Author, Post, Comment, Like, Inbox
 
 import traceback
 import uuid
@@ -36,27 +36,6 @@ class Authors(APIView):
             print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request):
-        """
-        register a new user
-        """
-        try:
-            # create our user and an author, and link it with the author.
-            serializer = UserSerializer(data=request.POST.dict())
-            print(request.POST.dict())
-            if serializer.is_valid():
-                user = serializer.data
-                user = User.objects.create_user(user['username'], password=user['password'])
-                # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
-                # to use for creating authors...
-                Author.objects.create(user=user, displayName=user.username)
-                return Response(user.username, status=status.HTTP_201_CREATED)
-            else:
-                print(serializer.error_messages)
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            print(e)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AuthorDetail(APIView):
 
@@ -295,21 +274,66 @@ class LikedPosts(APIView):
         """Get list of posts author_id has liked"""
         pass
 
-class Inbox(APIView):
+class InboxDetail(APIView):
 
     def get(self, request, author_id):
         """Get list of posts sent to author_id"""
-        pass
+        #  Require auth here
+        try:
+            inbox = Inbox.objects.get(author___id=author_id)
+            return Response(inbox.items, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, author_id):
         """Send a post to author_id"""
         # NOTE: 4 different cases based on type field in post request body
         # See https://github.com/abramhindle/CMPUT404-project-socialdistribution/blob/master/project.org#inbox
-        pass
+        object = request.POST.dict()
+        inbox = Inbox.objects.get(author___id=author_id)
+        match object:
+            case 'post':
+                serializer = PostSerializer(data=object)
+                if serializer.is_valid():
+                    post = serializer.data
+                    # inbox.items
+                else:
+                    print(serializer.error_messages)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+            case 'follow':
+                serializer = FollowSerializer(data=object)
+                if serializer.is_valid():
+                    pass
+                else:
+                    print(serializer.error_messages)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+            case 'like':
+                serializer = LikeSerializer(data=object)
+                if serializer.is_valid():
+                    pass
+                else:
+                    print(serializer.error_messages)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+            case 'comment':
+                serializer = CommentSerializer(data=object)
+                if serializer.is_valid():
+                    pass
+                else:
+                    print(serializer.error_messages)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+            case _:
+                return Response("Object type must be one of 'post', 'follow', 'like', or 'comment'", status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, author_id):
         """Clear author_id's inbox"""
-        pass
+        try:
+            inbox = Inbox.objects.get(author___id=author_id)
+            # TODO: Look into querying the generic field here
+            return Response(inbox.items, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # not yet fully tested nor working... but we worry about csrf later
 class Csrf(APIView):
@@ -318,6 +342,9 @@ class Csrf(APIView):
         return JsonResponse({})
     
 class Auth(APIView):
+    # make it so users logging in do not have to authenticate
+    authentication_classes = []
+    permission_classes = []
     def post(self, request):
         """
         login a user with a username and password
@@ -331,6 +358,32 @@ class Auth(APIView):
                 auth_response = {"username": user.username, "id": user_author._id}
                 return Response(auth_response, status=status.HTTP_200_OK)
             else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AuthRegister(APIView):
+    # make it so users registering do not have to login
+    authentication_classes = []
+    permission_classes = []
+    def post(self, request):
+        """
+        register a new user
+        """
+        try:
+            # create our user and an author, and link it with the author.
+            serializer = UserSerializer(data=request.POST.dict())
+            print(request.POST.dict())
+            if serializer.is_valid():
+                user = serializer.data
+                user = User.objects.create_user(user['username'], password=user['password'])
+                # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
+                # to use for creating authors...
+                Author.objects.create(user=user, displayName=user.username)
+                return Response(user.username, status=status.HTTP_201_CREATED)
+            else:
+                print(serializer.error_messages)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(e)
