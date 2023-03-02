@@ -103,7 +103,7 @@ const PostDetails = () => {
                                 origin={postData.origin}
                                 categories={postData.categories}
                                 type={postData.contentType}
-                                text={postData.content}
+                                content={postData.content}
                                 authorDisplayName={authorData.displayName}
                                 authorID={authorID}
                                 link={postData.id}

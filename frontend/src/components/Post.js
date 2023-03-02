@@ -17,28 +17,27 @@ import CommentIcon from '@mui/icons-material/Comment';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
-const Post = ({ 
-    id, 
+const Post = ({
+    id,
     type,
     title,
     description,
     categories,
     origin,
-    source, 
-    text, 
-    imageURL, 
-    authorDisplayName, 
+    source,
+    content,
+    authorDisplayName,
     authorID,
-    link, 
-    hideDetailsButton, 
-    hideEditButton, 
-    hideLikeButton, 
-    hideCommentButton, 
-    hideShareButton, 
+    link,
+    hideDetailsButton,
+    hideEditButton,
+    hideLikeButton,
+    hideCommentButton,
+    hideShareButton,
     hideDeleteButton,
     hideSource,
     hideOrigin,
-    hideCategories, 
+    hideCategories,
     hideLink }) => {
 
     const navigate = useNavigate();
@@ -54,6 +53,21 @@ const Post = ({
         setUserID(localStorage.getItem('author_id'))
     }, [])
 
+    // TODO: get likes for post, check if currently logged in user has already liked
+    // useEffect(() => {
+        // if (userID) {
+        //     createAPIEndpoint(`authors/${userID}/posts/${id}/likes`)
+        //         .get()
+        //         .then(res => {
+        //             // set hook for likes
+        //             console.log(res)
+        //         })
+        //         .catch(err => {
+        //             console.log(err)
+        //         })
+        // }
+    // }, [])
+
     const handleDelete = () => {
         if (userID) {
             setDeleting(true);
@@ -62,7 +76,6 @@ const Post = ({
                 .then(res => {
                     console.log(res.data)
                     navigate("/profile");
-                    window.location.reload();
                 })
                 .catch(err => {
                     // TODO: Add in error handling
@@ -121,7 +134,7 @@ const Post = ({
                     {(type === "text/plain" || type === "text/markdown") &&
                         <Grid item xs={12}>
                             <Typography align="left">
-                                <ReactMarkdown>{text}</ReactMarkdown>
+                                <ReactMarkdown>{content}</ReactMarkdown>
                             </Typography>
                         </Grid>
                     }
@@ -132,7 +145,7 @@ const Post = ({
                     {(type === "image/png;base64" || type === "image/jpeg;base64") &&
                         <Grid item xs={12}>
                             <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <img src={imageURL} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                <img src={content} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
                             </Box>
                         </Grid>
                     }

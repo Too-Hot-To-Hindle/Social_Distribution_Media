@@ -14,6 +14,9 @@ import { Alert, Box, CircularProgress, Card, Typography, Grid, TextField, Button
 import QuizIcon from '@mui/icons-material/Quiz';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
+import ImageIcon from '@mui/icons-material/Image';
+import NoPhotographyIcon from '@mui/icons-material/NoPhotography';
 
 function isMarkdown(text) {
     return /^(#+\s|\*\*|\_\_|\- \S)/m.test(text);
@@ -35,6 +38,13 @@ const EditPost = () => {
     const [postCategories, setPostCategories] = useState('');
     const [selectedPrivacy, setSelectedPrivacy] = useState('Public');
     const [unlisted, setUnlisted] = useState(false);
+
+    // image specific state hooks
+    const [imageType, setImageType] = useState("upload");
+    const [imageFile, setImageFile] = useState(null);
+    const [imageBase64, setImageBase64] = useState(null);
+    const [uploadedImagePreview, setUploadedImagePreview] = useState(null)
+    const [imageURL, setImageURL] = useState("");
 
     const [uploading, setUpload] = useState(false);
 
@@ -67,6 +77,23 @@ const EditPost = () => {
                             setPostCategories(res.data.categories)
                             setSelectedPrivacy(res.data.visibility)
                             setUnlisted(res.data.unlisted)
+
+                            console.log(res.data)
+
+                            if (res.data.contentType === "image/png;base64" || res.data.contentType === "image/jpeg;base64") {
+                                // if res.data begins with 'http', consider it a linked image
+                                if (res.data.content.startsWith('http')) {
+                                    setImageType("url")
+                                    setImageURL(res.data.content)
+                                }
+
+                                // otherwise, consider it a base64 image
+                                else {
+                                    setImageType("upload")
+                                    setImageBase64(res.data.content)
+                                }
+                            }
+
                         })
                         .catch(err => {
                             // TODO: Add in error handling
@@ -87,6 +114,21 @@ const EditPost = () => {
                 });
         }
     }, [userID]);
+
+    const handleFileSelect = (event) => {
+        setImageFile(event.target.files[0]);
+
+        const imageObjectURL = URL.createObjectURL(event.target.files[0]);
+        setUploadedImagePreview(imageObjectURL);
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            // set the state to the base64 string
+            setImageBase64(reader.result);
+        };
+
+        reader.readAsDataURL(event.target.files[0]);
+    };
 
     const handlePrivacyChange = (event) => {
         setSelectedPrivacy(event.target.value);
@@ -147,11 +189,43 @@ const EditPost = () => {
         }
     }
 
-    const editImagePost = async () => {
+    const uploadImagePost = async () => {
         setUpload(true);
-        // TODO: Upload image post to backend
-        // TODO: Redirect to Stream page
-        // navigate("/stream")
+        if (userID) {
+            var data = new URLSearchParams();
+            data.append('title', postTitle);
+            data.append('description', postDescription);
+            data.append('source', "https://google.com");
+            data.append('origin', "https://google.com");
+            if (imageFile) {
+                if (imageFile.type === "image/png") {
+                    data.append('contentType', "image/png;base64");
+                } else if (imageFile.type === "image/jpeg") {
+                    data.append('contentType', "image/jpeg;base64");
+                }
+            } else {
+                data.append('contentType', "image/png;base64");
+            }
+            if (imageType === "upload") {
+                data.append('content', imageBase64);
+            } else if (imageType === "url") {
+                data.append('content', imageURL);
+            }
+            data.append('categories', postCategories.replace(/\s/g, '').split(','));
+            data.append('visibility', selectedPrivacy);
+            data.append('unlisted', unlisted);
+
+            createAPIEndpoint(`authors/${userID}/posts/${postID}`)
+                .post(data)
+                .then(res => {
+                    navigate("/profile")
+                    setUpload(false)
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                });
+        }
     }
 
     return (
@@ -177,11 +251,64 @@ const EditPost = () => {
                         {(postData !== null && belongsToUser) && (
                             <>
                                 {/* Image Post */}
-                                {/* TODO: setup editing image posts */}
-                                {postType === 'Image' && (
+                                {(postType === 'image/png;base64' || postType === 'image/jpeg;base64') && (
                                     <Grid container spacing={2}>
                                         <Grid item xs={12}>
-                                            <Typography variant="h6" align="left" onChange={(event) => { setPostContent(event.target.value) }}>Upload an image</Typography>
+                                            <Typography variant="h6" align="left">Edit Post</Typography>
+                                        </Grid>
+
+                                        {/* Post author */}
+                                        <Grid item xs={12}>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+
+                                                    <div>
+                                                        <Typography variant="h6" align="left">@{authorData.displayName}</Typography>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        {/* Post title and description */}
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Title</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postTitle} placeholder="Write your title here..." onChange={(event) => { setPostTitle(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Description</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postDescription} placeholder="Write your description here..." onChange={(event) => { setPostDescription(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Catgeory</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postCategories} placeholder="Denote categories separated by commas" onChange={(event) => { setPostCategories(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
                                         </Grid>
 
                                         <Grid item xs={12}>
@@ -192,8 +319,8 @@ const EditPost = () => {
                                                     value={selectedPrivacy}
                                                     onChange={handlePrivacyChange}
                                                 >
-                                                    <MenuItem value={'Public'}>Public</MenuItem>
-                                                    <MenuItem value={'Friends Only'}>Friends Only</MenuItem>
+                                                    <MenuItem value={'PUBLIC'}>Public</MenuItem>
+                                                    <MenuItem value={'FRIENDS'}>Friends Only</MenuItem>
                                                 </Select>
                                             </FormControl>
                                         </Grid>
@@ -202,13 +329,69 @@ const EditPost = () => {
                                             <Divider />
                                         </Grid>
 
-                                        <Grid item xs={12}>
-                                            <Button variant="contained" fullWidth>Upload Image</Button>
-                                        </Grid>
+                                        {imageType === "upload" && (
+                                            <>
+                                                <Grid item xs={12}>
+                                                    {imageBase64 === null ? (
+                                                        <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <NoPhotographyIcon sx={{ marginRight: "10px" }} />
+                                                            <Typography variant="body2" align="center">No image uploaded</Typography>
+                                                        </Box>
+                                                    ) : (
+                                                        <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <img src={imageBase64} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                        </Box>
+                                                    )}
+                                                </Grid>
 
-                                        <Grid item xs={12}>
-                                            <Button>Or, set an image URL</Button>
-                                        </Grid>
+                                                <Grid item xs={12}>
+                                                    <Button variant="contained" fullWidth component="label">
+                                                        Upload Image
+                                                        <input
+                                                            type="file"
+                                                            onChange={handleFileSelect}
+                                                            hidden
+                                                            accept="image/jpeg,image/png"
+                                                            multiple={false}
+                                                            id="upload-image-input"
+                                                        />
+                                                    </Button>
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    <Button onClick={() => { setImageType("url") }}>Or, set an image URL</Button>
+                                                </Grid>
+                                            </>
+                                        )}
+
+                                        {imageType === "url" && (
+                                            <>
+                                                <Grid item xs={12}>
+                                                    <Typography variant="body1" fontWeight="500" align="left">Image Preview</Typography>
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    {imageURL === "" ? (
+                                                        <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <NoPhotographyIcon sx={{ marginRight: "10px" }} />
+                                                            <Typography variant="body2" align="center">No image URL set</Typography>
+                                                        </Box>
+                                                    ) : (
+                                                        <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <img src={imageURL} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                        </Box>
+                                                    )}
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    <TextField fullWidth label="Image URL" placeholder="Enter URL" value={imageURL} onChange={(event) => { setImageURL(event.target.value) }} />
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    <Button onClick={() => { setImageType("upload") }}>Or, upload an image</Button>
+                                                </Grid>
+                                            </>
+                                        )}
 
                                         <Grid item xs={12}>
                                             <Divider />
@@ -221,7 +404,11 @@ const EditPost = () => {
                                                     <CircularProgress size={30} sx={{ margin: "5px" }} />
                                                 </Button>
                                             ) : (
-                                                <Button variant="contained" fullWidth onClick={() => { editImagePost() }}>Save Edits</Button>
+                                                ((imageURL === '' && imageBase64 === null) || postTitle === '' || postDescription === '' || postCategories === '') ? (
+                                                    <Button variant="contained" fullWidth disabled>Post</Button>
+                                                ) : (
+                                                    <Button variant="contained" fullWidth onClick={() => { uploadImagePost() }}>Post</Button>
+                                                )
                                             )}
                                         </Grid>
                                     </Grid>

@@ -170,7 +170,7 @@ const Profile = () => {
                                         origin={post.origin}
                                         categories={post.categories}
                                         type={post.contentType} 
-                                        text={post.content} 
+                                        content={post.content}
                                         authorDisplayName={username} 
                                         authorID={userID}
                                         link={post.id} 
@@ -180,6 +180,10 @@ const Profile = () => {
                                         hideSource={true}
                                         hideOrigin={true}
                                         hideCategories={true} 
+                                        hideLikeButton={true}
+                                        hideCommentButton={true}
+                                        hideShareButton={true}
+                                        hideDeleteButton={true}
                                         />
                                 </Grid>
                             ))}

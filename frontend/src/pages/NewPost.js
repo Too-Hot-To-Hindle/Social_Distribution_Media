@@ -37,6 +37,7 @@ const NewPost = () => {
     // image specific state hooks
     const [imageType, setImageType] = useState("upload");
     const [imageFile, setImageFile] = useState(null);
+    const [imageBase64, setImageBase64] = useState(null);
     const [uploadedImagePreview, setUploadedImagePreview] = useState(null)
     const [imageURL, setImageURL] = useState("");
 
@@ -53,27 +54,19 @@ const NewPost = () => {
 
         const imageObjectURL = URL.createObjectURL(event.target.files[0]);
         setUploadedImagePreview(imageObjectURL);
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            // set the state to the base64 string
+            setImageBase64(reader.result);
+        };
+
+        reader.readAsDataURL(event.target.files[0]);
     };
 
     const handlePrivacyChange = (event) => {
         setSelectedPrivacy(event.target.value);
     };
-
-    const validateSharedAuthors = () => {
-        if (selectedPrivacy === "Specific Authors Only") {
-            if (specificAuthors === "") {
-                return false;
-            }
-
-            else {
-                return true
-            }
-        }
-
-        else {
-            return true
-        }
-    }
 
     const uploadTextPost = async () => {
         setUpload(true);
@@ -132,9 +125,41 @@ const NewPost = () => {
 
     const uploadImagePost = async () => {
         setUpload(true);
-        // TODO: Upload image post to backend
-        // TODO: Redirect to Stream page
-        // navigate("/stream")
+        if (userID) {
+            var data = new URLSearchParams();
+            data.append('title', postTitle);
+            data.append('description', postDescription);
+            data.append('source', "https://google.com");
+            data.append('origin', "https://google.com");
+            if (imageFile) {
+                if (imageFile.type === "image/png") {
+                    data.append('contentType', "image/png;base64");
+                } else if (imageFile.type === "image/jpeg") {
+                    data.append('contentType', "image/jpeg;base64");
+                }
+            } else {
+                data.append('contentType', "image/png;base64");
+            }
+            if (imageType === "upload") {
+                data.append('content', imageBase64);
+            } else if (imageType === "url") {
+                data.append('content', imageURL);
+            }
+            data.append('categories', postCategories.replace(/\s/g, '').split(','));
+            data.append('visibility', selectedPrivacy);
+            data.append('unlisted', unlisted);
+
+            createAPIEndpoint(`authors/${userID}/posts`)
+                .post(data)
+                .then(res => {
+                    navigate("/profile")
+                    setUpload(false)
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                });
+        }
     }
 
     return (
@@ -169,11 +194,46 @@ const NewPost = () => {
                     )}
 
                     {/* Image Post */}
-                    {/* TODO: show preview of image once uploaded/linked */}
                     {postType === 'Image' && (
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <Typography variant="h6" align="left">Post an image</Typography>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Typography variant="body1" fontWeight="500" align="left">Post Title</Typography>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField fullWidth placeholder="Write your title here..." onChange={(event) => { setPostTitle(event.target.value) }} />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Typography variant="body1" fontWeight="500" align="left">Post Description</Typography>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField fullWidth placeholder="Write your description here..." onChange={(event) => { setPostDescription(event.target.value) }} />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Typography variant="body1" fontWeight="500" align="left">Post Catgeory</Typography>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField fullWidth placeholder="Denote categories separated by commas" onChange={(event) => { setPostCategories(event.target.value) }} />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Divider />
                             </Grid>
 
                             <Grid item xs={12}>
@@ -184,25 +244,11 @@ const NewPost = () => {
                                         value={selectedPrivacy}
                                         onChange={handlePrivacyChange}
                                     >
-                                        <MenuItem value={'Public'}>Public</MenuItem>
-                                        <MenuItem value={'Friends Only'}>Friends Only</MenuItem>
-                                        <MenuItem value={'Specific Authors Only'}>Specific Authors Only</MenuItem>
+                                        <MenuItem value={'PUBLIC'}>Public</MenuItem>
+                                        <MenuItem value={'FRIEND'}>Friends Only</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
-
-                            {selectedPrivacy === "Specific Authors Only" && (
-                                <Grid item xs={12}>
-                                    <TextField
-                                        fullWidth
-                                        label="Author IDs"
-                                        variant="outlined"
-                                        placeholder="Enter author IDs separated by commas"
-                                        value={specificAuthors}
-                                        onChange={(event) => { setSpecificAuthors(event.target.value) }}
-                                    />
-                                </Grid>
-                            )}
 
                             <Grid item xs={12}>
                                 <Divider />
@@ -211,14 +257,14 @@ const NewPost = () => {
                             {imageType === "upload" && (
                                 <>
                                     <Grid item xs={12}>
-                                        {imageFile === null ? (
+                                        {imageBase64 === null ? (
                                             <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                                 <NoPhotographyIcon sx={{ marginRight: "10px" }} />
                                                 <Typography variant="body2" align="center">No image uploaded</Typography>
                                             </Box>
                                         ) : (
                                             <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                <img src={uploadedImagePreview} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                <img src={imageBase64} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
                                             </Box>
                                         )}
                                     </Grid>
@@ -230,7 +276,7 @@ const NewPost = () => {
                                                 type="file"
                                                 onChange={handleFileSelect}
                                                 hidden
-                                                accept="image/*"
+                                                accept="image/jpeg,image/png"
                                                 multiple={false}
                                                 id="upload-image-input"
                                             />
@@ -283,7 +329,7 @@ const NewPost = () => {
                                         <CircularProgress size={30} sx={{ margin: "5px" }} />
                                     </Button>
                                 ) : (
-                                    ((imageURL === '' && imageFile === null) || !validateSharedAuthors()) ? (
+                                    ((imageURL === '' && imageBase64 === null) || postTitle === '' || postDescription === '' || postCategories === '') ? (
                                         <Button variant="contained" fullWidth disabled>Post</Button>
                                     ) : (
                                         <Button variant="contained" fullWidth onClick={() => { uploadImagePost() }}>Post</Button>
