@@ -24,7 +24,7 @@
     "build": "react-scripts build",
     "relocate": "react-scripts build && rm -rf ../backend/build && mv -f build ../backend",
     "relocate-win": "react-scripts build & rd /s /q ..\\backend\\build & move build ..\\backend",
-    "test": "react-scripts test",
+    "test": "jest",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -44,5 +44,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-react": "^7.18.6",
+    "babel-jest": "^29.4.3",
+    "jest": "^27.5.1",
+    "react-test-renderer": "^18.2.0"
   }
 }
