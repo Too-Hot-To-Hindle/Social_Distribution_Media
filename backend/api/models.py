@@ -30,6 +30,11 @@ class Author(models.Model):
         return self.displayName
     
     def save(self, *args, **kwargs) -> None:
+
+        # Create inbox on Author creation
+        if not self.pk:
+            Inbox.objects.create(author___id=self._id)
+
         # Set the id and url fields intially, using the generated id.
         if not self.id:
             self.id = f"{API_BASE}/authors/{self._id}"
