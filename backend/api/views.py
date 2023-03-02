@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 # from django.contrib.auth import authenticate, login
 
-from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer
+from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer
 from .models import Author, Post, Comment, Like, Inbox
 
 import traceback
