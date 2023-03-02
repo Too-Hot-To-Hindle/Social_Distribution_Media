@@ -3,6 +3,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+# from django.contrib.auth import authenticate, login
 
 from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer
 from .models import Author, Post, Comment, Like, Inbox
@@ -29,6 +35,7 @@ class Authors(APIView):
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
+
 
 class AuthorDetail(APIView):
 
@@ -169,8 +176,7 @@ class Posts(APIView):
             return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             print(e)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
 
 class PostDetail(APIView):
 
@@ -328,3 +334,52 @@ class InboxDetail(APIView):
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# not yet fully tested nor working... but we worry about csrf later
+class Csrf(APIView):
+    @method_decorator(ensure_csrf_cookie, name='dispatch')
+    def get(self, request):
+        return JsonResponse({})
+    
+class Auth(APIView):
+    # make it so users logging in do not have to authenticate
+    authentication_classes = []
+    permission_classes = []
+    def post(self, request):
+        """
+        login a user with a username and password
+        """
+        try:
+            data = request.POST.dict()
+            user = authenticate(request, username=data['username'], password=data['password'])
+            if user:
+                login(request, user)
+                return Response(user.username, status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AuthRegister(APIView):
+    # make it so users registering do not have to login
+    authentication_classes = []
+    permission_classes = []
+    def post(self, request):
+        """
+        register a new user
+        """
+        try:
+            # create our user and an author, and link it with the author.
+            serializer = UserSerializer(data=request.POST.dict())
+            print(request.POST.dict())
+            if serializer.is_valid():
+                user = serializer.data
+                user = User.objects.create_user(user['username'], password=user['password'])
+                # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
+                # to use for creating authors...
+                Author.objects.create(user=user, displayName=user.username)
+                return Response(user.username, status=status.HTTP_201_CREATED)
+            else:
+                print(serializer.error_messages)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
