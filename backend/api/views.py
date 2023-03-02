@@ -383,3 +383,6 @@ class AuthRegister(APIView):
             else:
                 print(serializer.error_messages)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
