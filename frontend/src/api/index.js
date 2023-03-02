@@ -1,17 +1,17 @@
 import axios from 'axios'
 import { csrftoken } from './csrftoken';
 
-const BASE_URL = 'http://127.0.0.1:8000'
-// const BASE_URL = 'https://social-distribution-media.herokuapp.com'
+// const BASE_URL = 'http://127.0.0.1:8000'
+const BASE_URL = (process.env.NODE_ENV === 'production') ? 'https://social-distribution-media.herokuapp.com' : 'http://127.0.0.1:8000'
 
 export const ENDPOINTS = {
-    author: 'author',
-    authorAuth: 'author/authenticate',
+    authors: 'authors',
+    authorsAuth: 'auth',
     csrf: 'csrf'
 }
 
 export const createAPIEndpoint = endpoint => {
-    let url = BASE_URL + '/api/' + endpoint + '/'
+    let url = BASE_URL + '/api/' + endpoint
     const requestOptions = {
         headers: authHeader(),
         credentials: "same-origin"

@@ -16,25 +16,20 @@ export default function SignInSide() {
     const navigate = useNavigate();
 
     const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
 
-    let payload = {
-      username: data.get('username'),
-      password: data.get('password'),
+        createAPIEndpoint(ENDPOINTS.authorsAuth)
+            .post(data)
+            .then(res => {
+                console.log(res)
+                navigate("/stream")
+            })
+            .catch(err => {
+                // TODO: Add in error handling
+                console.log(err)
+            });
     };
-
-    createAPIEndpoint(ENDPOINTS.authorAuth)
-        .post(payload)
-        .then(res => {
-            console.log(res)
-            navigate("/stream")
-        })
-        .catch(err => {
-            // TODO: Add in error handling
-            console.log(err)
-        });
-  };
 
   return (
     <Grid container component="main" sx={{ height: '100vh' }}>

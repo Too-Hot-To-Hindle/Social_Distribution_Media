@@ -14,24 +14,20 @@ export default function SignUp() {
     const navigate = useNavigate();
 
     const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    let payload = {
-        username: data.get('username'),
-        password: data.get('password'),
-    };
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
 
-    createAPIEndpoint(ENDPOINTS.author)
-        .post(payload)
-        .then(res => {
-            console.log(res)
-            navigate("/stream")
-        })
-        .catch(err => {
-            // TODO: Add in error handling
-            console.log(err)
-        });
-  };
+        createAPIEndpoint(ENDPOINTS.authors)
+            .post(data)
+            .then(res => {
+                console.log(res)
+                navigate("/stream")
+            })
+            .catch(err => {
+                // TODO: Add in error handling
+                console.log(err)
+            });
+    };
 
   return (
     <Grid container component="main" sx={{ height: '100vh' }}
