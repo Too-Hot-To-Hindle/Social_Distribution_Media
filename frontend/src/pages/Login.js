@@ -19,13 +19,8 @@ export default function SignInSide() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
-    let payload = {
-      username: data.get('username'),
-      password: data.get('password'),
-    };
-
     createAPIEndpoint(ENDPOINTS.authorsAuth)
-        .post(payload)
+        .post(data)
         .then(res => {
             console.log(res)
             navigate("/stream")
