@@ -13,8 +13,7 @@ import Profile from './pages/Profile';
 import SearchResults from './pages/SearchResults';
 import Auth from './pages/Auth';
 import Login from './pages/Login';
-import SignUp from './pages/SignUp'
-import Auth from './pages/Auth'
+import SignUp from './pages/SignUp';
 
 const router = createBrowserRouter([
   // need to change to splash screen/login
