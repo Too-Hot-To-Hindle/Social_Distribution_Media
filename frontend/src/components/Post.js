@@ -1,9 +1,11 @@
 // React helpers
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import { createAPIEndpoint, ENDPOINTS } from '../api';
 
 // Material UI components
-import { Card, Typography, Grid, Divider, IconButton, Button, TextField } from "@mui/material";
+import { Card, Typography, Grid, Divider, IconButton, Button, TextField, Box, CircularProgress } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -15,11 +17,59 @@ import CommentIcon from '@mui/icons-material/Comment';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
-const Post = ({ hideDetailsButton, hideEditButton, hideLikeButton, hideCommentButton, hideShareButton, hideDeleteButton, hideLink }) => {
+const Post = ({ 
+    id, 
+    type,
+    title,
+    description,
+    categories,
+    origin,
+    source, 
+    text, 
+    imageURL, 
+    authorDisplayName, 
+    authorID,
+    link, 
+    hideDetailsButton, 
+    hideEditButton, 
+    hideLikeButton, 
+    hideCommentButton, 
+    hideShareButton, 
+    hideDeleteButton,
+    hideSource,
+    hideOrigin,
+    hideCategories, 
+    hideLink }) => {
 
     const navigate = useNavigate();
 
     const [liked, setLiked] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+
+    const [username, setUsername] = useState(null);
+    const [userID, setUserID] = useState(null);
+
+    useEffect(() => {
+        setUsername(localStorage.getItem('username'))
+        setUserID(localStorage.getItem('author_id'))
+    }, [])
+
+    const handleDelete = () => {
+        if (userID) {
+            setDeleting(true);
+            createAPIEndpoint(`authors/${userID}/posts/${id}`)
+                .delete()
+                .then(res => {
+                    console.log(res.data)
+                    navigate("/profile");
+                    window.location.reload();
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                });
+        }
+    }
 
     return (
         <>
@@ -32,19 +82,18 @@ const Post = ({ hideDetailsButton, hideEditButton, hideLikeButton, hideCommentBu
                                 <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
 
                                 <div>
-                                    <Typography variant="h6" align="left">John Smith</Typography>
-                                    <Typography variant="body1" align="left">@johnsmith</Typography>
+                                    <Typography variant="h6" align="left">@{authorDisplayName}</Typography>
                                 </div>
                             </div>
 
                             {!hideDetailsButton &&
-                                <IconButton onClick={() => { navigate("/post/123") }}>
+                                <IconButton onClick={() => { navigate(`/${authorID}/post/${id}`) }}>
                                     <ReadMoreIcon />
                                 </IconButton>
                             }
 
                             {!hideEditButton &&
-                                <IconButton onClick={() => { navigate("/post/123/edit") }}>
+                                <IconButton onClick={() => { navigate(`/${authorID}/post/${id}/edit`) }}>
                                     <EditIcon />
                                 </IconButton>
                             }
@@ -55,19 +104,38 @@ const Post = ({ hideDetailsButton, hideEditButton, hideLikeButton, hideCommentBu
                         <Divider />
                     </Grid>
 
-                    {/* Post content */}
+                    {/* Post title and description */}
                     <Grid item xs={12}>
-                        <Typography variant="body1" align="left">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla augue nisi, pharetra at risus et, gravida tempus purus.
-                            Ut euismod elit eget nisl luctus, eget euismod sapien fermentum. Mauris bibendum, felis eget lacinia auctor,
-                            tortor odio ornare orci, sit amet volutpat arcu eros ac est. Pellentesque non purus vel lectus dictum gravida quis a felis.
-                            In sed quam nulla. Sed sollicitudin mi felis, sed molestie sem dignissim in. Etiam nec blandit mi. Curabitur vel feugiat velit.
-                            Sed bibendum purus eu nunc vulputate, sed auctor nisl fermentum. Vivamus laoreet ex mauris, at interdum arcu vehicula nec.
-                            Donec sodales tortor a dui placerat, sit amet pharetra elit aliquam. Praesent eget urna mauris. Nunc varius lectus quis sodales posuere.
-                            Suspendisse bibendum ex id dolor lacinia, in consectetur ipsum pellentesque. Aliquam imperdiet pulvinar metus vitae bibendum. Curabitur
-                            ut elementum augue, eget interdum libero.
-                        </Typography>
+                        <Typography variant="h6" align="left">{title}</Typography>
                     </Grid>
+
+                    <Grid item xs={12}>
+                        <Typography align="left">{description}</Typography>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <Divider />
+                    </Grid>
+
+                    {/* Text post content */}
+                    {(type === "text/plain" || type === "text/markdown") &&
+                        <Grid item xs={12}>
+                            <Typography align="left">
+                                <ReactMarkdown>{text}</ReactMarkdown>
+                            </Typography>
+                        </Grid>
+                    }
+
+                    {/* TODO: BASE64 text only? */}
+
+                    {/* Image post content */}
+                    {(type === "image/png;base64" || type === "image/jpeg;base64") &&
+                        <Grid item xs={12}>
+                            <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <img src={imageURL} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                            </Box>
+                        </Grid>
+                    }
 
                     <Grid item xs={12}>
                         <Divider />
@@ -97,7 +165,7 @@ const Post = ({ hideDetailsButton, hideEditButton, hideLikeButton, hideCommentBu
 
                             {!hideDeleteButton &&
                                 <div style={{ display: "flex", alignItems: "center" }}>
-                                    <Button startIcon={<DeleteForeverIcon />}>Delete</Button>
+                                    {deleting ? <CircularProgress size="24px" /> : <Button startIcon={<DeleteForeverIcon />} onClick={() => { handleDelete() }}>Delete</Button>}
                                 </div>
                             }
                         </div>
@@ -105,7 +173,7 @@ const Post = ({ hideDetailsButton, hideEditButton, hideLikeButton, hideCommentBu
 
                     {!hideLink &&
                         <Grid item xs={12}>
-                            <TextField fullWidth label="Shareable Link" value={"https://abc123.com/post/abc123"}></TextField>
+                            <TextField fullWidth label="Shareable Link" value={link}></TextField>
                         </Grid>
                     }
 

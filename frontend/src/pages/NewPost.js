@@ -1,13 +1,14 @@
 // React helpers
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
+import { createAPIEndpoint, ENDPOINTS } from '../api';
 
 // Layout component
 import Layout from "../components/layouts/Layout";
 
 // Material UI components
-import { Alert, Box, CircularProgress, Card, CardActionArea, Typography, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Divider } from "@mui/material";
+import { Alert, Box, CircularProgress, FormGroup, FormControlLabel, Checkbox, Card, CardActionArea, Typography, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Divider } from "@mui/material";
 
 // Material UI icons
 import TextFieldsIcon from '@mui/icons-material/TextFields';
@@ -15,21 +16,37 @@ import ImageIcon from '@mui/icons-material/Image';
 import NoPhotographyIcon from '@mui/icons-material/NoPhotography';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 
+function isMarkdown(text) {
+    return /^(#+\s|\*\*|\_\_|\- \S)/m.test(text);
+}
+
 const NewPost = () => {
 
     const navigate = useNavigate();
 
     const [uploading, setUpload] = useState(false);
     const [postType, setPostType] = useState(null);
+    const [postTitle, setPostTitle] = useState("");
+    const [postDescription, setPostDescription] = useState("");
     const [postContent, setPostContent] = useState('');
+    const [postCategories, setPostCategories] = useState('');
     const [selectedPrivacy, setSelectedPrivacy] = useState('Public');
     const [specificAuthors, setSpecificAuthors] = useState("");
+    const [unlisted, setUnlisted] = useState(false);
 
     // image specific state hooks
     const [imageType, setImageType] = useState("upload");
     const [imageFile, setImageFile] = useState(null);
     const [uploadedImagePreview, setUploadedImagePreview] = useState(null)
     const [imageURL, setImageURL] = useState("");
+
+    const [username, setUsername] = useState(null);
+    const [userID, setUserID] = useState(null);
+
+    useEffect(() => {
+        setUsername(localStorage.getItem('username'))
+        setUserID(localStorage.getItem('author_id'))
+    }, [])
 
     const handleFileSelect = (event) => {
         setImageFile(event.target.files[0]);
@@ -43,7 +60,7 @@ const NewPost = () => {
     };
 
     const validateSharedAuthors = () => {
-        if  (selectedPrivacy === "Specific Authors Only") {
+        if (selectedPrivacy === "Specific Authors Only") {
             if (specificAuthors === "") {
                 return false;
             }
@@ -60,9 +77,57 @@ const NewPost = () => {
 
     const uploadTextPost = async () => {
         setUpload(true);
-        // TODO: Upload text post to backend
-        // TODO: Redirect to Stream page
-        // navigate("/stream")
+        if (userID) {
+            // if post is markdown, make a markdown type post in backend
+            if (isMarkdown(postContent)) {
+                var data = new URLSearchParams();
+                data.append('title', postTitle);
+                data.append('description', postDescription);
+                data.append('source', "https://google.com");
+                data.append('origin', "https://google.com");
+                data.append('contentType', "text/markdown");
+                data.append('content', postContent);
+                data.append('categories', postCategories.replace(/\s/g, '').split(','));
+                data.append('visibility', selectedPrivacy);
+                data.append('unlisted', unlisted);
+
+                createAPIEndpoint(`authors/${userID}/posts`)
+                    .post(data)
+                    .then(res => {
+                        navigate("/profile")
+                        setUpload(false)
+                    })
+                    .catch(err => {
+                        // TODO: Add in error handling
+                        console.log(err)
+                    });
+            }
+
+            // otherwise, create a plaintext post in backend
+            else {
+                var data = new URLSearchParams();
+                data.append('title', postTitle);
+                data.append('description', postDescription);
+                data.append('source', "https://google.com");
+                data.append('origin', "https://google.com");
+                data.append('contentType', "text/plain");
+                data.append('content', postContent);
+                data.append('categories', postCategories.replace(/\s/g, '').split(','));
+                data.append('visibility', selectedPrivacy);
+                data.append('unlisted', unlisted);
+
+                createAPIEndpoint(`authors/${userID}/posts`)
+                    .post(data)
+                    .then(res => {
+                        navigate("/profile")
+                        setUpload(false)
+                    })
+                    .catch(err => {
+                        // TODO: Add in error handling
+                        console.log(err)
+                    });
+            }
+        }
     }
 
     const uploadImagePost = async () => {
@@ -236,32 +301,60 @@ const NewPost = () => {
                             </Grid>
 
                             <Grid item xs={12}>
-                                <FormControl fullWidth>
-                                    <InputLabel id="privacy-label">Privacy</InputLabel>
-                                    <Select
-                                        label="Privacy"
-                                        value={selectedPrivacy}
-                                        onChange={handlePrivacyChange}
-                                    >
-                                        <MenuItem value={'Public'}>Public</MenuItem>
-                                        <MenuItem value={'Friends Only'}>Friends Only</MenuItem>
-                                        <MenuItem value={'Specific Authors Only'}>Specific Authors Only</MenuItem>
-                                    </Select>
-                                </FormControl>
+                                <Typography variant="body1" fontWeight="500" align="left">Post Title</Typography>
                             </Grid>
 
-                            {selectedPrivacy === "Specific Authors Only" && (
-                                <Grid item xs={12}>
-                                    <TextField
-                                        fullWidth
-                                        label="Author IDs"
-                                        variant="outlined"
-                                        placeholder="Enter author IDs separated by commas"
-                                        value={specificAuthors}
-                                        onChange={(event) => { setSpecificAuthors(event.target.value) }}
-                                    />
-                                </Grid>
-                            )}
+                            <Grid item xs={12}>
+                                <TextField fullWidth placeholder="Write your title here..." onChange={(event) => { setPostTitle(event.target.value) }} />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Typography variant="body1" fontWeight="500" align="left">Post Description</Typography>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField fullWidth placeholder="Write your description here..." onChange={(event) => { setPostDescription(event.target.value) }} />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Typography variant="body1" fontWeight="500" align="left">Post Catgeory</Typography>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField fullWidth placeholder="Denote categories separated by commas" onChange={(event) => { setPostCategories(event.target.value) }} />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <FormControl fullWidth sx={{ marginRight: "15px" }}>
+                                        <InputLabel id="privacy-label">Privacy</InputLabel>
+                                        <Select
+                                            label="Privacy"
+                                            value={selectedPrivacy}
+                                            onChange={handlePrivacyChange}
+                                        >
+                                            <MenuItem value={'PUBLIC'}>Public</MenuItem>
+                                            <MenuItem value={'FRIENDS'}>Friends Only</MenuItem>
+                                        </Select>
+                                    </FormControl>
+
+                                    <FormGroup>
+                                        <FormControlLabel control={<Checkbox checked={unlisted} onChange={(event) => { setUnlisted(event.target.checked) }} />} label="Unlisted" />
+                                    </FormGroup>
+                                </div>
+                            </Grid>
 
                             <Grid item xs={12}>
                                 <Divider />
@@ -292,7 +385,7 @@ const NewPost = () => {
 
                             <Grid item xs={12}>
                                 <Alert severity="info">
-                                    You can use CommonMark to format your post. <a href="https://commonmark.org/help/" target="_blank" style={{color: "#499BE9"}}>Click here</a> to learn more.
+                                    You can use CommonMark to format your post. <a href="https://commonmark.org/help/" target="_blank" style={{ color: "#499BE9" }}>Click here</a> to learn more.
                                 </Alert>
                             </Grid>
 
@@ -308,7 +401,7 @@ const NewPost = () => {
                                     </Button>
                                 ) : (
                                     // If postContent is empty, disable button
-                                    (postContent === '' || !validateSharedAuthors()) ? (
+                                    (postTitle === '' || postDescription === '' || postCategories === '' || postContent === '') ? (
                                         <Button variant="contained" fullWidth disabled>Post</Button>
                                     ) : (
                                         <Button variant="contained" fullWidth onClick={() => { uploadTextPost() }}>Post</Button>

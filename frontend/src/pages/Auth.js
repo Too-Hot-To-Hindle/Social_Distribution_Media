@@ -33,7 +33,10 @@ const Auth = () => {
         createAPIEndpoint(ENDPOINTS.authorsAuth)
             .post(data)
             .then(res => {
-                console.log(res)
+                // TODO: instead of just setting the object, set a JWT token
+                // (and maybe store it somewhere better than local storage?)
+                localStorage.setItem('username', res.data.username); // capture logged in author username
+                localStorage.setItem('author_id', res.data.id); // capture logged in author id
                 navigate("/stream")
             })
             .catch(err => {
@@ -93,6 +96,7 @@ const Auth = () => {
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
+                                type="password"
                                 value={password}
                                 onChange={(event) => { setPassword(event.target.value) }}
                                 placeholder="Password"
@@ -184,6 +188,7 @@ const Auth = () => {
                             <TextField
                                 fullWidth
                                 value={password}
+                                type="password"
                                 onChange={(event) => { setPassword(event.target.value) }}
                                 placeholder="Password"
                                 style={{ backgroundColor: '#535560', borderRadius: "40px" }}

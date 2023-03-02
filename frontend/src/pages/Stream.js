@@ -17,7 +17,9 @@ const Stream = () => {
     const [posts, setPosts] = useState([]);
 
     useEffect(() => {
-        
+        setTimeout(() => {
+            setLoading(false)
+        }, 2000)
     }, [])
 
     return (
@@ -38,11 +40,6 @@ const Stream = () => {
 
                 {(posts.length > 0 && !loading) && (
                     <>
-                        <Post hideEditButton={true} hideLink={true} hideDeleteButton={true} />
-                        <SharedPost hideEditButton={true} hideLink={true} hideDeleteButton={true} />
-                        <Post hideEditButton={true} hideLink={true} hideDeleteButton={true} />
-                        <Post hideEditButton={true} hideLink={true} hideDeleteButton={true} />
-                        <Post hideEditButton={true} hideLink={true} hideDeleteButton={true} />
                     </>
                 )}
 

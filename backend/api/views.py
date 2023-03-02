@@ -327,7 +327,9 @@ class Auth(APIView):
             user = authenticate(request, username=data['username'], password=data['password'])
             if user:
                 login(request, user)
-                return Response(user.username, status=status.HTTP_200_OK)
+                user_author = Author.objects.get(displayName=user.username)
+                auth_response = {"username": user.username, "id": user_author._id}
+                return Response(auth_response, status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
