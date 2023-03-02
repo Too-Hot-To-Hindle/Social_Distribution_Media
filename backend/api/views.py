@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
 
-from .serializers import AuthorSerializer, PostSerializer
-from .models import Author, Post
+from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer
+from .models import Author, Post, Comment, Like, Inbox
 
 import traceback
 import uuid
@@ -268,18 +268,63 @@ class LikedPosts(APIView):
         """Get list of posts author_id has liked"""
         pass
 
-class Inbox(APIView):
+class InboxDetail(APIView):
 
     def get(self, request, author_id):
         """Get list of posts sent to author_id"""
-        pass
+        #  Require auth here
+        try:
+            inbox = Inbox.objects.get(author___id=author_id)
+            return Response(inbox.items, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, author_id):
         """Send a post to author_id"""
         # NOTE: 4 different cases based on type field in post request body
         # See https://github.com/abramhindle/CMPUT404-project-socialdistribution/blob/master/project.org#inbox
-        pass
+        object = request.POST.dict()
+        inbox = Inbox.objects.get(author___id=author_id)
+        match object:
+            case 'post':
+                serializer = PostSerializer(data=object)
+                if serializer.is_valid():
+                    post = serializer.data
+                    # inbox.items
+                else:
+                    print(serializer.error_messages)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+            case 'follow':
+                serializer = FollowSerializer(data=object)
+                if serializer.is_valid():
+                    pass
+                else:
+                    print(serializer.error_messages)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+            case 'like':
+                serializer = LikeSerializer(data=object)
+                if serializer.is_valid():
+                    pass
+                else:
+                    print(serializer.error_messages)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+            case 'comment':
+                serializer = CommentSerializer(data=object)
+                if serializer.is_valid():
+                    pass
+                else:
+                    print(serializer.error_messages)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+            case _:
+                return Response("Object type must be one of 'post', 'follow', 'like', or 'comment'", status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, author_id):
         """Clear author_id's inbox"""
-        pass
+        try:
+            inbox = Inbox.objects.get(author___id=author_id)
+            # TODO: Look into querying the generic field here
+            return Response(inbox.items, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)

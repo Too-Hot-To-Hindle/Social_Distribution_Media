@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 import uuid
 
@@ -121,10 +121,13 @@ class Like(models.Model):
 
     type = 'Like'
 
+    _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     summary = models.TextField()
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
 
     # These 3 properties let us define the object foreign key model generically
+    # NOTE: It is recomended to define indexes for the generic foreign key fields
+    # https://docs.djangoproject.com/en/4.1/ref/models/options/#django.db.models.Options.indexes
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.UUIDField()
     object = GenericForeignKey('content_type', 'object_id')
@@ -141,3 +144,41 @@ class FriendRequest(models.Model):
 
     def __str__(self) -> str:
         return f"Friend request from {self.from_author.displayName} to {self.to_author.displayName}"
+
+class Follow(models.Model):
+
+    type = 'follow'
+
+    _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    fromAuthor = models.ForeignKey(Author, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return f"Friend request from {self.fromAuthor.displayName}"
+
+class Inbox(models.Model):
+
+    type = 'inbox'
+    
+    _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+
+    # These 3 properties let us define the object foreign key model generically
+    # NOTE: It is recomended to define indexes for the generic foreign key fields
+    # https://docs.djangoproject.com/en/4.1/ref/models/options/#django.db.models.Options.indexes
+    # content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    # object_id = models.UUIDField()
+    # items = GenericForeignKey('content_type', 'object_id')
+
+    items = GenericRelation('InboxObject', content_type_field='object_content_type', object_id_field='object_id')
+
+    def __str__(self) -> str:
+        return f"{self.author.displayName}'s Inbox"
+
+class InboxObject(models.Model):
+
+    object_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.UUIDField()
+    object = GenericForeignKey('object_content_type', 'object_id')
+
+    def __str__(self) -> str:
+        return "Inbox Items Object"
