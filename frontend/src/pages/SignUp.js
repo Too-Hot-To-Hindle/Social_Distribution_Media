@@ -16,13 +16,9 @@ export default function SignUp() {
     const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    let payload = {
-        username: data.get('username'),
-        password: data.get('password'),
-    };
 
-    createAPIEndpoint(ENDPOINTS.author)
-        .post(payload)
+    createAPIEndpoint(ENDPOINTS.authors)
+        .post(data)
         .then(res => {
             console.log(res)
             navigate("/stream")

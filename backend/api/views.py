@@ -42,14 +42,14 @@ class Authors(APIView):
         try:
             # create our user and an author, and link it with the author.
             serializer = UserSerializer(data=request.POST.dict())
+            print(request.POST.dict())
             if serializer.is_valid():
-                print(serializer.data)
                 user = serializer.data
                 user = User.objects.create_user(user['username'], password=user['password'])
                 # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
                 # to use for creating authors...
-                author = Author.objects.create(user=user, displayName=user.username)
-                return Response(user, status=status.HTTP_201_CREATED)
+                Author.objects.create(user=user, displayName=user.username)
+                return Response(user.username, status=status.HTTP_201_CREATED)
             else:
                 print(serializer.error_messages)
                 return Response(status=status.HTTP_400_BAD_REQUEST)

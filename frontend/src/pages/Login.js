@@ -24,7 +24,7 @@ export default function SignInSide() {
       password: data.get('password'),
     };
 
-    createAPIEndpoint(ENDPOINTS.authorAuth)
+    createAPIEndpoint(ENDPOINTS.authorsAuth)
         .post(payload)
         .then(res => {
             console.log(res)
