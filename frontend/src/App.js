@@ -10,17 +10,18 @@ import PostDetails from './pages/PostDetails';
 import EditPost from './pages/EditPost';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp'
+import Auth from './pages/Auth'
 
 const router = createBrowserRouter([
   // need to change to splash screen/login
   {
     path: "/",
-    element: <Login/>,
+    element: <Auth/>,
   },
-  {
-    path: "/signup",
-    element: <SignUp/>,
-  },
+  // {
+  //   path: "/signup",
+  //   element: <SignUp/>,
+  // },
   {
     path: "/stream",
     element: <Stream/>,
