@@ -1,5 +1,6 @@
 // React helpers
 import { useState, useEffect } from "react";
+import { createAPIEndpoint, ENDPOINTS } from '../api';
 
 // Custom components
 import Layout from "../components/layouts/Layout";
@@ -12,12 +13,17 @@ import { Card, Typography, CircularProgress } from '@mui/material';
 // Material UI icons
 import PagesIcon from '@mui/icons-material/Pages';
 
-const Stream = () => {
+const Explore = () => {
     const [loading, setLoading] = useState(true)
     const [posts, setPosts] = useState([]);
 
     useEffect(() => {
-        
+        // createAPIEndpoint(ENDPOINTS.POSTS).fetchAll()
+        //     .then(res => {
+        //         setPosts(res.data);
+        //         setLoading(false);
+        //     })
+        //     .catch(err => console.log(err))
     }, [])
 
     return (
@@ -51,4 +57,4 @@ const Stream = () => {
     )
 }
 
-export default Stream;
+export default Explore;

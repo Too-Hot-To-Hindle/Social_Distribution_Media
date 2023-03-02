@@ -1,5 +1,7 @@
 // React helpers
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createAPIEndpoint, ENDPOINTS } from '../api';
+import axios from 'axios'
 
 // Layout components
 import Layout from "../components/layouts/Layout";
@@ -11,8 +13,13 @@ import { Card, Typography, Grid, Button, Divider, TextField, InputAdornment, Cir
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import FaceIcon from '@mui/icons-material/Face';
+import PagesIcon from '@mui/icons-material/Pages';
+
 
 const Profile = () => {
+
+    const [loading, setLoading] = useState(true);
+    const [posts, setPosts] = useState([]);
 
     const [firstName, setFirstName] = useState("John");
     const [lastName, setLastName] = useState("Doe");
@@ -29,6 +36,20 @@ const Profile = () => {
 
         // otherwise, make API call here to update user profile
     }
+
+    // TODO: sub in actual author ID
+    useEffect(() => {
+        createAPIEndpoint("authors/2713ab16-0537-4f69-b4ff-3f9335cbbb43/posts")
+            .get()
+            .then(res => {
+                setPosts(res.data)
+                setLoading(false)
+            })
+            .catch(err => {
+                // TODO: Add in error handling
+                console.log(err)
+            });
+    }, [])
 
     return (
         <>
@@ -54,7 +75,7 @@ const Profile = () => {
                                     </Grid>
 
                                     <Grid item xs={12}>
-                                        <Button fullWidth variant="contained" onClick={() => {setEditing(true)}}>Edit Profile</Button>
+                                        <Button fullWidth variant="contained" onClick={() => { setEditing(true) }}>Edit Profile</Button>
                                     </Grid>
                                 </Grid>
                             </Card>
@@ -112,13 +133,34 @@ const Profile = () => {
                         <Typography variant="h6" align="left">My Posts</Typography>
                     </Grid>
 
-                    <Grid item xs={12}>
-                        <Grid container>
-                            <Grid item xs={12}>
-                                <Post hideEditButton={true} hideDeleteButton={true} />
+                    {loading && (
+                        <Grid item xs={12}>
+                            <Card>
+                                <CircularProgress sx={{ margin: "auto" }} />
+                            </Card>
+                        </Grid>
+                    )}
+
+                    {(posts.length === 0 && !loading) && (
+                        <Grid item xs={12}>
+                            <Card>
+                                <PagesIcon sx={{ fontSize: "60px" }} />
+                                <Typography variant="h6" component="h2" sx={{ textAlign: "center" }}>No posts to show.</Typography>
+                            </Card>
+                        </Grid>
+                    )}
+
+                    {(posts.length > 0 && !loading) && (
+                        <Grid item xs={12}>
+                            <Grid container>
+                                <Grid item xs={12}>
+                                    <Post hideEditButton={true} hideDeleteButton={true} />
+                                </Grid>
                             </Grid>
                         </Grid>
-                    </Grid>
+                    )}
+
+
 
                 </Grid>
             </Layout>
