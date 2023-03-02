@@ -9,8 +9,9 @@ export const BASIC_AUTH_COOKIE_NAME = 'X-SOCIAL-DISTRIBUTION-BASIC-AUTH';
 
 export const ENDPOINTS = {
     authors: 'authors',
-    authorsAuth: 'auth',
-    csrf: 'csrf'
+    auth: 'auth',
+    authRegister: 'auth/register',
+    csrf: 'csrf',
 }
 
 export const createAPIEndpoint = endpoint => {

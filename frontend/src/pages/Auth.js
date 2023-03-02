@@ -31,7 +31,7 @@ const Auth = () => {
         data.append('username', username)
         data.append('password', password)
 
-        createAPIEndpoint(ENDPOINTS.authorsAuth)
+        createAPIEndpoint(ENDPOINTS.auth)
             .post(data)
             .then(res => {
                 let authData = window.btoa(username + ':' + password);
@@ -53,7 +53,7 @@ const Auth = () => {
         data.append('username', username)
         data.append('password', password)
 
-        createAPIEndpoint(ENDPOINTS.authors)
+        createAPIEndpoint(ENDPOINTS.authRegister)
             .post(data)
             .then(res => {
                 let authData = window.btoa(username + ':' + password);
