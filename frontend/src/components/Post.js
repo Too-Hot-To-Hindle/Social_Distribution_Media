@@ -17,6 +17,17 @@ import CommentIcon from '@mui/icons-material/Comment';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
+// Helper functions
+// isMarkdownImage checks if a string is a markdown image
+const isMarkdownImage = (str) => {
+    return (str.startsWith('![') && str.endsWith(')'));
+}
+
+// extractMarkdownImageURL extracts the image URL from a markdown image
+const extractMarkdownImageURL = (str) => {
+    return str.substring(str.indexOf('(') + 1, str.indexOf(')'));
+}
+
 const Post = ({
     id,
     type,
@@ -55,17 +66,17 @@ const Post = ({
 
     // TODO: get likes for post, check if currently logged in user has already liked
     // useEffect(() => {
-        // if (userID) {
-        //     createAPIEndpoint(`authors/${userID}/posts/${id}/likes`)
-        //         .get()
-        //         .then(res => {
-        //             // set hook for likes
-        //             console.log(res)
-        //         })
-        //         .catch(err => {
-        //             console.log(err)
-        //         })
-        // }
+    // if (userID) {
+    //     createAPIEndpoint(`authors/${userID}/posts/${id}/likes`)
+    //         .get()
+    //         .then(res => {
+    //             // set hook for likes
+    //             console.log(res)
+    //         })
+    //         .catch(err => {
+    //             console.log(err)
+    //         })
+    // }
     // }, [])
 
     const handleDelete = () => {
@@ -83,6 +94,23 @@ const Post = ({
                 });
         }
     }
+
+    //ReactMarkdown accepts custom renderers
+    const renderers = {
+        //This custom renderer changes how images are rendered
+        //we use it to constrain the max width of an image to its container
+        image: ({
+            alt,
+            src,
+            title,
+        }) => (
+            <img
+                alt={alt}
+                src={src}
+                title={title}
+                style={{ maxWidth: "100px" }} />
+        ),
+    };
 
     return (
         <>
@@ -132,11 +160,22 @@ const Post = ({
 
                     {/* Text post content */}
                     {(type === "text/plain" || type === "text/markdown") &&
-                        <Grid item xs={12}>
-                            <Typography align="left">
-                                <ReactMarkdown>{content}</ReactMarkdown>
-                            </Typography>
-                        </Grid>
+                        <>
+                            {(isMarkdownImage(content)) ? (
+                                <Grid item xs={12}>
+                                    <Box sx={{ backgroundColor: "#343540", minHeight: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <img src={extractMarkdownImageURL(content)} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
+                                    </Box>
+                                </Grid>
+                            ) :
+                                (<Grid item xs={12}>
+                                    <Box sx={{ backgroundColor: "#343540", minHeight: "300px", borderRadius: "5px", textAlign: "left", padding: "10px" }}>
+                                        <ReactMarkdown>{content}</ReactMarkdown>
+                                    </Box>
+                                </Grid>)
+                            }
+                        </>
+
                     }
 
                     {/* TODO: BASE64 text only? */}
@@ -144,8 +183,8 @@ const Post = ({
                     {/* Image post content */}
                     {(type === "image/png;base64" || type === "image/jpeg;base64") &&
                         <Grid item xs={12}>
-                            <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <img src={content} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                            <Box sx={{ backgroundColor: "#343540", minHeight: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <img src={content} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
                             </Box>
                         </Grid>
                     }

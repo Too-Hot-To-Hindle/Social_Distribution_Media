@@ -18,8 +18,19 @@ import TextFieldsIcon from '@mui/icons-material/TextFields';
 import ImageIcon from '@mui/icons-material/Image';
 import NoPhotographyIcon from '@mui/icons-material/NoPhotography';
 
+// Helper functions
 function isMarkdown(text) {
     return /^(#+\s|\*\*|\_\_|\- \S)/m.test(text);
+}
+
+// isMarkdownImage checks if a string is a markdown image
+const isMarkdownImage = (str) => {
+    return (str.startsWith('![') && str.endsWith(')'));
+}
+
+// extractMarkdownImageURL extracts the image URL from a markdown image
+const extractMarkdownImageURL = (str) => {
+    return str.substring(str.indexOf('(') + 1, str.indexOf(')'));
 }
 
 const EditPost = () => {
@@ -68,6 +79,7 @@ const EditPost = () => {
                     createAPIEndpoint(`authors/${authorID}/posts/${postID}`)
                         .get()
                         .then(res => {
+                            console.log(res.data)
                             setPostData(res.data)
                             setBelongsToUser(authorRes.data["_id"] === userID)
                             setPostType(res.data.contentType)
@@ -78,8 +90,7 @@ const EditPost = () => {
                             setSelectedPrivacy(res.data.visibility)
                             setUnlisted(res.data.unlisted)
 
-                            console.log(res.data)
-
+                            
                             if (res.data.contentType === "image/png;base64" || res.data.contentType === "image/jpeg;base64") {
                                 // if res.data begins with 'http', consider it a linked image
                                 if (res.data.content.startsWith('http')) {
@@ -92,6 +103,11 @@ const EditPost = () => {
                                     setImageType("upload")
                                     setImageBase64(res.data.content)
                                 }
+                            }
+
+                            if ((res.data.contentType === "text/markdown" || res.data.contentType === "text/plain") && isMarkdownImage(res.data.content)) {
+                                setImageType("url")
+                                setImageURL(extractMarkdownImageURL(res.data.content))
                             }
 
                         })
@@ -151,7 +167,7 @@ const EditPost = () => {
                 data.append('unlisted', unlisted);
 
                 createAPIEndpoint(`authors/${userID}/posts/${postID}`)
-                    .post(data)
+                    .put(data)
                     .then(res => {
                         navigate("/profile")
                         setUpload(false)
@@ -175,8 +191,8 @@ const EditPost = () => {
                 data.append('visibility', selectedPrivacy);
                 data.append('unlisted', unlisted);
 
-                createAPIEndpoint(`authors/${userID}/posts`)
-                    .post(data)
+                createAPIEndpoint(`authors/${userID}/posts/${postID}`)
+                    .put(data)
                     .then(res => {
                         navigate("/profile")
                         setUpload(false)
@@ -216,7 +232,7 @@ const EditPost = () => {
             data.append('unlisted', unlisted);
 
             createAPIEndpoint(`authors/${userID}/posts/${postID}`)
-                .post(data)
+                .put(data)
                 .then(res => {
                     navigate("/profile")
                     setUpload(false)
@@ -250,7 +266,7 @@ const EditPost = () => {
 
                         {(postData !== null && belongsToUser) && (
                             <>
-                                {/* Image Post */}
+                                {/* Image File Post */}
                                 {(postType === 'image/png;base64' || postType === 'image/jpeg;base64') && (
                                     <Grid container spacing={2}>
                                         <Grid item xs={12}>
@@ -414,8 +430,137 @@ const EditPost = () => {
                                     </Grid>
                                 )}
 
+                                {/* Image URL Post */}
+                                {((postType === 'text/plain' || postType === "text/markdown") && isMarkdownImage(postContent)) && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12}>
+                                            <Typography variant="h6" align="left">Edit Post</Typography>
+                                        </Grid>
+
+                                        {/* Post author */}
+                                        <Grid item xs={12}>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+
+                                                    <div>
+                                                        <Typography variant="h6" align="left">@{authorData.displayName}</Typography>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        {/* Post title and description */}
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Title</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postTitle} placeholder="Write your title here..." onChange={(event) => { setPostTitle(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Description</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postDescription} placeholder="Write your description here..." onChange={(event) => { setPostDescription(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Catgeory</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postCategories} placeholder="Denote categories separated by commas" onChange={(event) => { setPostCategories(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <FormControl fullWidth>
+                                                <InputLabel id="privacy-label">Privacy</InputLabel>
+                                                <Select
+                                                    label="Privacy"
+                                                    value={selectedPrivacy}
+                                                    onChange={handlePrivacyChange}
+                                                >
+                                                    <MenuItem value={'PUBLIC'}>Public</MenuItem>
+                                                    <MenuItem value={'FRIENDS'}>Friends Only</MenuItem>
+                                                </Select>
+                                            </FormControl>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        {imageType === "url" && (
+                                            <>
+                                                <Grid item xs={12}>
+                                                    <Typography variant="body1" fontWeight="500" align="left">Image Preview</Typography>
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    {imageURL === "" ? (
+                                                        <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <NoPhotographyIcon sx={{ marginRight: "10px" }} />
+                                                            <Typography variant="body2" align="center">No image URL set</Typography>
+                                                        </Box>
+                                                    ) : (
+                                                        <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <img src={imageURL} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                        </Box>
+                                                    )}
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    <TextField fullWidth label="Image URL" placeholder="Enter URL" value={imageURL} onChange={(event) => { setImageURL(event.target.value) }} />
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    <Button onClick={() => { setImageType("upload") }}>Or, upload an image</Button>
+                                                </Grid>
+                                            </>
+                                        )}
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            {/* If uploading === true, display button with CircularProgress spinner inside */}
+                                            {uploading ? (
+                                                <Button variant="contained" fullWidth disabled>
+                                                    <CircularProgress size={30} sx={{ margin: "5px" }} />
+                                                </Button>
+                                            ) : (
+                                                ((imageURL === '' && imageBase64 === null) || postTitle === '' || postDescription === '' || postCategories === '') ? (
+                                                    <Button variant="contained" fullWidth disabled>Post</Button>
+                                                ) : (
+                                                    <Button variant="contained" fullWidth onClick={() => { uploadImagePost() }}>Post</Button>
+                                                )
+                                            )}
+                                        </Grid>
+                                    </Grid>
+                                )}
+
                                 {/* Text/Markdown Post */}
-                                {(postType === 'text/plain' || postType === "text/markdown") && (
+                                {((postType === 'text/plain' || postType === "text/markdown") && !isMarkdownImage(postContent)) && (
                                     <Grid container spacing={2}>
                                         <Grid item xs={12}>
                                             <Typography variant="h6" align="left">Edit Post</Typography>

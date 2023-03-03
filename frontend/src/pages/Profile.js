@@ -1,7 +1,6 @@
 // React helpers
 import { useState, useEffect } from "react";
 import { createAPIEndpoint, ENDPOINTS } from '../api';
-import axios from 'axios'
 
 // Layout components
 import Layout from "../components/layouts/Layout";

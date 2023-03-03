@@ -131,20 +131,20 @@ const NewPost = () => {
             data.append('description', postDescription);
             data.append('source', "https://google.com");
             data.append('origin', "https://google.com");
-            if (imageFile) {
+
+            if (imageType === "upload") {
                 if (imageFile.type === "image/png") {
                     data.append('contentType', "image/png;base64");
                 } else if (imageFile.type === "image/jpeg") {
                     data.append('contentType', "image/jpeg;base64");
                 }
-            } else {
-                data.append('contentType', "image/png;base64");
-            }
-            if (imageType === "upload") {
+
                 data.append('content', imageBase64);
             } else if (imageType === "url") {
-                data.append('content', imageURL);
+                data.append('contentType', "text/markdown");
+                data.append('content', `![${imageURL}](${imageURL})`);
             }
+
             data.append('categories', postCategories.replace(/\s/g, '').split(','));
             data.append('visibility', selectedPrivacy);
             data.append('unlisted', unlisted);

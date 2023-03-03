@@ -24,6 +24,7 @@ export const createAPIEndpoint = endpoint => {
 
     return {
         post: data => axios.post(url, data, requestOptions),
+        put: data => axios.put(url, data, requestOptions),
         get: () => axios.get(url, requestOptions),
         delete: () => axios.delete(url, requestOptions),
     }
