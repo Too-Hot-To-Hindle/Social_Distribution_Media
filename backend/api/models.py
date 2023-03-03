@@ -27,17 +27,19 @@ class Author(models.Model):
         return self.displayName
     
     def save(self, *args, **kwargs) -> None:
-
-        # Create inbox on Author creation
-        if not self.pk:
-            Inbox.objects.create(author___id=self._id)
+        # Store if this is the first or not
+        first_save = self._state.adding
 
         # Set the id and url fields intially, using the generated id.
         if not self.id:
             self.id = f"{API_BASE}/authors/{self._id}"
         if not self.url:
             self.url = f"{SERVICE_ADDRESS}/authors/{self._id}"
-        return super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
+        # Create inbox on Author creation
+        if first_save:
+            Inbox.objects.create(author_id=self._id)
 
 class Post(models.Model):
 
