@@ -8,6 +8,8 @@ from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
+from drf_spectacular.utils import extend_schema_serializer, extend_schema, OpenApiExample, OpenApiParameter
+import json
 # from django.contrib.auth import authenticate, login
 
 from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer
@@ -382,12 +384,33 @@ class Auth(APIView):
     # make it so users logging in do not have to authenticate
     authentication_classes = []
     permission_classes = []
+    serializer_class = UserSerializer
+
+    @extend_schema(
+        request={
+            "application/json": {
+                "description": "Form data.",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "username": {"type": "string"},
+                        "password": {"type": "string", "format": "password"},
+                    },
+                    "required": ["username", "password"],
+                },
+                "example": {
+                    "username": "steven",
+                    "password": "pwd",
+                },
+            }
+        }
+    )
     def post(self, request):
         """
         login a user with a username and password
         """
         try:
-            data = request.POST.dict()
+            data = json.loads(request.body)
             user = authenticate(request, username=data['username'], password=data['password'])
             if user:
                 login(request, user)
@@ -404,13 +427,34 @@ class AuthRegister(APIView):
     # make it so users registering do not have to login
     authentication_classes = []
     permission_classes = []
+    serializer_class = UserSerializer
+
+    @extend_schema(
+        request={
+            "application/json": {
+                "description": "Form data.",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "username": {"type": "string"},
+                        "password": {"type": "string", "format": "password"},
+                    },
+                    "required": ["username", "password"],
+                },
+                "example": {
+                    "username": "john.doe",
+                    "password": "my_password",
+                },
+            }
+        }
+    )
     def post(self, request):
         """
         register a new user
         """
         try:
             # create our user and an author, and link it with the author.
-            serializer = UserSerializer(data=request.POST.dict())
+            serializer = UserSerializer(data=json.loads(request.body))
             print(request.POST.dict())
             if serializer.is_valid():
                 user = serializer.data
