@@ -1,31 +1,134 @@
 // React helpers
 import { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createAPIEndpoint, ENDPOINTS } from '../api';
+import ReactMarkdown from 'react-markdown';
 
 // Layout component
 import Layout from "../components/layouts/Layout";
 
 // Material UI components
-import { CircularProgress, Card, Typography, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Divider } from "@mui/material";
+import { Alert, Box, CircularProgress, Card, Typography, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Divider, FormGroup, FormControlLabel, Checkbox } from "@mui/material";
 
 // Material UI icons
 import QuizIcon from '@mui/icons-material/Quiz';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
+import ImageIcon from '@mui/icons-material/Image';
+import NoPhotographyIcon from '@mui/icons-material/NoPhotography';
+
+function isMarkdown(text) {
+    return /^(#+\s|\*\*|\_\_|\- \S)/m.test(text);
+}
 
 const EditPost = () => {
 
     const navigate = useNavigate();
 
-    const [postData, setPostData] = useState("null");
+    const { authorID, postID } = useParams()
+    const [authorData, setAuthorData] = useState(null);
+    const [postData, setPostData] = useState(null);
     const [belongsToUser, setBelongsToUser] = useState(false);
-    const [uploading, setUpload] = useState(false);
-    const [postType, setPostType] = useState("Text");
-    const [postContent, setPostContent] = useState(`Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla augue nisi, pharetra at risus et, gravida tempus purus. Ut euismod elit eget nisl luctus, eget euismod sapien fermentum. Mauris bibendum, felis eget lacinia auctor, tortor odio ornare orci, sit amet volutpat arcu eros ac est. Pellentesque non purus vel lectus dictum gravida quis a felis. In sed quam nulla. Sed sollicitudin mi felis, sed molestie sem dignissim in. Etiam nec blandit mi. Curabitur vel feugiat velit. Sed bibendum purus eu nunc vulputate, sed auctor nisl fermentum. Vivamus laoreet ex mauris, at interdum arcu vehicula nec. Donec sodales tortor a dui placerat, sit amet pharetra elit aliquam. Praesent eget urna mauris. Nunc varius lectus quis sodales posuere. Suspendisse bibendum ex id dolor lacinia, in consectetur ipsum pellentesque. Aliquam imperdiet pulvinar metus vitae bibendum. Curabitur ut elementum augue, eget interdum libero.`);
+
+    const [postType, setPostType] = useState(null);
+    const [postTitle, setPostTitle] = useState("");
+    const [postDescription, setPostDescription] = useState("");
+    const [postContent, setPostContent] = useState('');
+    const [postCategories, setPostCategories] = useState('');
     const [selectedPrivacy, setSelectedPrivacy] = useState('Public');
+    const [unlisted, setUnlisted] = useState(false);
+
+    // image specific state hooks
+    const [imageType, setImageType] = useState("upload");
+    const [imageFile, setImageFile] = useState(null);
+    const [imageBase64, setImageBase64] = useState(null);
+    const [uploadedImagePreview, setUploadedImagePreview] = useState(null)
+    const [imageURL, setImageURL] = useState("");
+
+    const [uploading, setUpload] = useState(false);
+
+    const [username, setUsername] = useState(null);
+    const [userID, setUserID] = useState(null);
 
     useEffect(() => {
-        // TODO: on page load, retrieve post data from backend
-        // and fill in state hooks with data
+        setUsername(localStorage.getItem('username'))
+        setUserID(localStorage.getItem('author_id'))
     }, [])
+
+    useEffect(() => {
+        if (userID) {
+            // get author information
+            createAPIEndpoint(`authors/${authorID}`)
+                .get()
+                .then(authorRes => {
+                    setAuthorData(authorRes.data)
+
+                    // get post information
+                    createAPIEndpoint(`authors/${authorID}/posts/${postID}`)
+                        .get()
+                        .then(res => {
+                            setPostData(res.data)
+                            setBelongsToUser(authorRes.data["_id"] === userID)
+                            setPostType(res.data.contentType)
+                            setPostTitle(res.data.title)
+                            setPostDescription(res.data.description)
+                            setPostContent(res.data.content)
+                            setPostCategories(res.data.categories)
+                            setSelectedPrivacy(res.data.visibility)
+                            setUnlisted(res.data.unlisted)
+
+                            console.log(res.data)
+
+                            if (res.data.contentType === "image/png;base64" || res.data.contentType === "image/jpeg;base64") {
+                                // if res.data begins with 'http', consider it a linked image
+                                if (res.data.content.startsWith('http')) {
+                                    setImageType("url")
+                                    setImageURL(res.data.content)
+                                }
+
+                                // otherwise, consider it a base64 image
+                                else {
+                                    setImageType("upload")
+                                    setImageBase64(res.data.content)
+                                }
+                            }
+
+                        })
+                        .catch(err => {
+                            // TODO: Add in error handling
+                            if (err.response.status === 404) {
+                                setPostData({})
+                                setBelongsToUser(false)
+                            }
+                            console.log(err)
+                        });
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    if (err.response.status === 404) {
+                        setPostData({})
+                        setBelongsToUser(false)
+                    }
+                    console.log(err)
+                });
+        }
+    }, [userID]);
+
+    const handleFileSelect = (event) => {
+        setImageFile(event.target.files[0]);
+
+        const imageObjectURL = URL.createObjectURL(event.target.files[0]);
+        setUploadedImagePreview(imageObjectURL);
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            // set the state to the base64 string
+            setImageBase64(reader.result);
+        };
+
+        reader.readAsDataURL(event.target.files[0]);
+    };
 
     const handlePrivacyChange = (event) => {
         setSelectedPrivacy(event.target.value);
@@ -33,16 +136,96 @@ const EditPost = () => {
 
     const editTextPost = async () => {
         setUpload(true);
-        // TODO: Upload text post to backend
-        // TODO: Redirect to Stream page
-        // navigate("/stream")
+        if (userID) {
+            // if post is markdown, make a markdown type post in backend
+            if (isMarkdown(postContent)) {
+                var data = new URLSearchParams();
+                data.append('title', postTitle);
+                data.append('description', postDescription);
+                data.append('source', "https://google.com");
+                data.append('origin', "https://google.com");
+                data.append('contentType', "text/markdown");
+                data.append('content', postContent);
+                data.append('categories', postCategories.replace(/\s/g, '').split(','));
+                data.append('visibility', selectedPrivacy);
+                data.append('unlisted', unlisted);
+
+                createAPIEndpoint(`authors/${userID}/posts/${postID}`)
+                    .post(data)
+                    .then(res => {
+                        navigate("/profile")
+                        setUpload(false)
+                    })
+                    .catch(err => {
+                        // TODO: Add in error handling
+                        console.log(err)
+                    });
+            }
+
+            // otherwise, create a plaintext post in backend
+            else {
+                var data = new URLSearchParams();
+                data.append('title', postTitle);
+                data.append('description', postDescription);
+                data.append('source', "https://google.com");
+                data.append('origin', "https://google.com");
+                data.append('contentType', "text/plain");
+                data.append('content', postContent);
+                data.append('categories', postCategories.replace(/\s/g, '').split(','));
+                data.append('visibility', selectedPrivacy);
+                data.append('unlisted', unlisted);
+
+                createAPIEndpoint(`authors/${userID}/posts`)
+                    .post(data)
+                    .then(res => {
+                        navigate("/profile")
+                        setUpload(false)
+                    })
+                    .catch(err => {
+                        // TODO: Add in error handling
+                        console.log(err)
+                    });
+            }
+        }
     }
 
-    const editImagePost = async () => {
+    const uploadImagePost = async () => {
         setUpload(true);
-        // TODO: Upload image post to backend
-        // TODO: Redirect to Stream page
-        // navigate("/stream")
+        if (userID) {
+            var data = new URLSearchParams();
+            data.append('title', postTitle);
+            data.append('description', postDescription);
+            data.append('source', "https://google.com");
+            data.append('origin', "https://google.com");
+            if (imageFile) {
+                if (imageFile.type === "image/png") {
+                    data.append('contentType', "image/png;base64");
+                } else if (imageFile.type === "image/jpeg") {
+                    data.append('contentType', "image/jpeg;base64");
+                }
+            } else {
+                data.append('contentType', "image/png;base64");
+            }
+            if (imageType === "upload") {
+                data.append('content', imageBase64);
+            } else if (imageType === "url") {
+                data.append('content', imageURL);
+            }
+            data.append('categories', postCategories.replace(/\s/g, '').split(','));
+            data.append('visibility', selectedPrivacy);
+            data.append('unlisted', unlisted);
+
+            createAPIEndpoint(`authors/${userID}/posts/${postID}`)
+                .post(data)
+                .then(res => {
+                    navigate("/profile")
+                    setUpload(false)
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                });
+        }
     }
 
     return (
@@ -50,16 +233,15 @@ const EditPost = () => {
             <Layout>
                 <Card>
                     <>
-                        {/* Post type selector */}
                         {postData === null && (
                             <CircularProgress sx={{ marginTop: "50px", marginBottom: "50px" }} />
                         )}
 
-                        {(postData!== null && !belongsToUser) && (
+                        {(postData !== null && !belongsToUser) && (
                             <>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12}>
-                                        <QuizIcon sx={{fontSize: "60px", margin: "20px"}}/>
+                                        <QuizIcon sx={{ fontSize: "60px", margin: "20px" }} />
                                         <Typography variant="h6" align="center">Post not found.</Typography>
                                     </Grid>
                                 </Grid>
@@ -69,11 +251,64 @@ const EditPost = () => {
                         {(postData !== null && belongsToUser) && (
                             <>
                                 {/* Image Post */}
-                                {/* TODO: show existing image */}
-                                {postType === 'Image' && (
+                                {(postType === 'image/png;base64' || postType === 'image/jpeg;base64') && (
                                     <Grid container spacing={2}>
                                         <Grid item xs={12}>
-                                            <Typography variant="h6" align="left" onChange={(event) => { setPostContent(event.target.value) }}>Upload an image</Typography>
+                                            <Typography variant="h6" align="left">Edit Post</Typography>
+                                        </Grid>
+
+                                        {/* Post author */}
+                                        <Grid item xs={12}>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+
+                                                    <div>
+                                                        <Typography variant="h6" align="left">@{authorData.displayName}</Typography>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        {/* Post title and description */}
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Title</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postTitle} placeholder="Write your title here..." onChange={(event) => { setPostTitle(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Description</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postDescription} placeholder="Write your description here..." onChange={(event) => { setPostDescription(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Catgeory</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postCategories} placeholder="Denote categories separated by commas" onChange={(event) => { setPostCategories(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
                                         </Grid>
 
                                         <Grid item xs={12}>
@@ -84,8 +319,8 @@ const EditPost = () => {
                                                     value={selectedPrivacy}
                                                     onChange={handlePrivacyChange}
                                                 >
-                                                    <MenuItem value={'Public'}>Public</MenuItem>
-                                                    <MenuItem value={'Friends Only'}>Friends Only</MenuItem>
+                                                    <MenuItem value={'PUBLIC'}>Public</MenuItem>
+                                                    <MenuItem value={'FRIENDS'}>Friends Only</MenuItem>
                                                 </Select>
                                             </FormControl>
                                         </Grid>
@@ -94,13 +329,69 @@ const EditPost = () => {
                                             <Divider />
                                         </Grid>
 
-                                        <Grid item xs={12}>
-                                            <Button variant="contained" fullWidth>Upload Image</Button>
-                                        </Grid>
+                                        {imageType === "upload" && (
+                                            <>
+                                                <Grid item xs={12}>
+                                                    {imageBase64 === null ? (
+                                                        <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <NoPhotographyIcon sx={{ marginRight: "10px" }} />
+                                                            <Typography variant="body2" align="center">No image uploaded</Typography>
+                                                        </Box>
+                                                    ) : (
+                                                        <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <img src={imageBase64} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                        </Box>
+                                                    )}
+                                                </Grid>
 
-                                        <Grid item xs={12}>
-                                            <Button>Or, set an image URL</Button>
-                                        </Grid>
+                                                <Grid item xs={12}>
+                                                    <Button variant="contained" fullWidth component="label">
+                                                        Upload Image
+                                                        <input
+                                                            type="file"
+                                                            onChange={handleFileSelect}
+                                                            hidden
+                                                            accept="image/jpeg,image/png"
+                                                            multiple={false}
+                                                            id="upload-image-input"
+                                                        />
+                                                    </Button>
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    <Button onClick={() => { setImageType("url") }}>Or, set an image URL</Button>
+                                                </Grid>
+                                            </>
+                                        )}
+
+                                        {imageType === "url" && (
+                                            <>
+                                                <Grid item xs={12}>
+                                                    <Typography variant="body1" fontWeight="500" align="left">Image Preview</Typography>
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    {imageURL === "" ? (
+                                                        <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <NoPhotographyIcon sx={{ marginRight: "10px" }} />
+                                                            <Typography variant="body2" align="center">No image URL set</Typography>
+                                                        </Box>
+                                                    ) : (
+                                                        <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <img src={imageURL} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                        </Box>
+                                                    )}
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    <TextField fullWidth label="Image URL" placeholder="Enter URL" value={imageURL} onChange={(event) => { setImageURL(event.target.value) }} />
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    <Button onClick={() => { setImageType("upload") }}>Or, upload an image</Button>
+                                                </Grid>
+                                            </>
+                                        )}
 
                                         <Grid item xs={12}>
                                             <Divider />
@@ -113,35 +404,128 @@ const EditPost = () => {
                                                     <CircularProgress size={30} sx={{ margin: "5px" }} />
                                                 </Button>
                                             ) : (
-                                                <Button variant="contained" fullWidth onClick={() => { editImagePost() }}>Save Edits</Button>
+                                                ((imageURL === '' && imageBase64 === null) || postTitle === '' || postDescription === '' || postCategories === '') ? (
+                                                    <Button variant="contained" fullWidth disabled>Post</Button>
+                                                ) : (
+                                                    <Button variant="contained" fullWidth onClick={() => { uploadImagePost() }}>Post</Button>
+                                                )
                                             )}
                                         </Grid>
                                     </Grid>
                                 )}
 
                                 {/* Text/Markdown Post */}
-                                {postType === 'Text' && (
+                                {(postType === 'text/plain' || postType === "text/markdown") && (
                                     <Grid container spacing={2}>
                                         <Grid item xs={12}>
                                             <Typography variant="h6" align="left">Edit Post</Typography>
                                         </Grid>
 
+                                        {/* Post author */}
                                         <Grid item xs={12}>
-                                            <FormControl fullWidth>
-                                                <InputLabel id="privacy-label">Privacy</InputLabel>
-                                                <Select
-                                                    label="Privacy"
-                                                    value={selectedPrivacy}
-                                                    onChange={handlePrivacyChange}
-                                                >
-                                                    <MenuItem value={'Public'}>Public</MenuItem>
-                                                    <MenuItem value={'Friends Only'}>Friends Only</MenuItem>
-                                                </Select>
-                                            </FormControl>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+
+                                                    <div>
+                                                        <Typography variant="h6" align="left">@{authorData.displayName}</Typography>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </Grid>
 
                                         <Grid item xs={12}>
                                             <Divider />
+                                        </Grid>
+
+                                        {/* Post title and description */}
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Title</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postTitle} placeholder="Write your title here..." onChange={(event) => { setPostTitle(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Description</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postDescription} placeholder="Write your description here..." onChange={(event) => { setPostDescription(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Post Catgeory</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth value={postCategories} placeholder="Denote categories separated by commas" onChange={(event) => { setPostCategories(event.target.value) }} />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                <FormControl fullWidth sx={{ marginRight: "15px" }}>
+                                                    <InputLabel id="privacy-label">Privacy</InputLabel>
+                                                    <Select
+                                                        label="Privacy"
+                                                        value={selectedPrivacy}
+                                                        onChange={handlePrivacyChange}
+                                                    >
+                                                        <MenuItem value={'PUBLIC'}>Public</MenuItem>
+                                                        <MenuItem value={'FRIENDS'}>Friends Only</MenuItem>
+                                                    </Select>
+                                                </FormControl>
+
+                                                <FormGroup>
+                                                    <FormControlLabel control={<Checkbox checked={unlisted} onChange={(event) => { setUnlisted(event.target.checked) }} />} label="Unlisted" />
+                                                </FormGroup>
+                                            </div>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="body1" fontWeight="500" align="left">Content Preview</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            {postContent === "" ? (
+                                                <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                    <DriveFileRenameOutlineIcon sx={{ marginRight: "10px" }} />
+                                                    <Typography variant="body2" align="center">Start writing to preview your post</Typography>
+                                                </Box>
+                                            ) : (
+                                                <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", paddingLeft: "10px", paddingRight: "10px", overflowY: "scroll" }}>
+                                                    <Typography align="left">
+                                                        <ReactMarkdown>{postContent}</ReactMarkdown>
+                                                    </Typography>
+                                                </Box>
+                                            )}
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Alert severity="info">
+                                                You can use CommonMark to format your post. <a href="https://commonmark.org/help/" target="_blank" style={{ color: "#499BE9" }}>Click here</a> to learn more.
+                                            </Alert>
                                         </Grid>
 
                                         <Grid item xs={12}>
@@ -156,7 +540,7 @@ const EditPost = () => {
                                                 </Button>
                                             ) : (
                                                 // If postContent is empty, disable button
-                                                postContent === '' ? (
+                                                (postTitle === '' || postDescription === '' || postCategories === '' || postContent === '') ? (
                                                     <Button variant="contained" fullWidth disabled>Post</Button>
                                                 ) : (
                                                     <Button variant="contained" fullWidth onClick={() => { editTextPost() }}>Save Edits</Button>
