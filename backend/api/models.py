@@ -170,12 +170,3 @@ class Inbox(models.Model):
 
     def __str__(self) -> str:
         return f"{self.author.displayName}'s Inbox"
-
-class InboxObject(models.Model):
-
-    object_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.UUIDField()
-    object = GenericForeignKey('object_content_type', 'object_id')
-
-    def __str__(self) -> str:
-        return "Inbox Items Object"
