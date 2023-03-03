@@ -11,7 +11,7 @@ from django.http import JsonResponse
 # from django.contrib.auth import authenticate, login
 
 from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
-from .models import Author, Post, Comment, Like, Inbox, InboxObject
+from .models import Author, Post, Comment, Like, Inbox, Follow
 
 import traceback
 import uuid
@@ -391,6 +391,20 @@ class InboxDetail(APIView):
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class FollowRequests(APIView):
+
+    def get(self, request, author_id):
+        """Get requests to follow author_id"""
+        try:
+            if not Author.objects.filter(pk=author_id).exists():
+                return Response('That author id does not exist', status=status.HTTP_404_NOT_FOUND)
+            requests = Follow.objects.filter(object___id=author_id)
+            return Response(FollowSerializer(requests, many=True).data, status=status.HTTP_200_OK)
+        except Exception as e:
+            traceback.print_exc()
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # not yet fully tested nor working... but we worry about csrf later
 class Csrf(APIView):
