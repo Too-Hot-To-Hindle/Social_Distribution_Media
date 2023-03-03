@@ -13,17 +13,14 @@ class Author(models.Model):
     type = 'author'
 
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    id = models.URLField(blank=True, default=None, editable=False)
+    id = models.URLField(blank=True, default=None)
     url = models.URLField(blank=True, default=None, editable=False)
     host = models.URLField(default=SERVICE_ADDRESS, editable=False)
     displayName = models.CharField(max_length=100)
     github = models.URLField(blank=True)
     profileImage = models.URLField(blank=True)
-    # https://stackoverflow.com/questions/35957837/trying-to-make-a-postgresql-field-with-a-list-of-foreign-keys-in-django
-    # https://docs.djangoproject.com/en/4.1/ref/models/fields/#django.db.models.ManyToManyField.symmetrical
-    # NOTE: Can't specify on_delete for this, but the default behaviour is CASCADE which is correct for us :)
-    followers = models.ManyToManyField("self", symmetrical=False, blank=True)
-    # store a default User object for leveraging Django's built-in auth
+    followers = models.ManyToManyField("self", symmetrical=False, blank=True, related_name="author_followers")
+    following = models.ManyToManyField("self", symmetrical=False, blank=True, related_name="author_following")
     user = models.OneToOneField(User, on_delete= models.CASCADE, blank=True)
 
     def __str__(self):
@@ -86,7 +83,7 @@ class Post(models.Model):
     unlisted = models.BooleanField(default=False)
 
     def __str__(self) -> str:
-        return f"Post by {Author.displayName}"
+        return f"Post by {self.author.displayName}"
     
     def save(self, *args, **kwargs) -> None:
         # Set the id and url fields intially, using the generated id.
@@ -108,9 +105,11 @@ class Comment(models.Model):
     type = "comment"
 
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    _post_author_id = models.UUIDField(blank=True)
+    _post_id = models.UUIDField(blank=True)
+    
     id = models.URLField(blank=True, default=None, editable=False)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, blank=True)
     comment = models.TextField()
     contentType = models.TextField(choices=CONTENT_TYPES)
     published = models.DateTimeField(auto_now_add=True)  # Sets to timezone.now on first creation
@@ -120,9 +119,12 @@ class Comment(models.Model):
     
     def save(self, *args, **kwargs) -> None:
         # Set the id and url fields intially, using the generated id.
+        print("in comment save")
         if not self.id:
-            self.id = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
-            self.comments = f"{self.id}/comments"
+            print("not id")
+            self.id = f"{API_BASE}/authors/{self._post_author_id}/posts/{self._post_id}/comments/{self._id}"
+
+        print(self.id)
         return super().save(*args, **kwargs)
 
 class Like(models.Model):
@@ -132,36 +134,29 @@ class Like(models.Model):
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     summary = models.TextField()
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-
-    # These 3 properties let us define the object foreign key model generically
-    # NOTE: It is recomended to define indexes for the generic foreign key fields
-    # https://docs.djangoproject.com/en/4.1/ref/models/options/#django.db.models.Options.indexes
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.UUIDField()
-    object = GenericForeignKey('content_type', 'object_id')
+    object = models.URLField()
 
     def __str__(self) -> str:
-        return f"Like by {Author.displayName}"
-    
-class FriendRequest(models.Model):
-
-    type = 'request'
-
-    from_author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='friend_request_from')
-    to_author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='friend_request_to')
-
-    def __str__(self) -> str:
-        return f"Friend request from {self.from_author.displayName} to {self.to_author.displayName}"
+        return f"Like by {self.author.displayName}"
 
 class Follow(models.Model):
 
     type = 'follow'
 
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    fromAuthor = models.ForeignKey(Author, on_delete=models.CASCADE)
+    summary = models.TextField()
+    actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='follow_request_from')
+    object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='follow_request_to')
 
     def __str__(self) -> str:
-        return f"Friend request from {self.fromAuthor.displayName}"
+        return f"Follow request from {self.actor.displayName} to {self.object.displayName}"
+    
+# class Followers(models.Model):
+
+#     type = 'followers'
+
+#     author = models.ForeignKey(Author, on_delete=models.CASCADE)
+#     items = models.ManyToManyField(Author, blank=True)
 
 class Inbox(models.Model):
 
@@ -169,15 +164,7 @@ class Inbox(models.Model):
     
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-
-    # These 3 properties let us define the object foreign key model generically
-    # NOTE: It is recomended to define indexes for the generic foreign key fields
-    # https://docs.djangoproject.com/en/4.1/ref/models/options/#django.db.models.Options.indexes
-    # content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    # object_id = models.UUIDField()
-    # items = GenericForeignKey('content_type', 'object_id')
-
-    items = GenericRelation('InboxObject', content_type_field='object_content_type', object_id_field='object_id')
+    items = models.ManyToManyField(Post, blank=True)
 
     def __str__(self) -> str:
         return f"{self.author.displayName}'s Inbox"
