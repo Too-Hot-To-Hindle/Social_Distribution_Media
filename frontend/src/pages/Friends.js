@@ -18,12 +18,12 @@ const Friends = () => {
     const [username, setUsername] = useState(null);
     const [userID, setUserID] = useState(null);
 
-    const [loading, setLoading] = useState(true)
+    const [friendRequestsLoading, setFriendRequestsLoading] = useState(true)
+    const [friendsLoading, setFriendsLoading] = useState(true)
 
-    const [followers, setFollowers] = useState([]);
-    const [following, setFollowing] = useState([]);
     const [trueFriends, setTrueFriends] = useState([]);
     const [friends, setFriends] = useState([]);
+    const [friendRequests, setFriendRequests] = useState([]);
 
     useEffect(() => {
         setUsername(localStorage.getItem('username'))
@@ -57,39 +57,61 @@ const Friends = () => {
                     tempFollowing.push(res.data)
                 }
 
-                findTrueFriends(tempFollowers, tempFollowing);
-                findRegularFriends(tempFollowers, tempFollowing);
-                setLoading(false)
+                setupFriends(tempFollowers, tempFollowing)
+                setFriendsLoading(false)
             }
         }
 
         getFriends();
     }, [userID])
 
-    const findTrueFriends = (followers, following) => {
-        // for every follower in followers, check if they are also in following
-        // and if so, add them to trueFriends
-        for (let i = 0; i < followers.length; i++) {
-            for (let j = 0; j < following.length; j++) {
-                if (followers[i].id === following[j].id) {
-                    setTrueFriends(prevState => [...prevState, followers[i]])
-                }
-            }
+    // get any friend requests
+    useEffect(() => {
+        if (userID) {
+            createAPIEndpoint(`authors/${userID}/inbox/followers`)
+                .get()
+                .then(res => {
+                    setFriendRequests(res.data)
+                    setFriendRequestsLoading(false)
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                });
         }
+    }, [userID])
 
-        console.log(trueFriends)
+    const setupFriends = (followers, following) => {
+        const followersOnly = followers.filter(x => !following.includes(x));
+        const followingOnly = following.filter(x => !followers.includes(x));
+        const friends = followersOnly.concat(followingOnly);
+        const trueFriends = followers.filter(x => following.includes(x));
+
+        setFriends(friends);
+        setTrueFriends(trueFriends);
     }
 
-    const findRegularFriends = (followers, following) => {
-        // for every follower in followers, check if they are not in following
-        // and if so, add them to friends
-        for (let i = 0; i < followers.length; i++) {
-            for (let j = 0; j < following.length; j++) {
-                if (followers[i].id !== following[j].id) {
-                    setFriends(prevState => [...prevState, followers[i]])
-                }
-            }
+    const acceptFriendRequest = (friendRequest) => {
+        var data = {
+            "type": "author",
+            "id": friendRequest.actor.id,
+            "host": friendRequest.actor.host,
+            "displayName": friendRequest.actor.displayName,
+            "url": friendRequest.actor.url,
+            "github": friendRequest.actor.github,
+            "profileImage": friendRequest.actor.profileImage
         }
+
+        createAPIEndpoint(`authors/${userID}/followers/${friendRequest.actor._id}`)
+                .put(data)
+                .then(res => {
+                    // reload page
+                    window.location.reload();
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                });
     }
 
     return (
@@ -103,7 +125,7 @@ const Friends = () => {
 
                         <Grid item xs={12}>
                             <Alert severity="info" style={{ textAlign: "left" }}>
-                                To become true friends with another author, you must both accept each other's friend requests. You can lookup other authors on the Explore page.
+                                To become true friends with another author, you must both accept each other's friend requests. You can lookup other authors using the Search bar.
                             </Alert>
                         </Grid>
 
@@ -111,35 +133,48 @@ const Friends = () => {
                             <Divider />
                         </Grid>
 
-                        <Grid item xs={12}>
-                            <Alert severity="info" style={{ textAlign: "left" }}>
-                                No friend requests at this time.
-                            </Alert>
-                        </Grid>
+                        {/* show spinner if friendsRequestsLoading is true */}
+                        {friendRequestsLoading && (
+                            <Grid item xs={12}>
+                                <CircularProgress sx={{ marginTop: "50px", marginBottom: "50px" }} />
+                            </Grid>
+                        )}
 
+                        {/* if friendRequests is length zero, display message */}
+                        {!friendRequestsLoading && friendRequests.length === 0 && (
+                            <Grid item xs={12}>
+                                <Alert severity="info" style={{ textAlign: "left" }}>
+                                    No friend requests at this time.
+                                </Alert>
+                            </Grid>
+                        )}
 
-                        {/* <Grid item xs={12}>
-                            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                <div style={{ display: "flex", alignItems: "center" }}>
-                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+                        {/* if friendRequests is length greater than zero, display list of friend requests */}
+                        {!friendRequestsLoading && friendRequests.length > 0 && (
+                            friendRequests.map((friendRequest) => (
+                                <Grid item xs={12}>
+                                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                        <div style={{ display: "flex", alignItems: "center" }}>
+                                            <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
 
-                                    <div>
-                                        <Typography variant="h6" align="left">Jane Doe</Typography>
-                                        <Typography variant="body1" align="left">@janedoe</Typography>
+                                            <div>
+                                                <Typography variant="h6" align="left">@{friendRequest.actor.displayName}</Typography>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: "flex", alignItems: "center" }}>
+                                            {/* <Button variant="outlined" startIcon={<CloseIcon />} sx={{ marginRight: "5px" }}>
+                                                Reject
+                                            </Button> */}
+                                            <Button variant="contained" endIcon={<CheckIcon />} onClick={() => {acceptFriendRequest(friendRequest)}}>
+                                                Accept
+                                            </Button>
+                                        </div>
+
                                     </div>
-                                </div>
-
-                                <div style={{ display: "flex", alignItems: "center" }}>
-                                    <Button variant="outlined" startIcon={<CloseIcon />} sx={{ marginRight: "5px" }}>
-                                        Reject
-                                    </Button>
-                                    <Button variant="contained" endIcon={<CheckIcon />}>
-                                        Accept
-                                    </Button>
-                                </div>
-
-                            </div>
-                        </Grid> */}
+                                </Grid>
+                            ))
+                        )}
                     </Grid>
                 </Card>
 
@@ -151,13 +186,22 @@ const Friends = () => {
 
                         {/* if loading is true, and followers is null, show loader */}
                         {/* otherwise, show list of followers */}
-                        {loading && (
+                        {friendsLoading && (
                             <Grid item xs={12}>
                                 <CircularProgress sx={{ marginTop: "50px", marginBottom: "50px" }} />
                             </Grid>
                         )}
 
-                        {!loading && (
+                        {/* if trueFriends and friends are both length zero, display message */}
+                        {!friendsLoading && trueFriends.length === 0 && friends.length === 0 && (
+                            <Grid item xs={12}>
+                                <Alert severity="info" style={{ textAlign: "left" }}>
+                                    You have no friends yet. To become friends with another author, you must both accept each other's friend requests. You can lookup other authors using the Search bar.
+                                </Alert>
+                            </Grid>
+                        )}
+
+                        {!friendsLoading && (
                             <>
                                 {trueFriends.map((follower, index) => {
                                     return (

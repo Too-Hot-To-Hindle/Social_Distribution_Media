@@ -166,6 +166,8 @@ const PostDetails = () => {
 
                                 // Hide details button
                                 hideDetailsButton={true}
+                                hideCommentButton={true}
+                                hideShareButton={true}
                             />
                         }
 

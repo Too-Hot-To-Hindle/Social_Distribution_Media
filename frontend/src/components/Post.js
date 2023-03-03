@@ -56,6 +56,9 @@ const Post = ({
     const [liked, setLiked] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
+    const [likes, setLikes] = useState([]);
+    const [myAuthorData, setMyAuthorData] = useState(null);
+
     const [username, setUsername] = useState(null);
     const [userID, setUserID] = useState(null);
 
@@ -64,20 +67,38 @@ const Post = ({
         setUserID(localStorage.getItem('author_id'))
     }, [])
 
-    // TODO: get likes for post, check if currently logged in user has already liked
-    // useEffect(() => {
-    // if (userID) {
-    //     createAPIEndpoint(`authors/${userID}/posts/${id}/likes`)
-    //         .get()
-    //         .then(res => {
-    //             // set hook for likes
-    //             console.log(res)
-    //         })
-    //         .catch(err => {
-    //             console.log(err)
-    //         })
-    // }
-    // }, [])
+    useEffect(() => {
+        if (userID) {
+            createAPIEndpoint(`authors/${userID}/posts/${id}/likes`)
+                .get()
+                .then(res => {
+                    setLikes(res.data)
+                    for (const like of res.data) {
+                        if (like.author._id === userID) {
+                            setLiked(true)
+                        }
+                    }
+
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
+    }, [userID])
+
+    // get currently logged in author information
+    useEffect(() => {
+        if (userID) {
+            createAPIEndpoint(`authors/${authorID}`)
+                .get()
+                .then(res => {
+                    setMyAuthorData(res.data)
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
+    }, [userID])
 
     const handleDelete = () => {
         if (userID) {
@@ -92,6 +113,42 @@ const Post = ({
                     // TODO: Add in error handling
                     console.log(err)
                 });
+        }
+    }
+
+    const handleLike = () => {
+        if (userID && myAuthorData) {
+            if (!liked) {
+                setLiked(true)
+
+                console.log(myAuthorData)
+                var data = {
+                    "type": "like",
+                    "summary": `${username} likes your post!`,
+                    "author": {
+                        "type": "author",
+                        "id": myAuthorData.id,
+                        "host": myAuthorData.host,
+                        "displayName": myAuthorData.displayName,
+                        "url": myAuthorData.url,
+                        "github": myAuthorData.github,
+                        "profileImage": myAuthorData.profileImage
+                    },
+                    "object": `https://social-distribution-media.herokuapp.com/api/authors/${authorID}/posts/${id}`
+                }
+
+                console.log(data)
+
+                createAPIEndpoint(`authors/${authorID}/inbox`)
+                    .post(data)
+                    .then(res => {
+                        // refresh page
+                        window.location.reload();
+                    })
+                    .catch(err => {
+                        console.log(err)
+                    })
+            }
         }
     }
 
@@ -199,7 +256,7 @@ const Post = ({
 
                             {!hideLikeButton &&
                                 <div style={{ display: "flex", alignItems: "center" }}>
-                                    <Button startIcon={liked ? <FavoriteIcon /> : <FavoriteBorderIcon />} onClick={() => { setLiked(!liked) }}>Like</Button>
+                                    <Button startIcon={liked ? <FavoriteIcon /> : <FavoriteBorderIcon />} onClick={() => { handleLike() }}>Like</Button>
                                 </div>
                             }
 
@@ -224,9 +281,15 @@ const Post = ({
                     </Grid>
 
                     {!hideLink &&
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="Shareable Link" value={link}></TextField>
-                        </Grid>
+                        <>
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Post URI" value={link}></TextField>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Shareable Link" value={`https://social-distribution-media.herokuapp.com/${authorID}/post/${id}`}></TextField>
+                            </Grid>
+                        </>
                     }
 
                 </Grid>
