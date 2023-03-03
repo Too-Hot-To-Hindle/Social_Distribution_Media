@@ -375,10 +375,10 @@ class InboxDetail(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # not yet fully tested nor working... but we worry about csrf later
-class Csrf(APIView):
-    @method_decorator(ensure_csrf_cookie, name='dispatch')
-    def get(self, request):
-        return JsonResponse({})
+# class Csrf(APIView):
+#     @method_decorator(ensure_csrf_cookie, name='dispatch')
+#     def get(self, request):
+#         return JsonResponse({})
     
 class Auth(APIView):
     # make it so users logging in do not have to authenticate
