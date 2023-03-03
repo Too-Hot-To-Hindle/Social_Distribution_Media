@@ -62,8 +62,8 @@ class LikeSerializer(serializers.ModelSerializer):
 
 class FollowSerializer(serializers.ModelSerializer):
 
-    fromAuthor = AuthorSerializer()
-    toAuthor = AuthorSerializer()
+    actor = AuthorSerializer()
+    object = AuthorSerializer()
 
     class Meta:
         model = Follow
@@ -71,11 +71,11 @@ class FollowSerializer(serializers.ModelSerializer):
         depth = 1
     
     def create(self, validated_data):
-        from_author_data = validated_data.pop('actor')
-        to_author_data = validated_data.pop('object')
-        from_author = Author.objects.get(**from_author_data)
-        to_author = Author.objects.get(**to_author_data)
-        return Follow.objects.create(fromAuthor=from_author, toAuthor=to_author, **validated_data)
+        actor_data = validated_data.pop('actor')
+        object_data = validated_data.pop('object')
+        actor = Author.objects.get(**actor_data)
+        object = Author.objects.get(**object_data)
+        return Follow.objects.create(actor=actor, object=object, **validated_data)
 
 class InboxSerializer(serializers.ModelSerializer):
 
