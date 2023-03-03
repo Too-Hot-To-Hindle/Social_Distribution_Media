@@ -10,8 +10,8 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 # from django.contrib.auth import authenticate, login
 
-from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer
-from .models import Author, Post, Comment, Like, Inbox
+from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer
+from .models import Author, Post, Comment, Like, Inbox, InboxObject
 
 import traceback
 import uuid
@@ -118,8 +118,9 @@ class FollowersDetail(APIView):
         """
         try:
             author = Author.objects.get(pk=author_id)
-            follower = Author.objects.get(id=foreign_author_id)
+            follower = Author.objects.get(pk=foreign_author_id)
             author.followers.remove(follower)
+            follower.following.remove(author)  # Can only do this on local authors
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Author.DoesNotExist:
             return Response(f'The author {author_id} or {foreign_author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
@@ -130,12 +131,16 @@ class FollowersDetail(APIView):
     def put(self, request, author_id, foreign_author_id):
         """Add foreign_author_id as a follower of author_id"""
         try:
-            serializer = AuthorSerializer(data=request.POST.dict())
+            print(request.data)
+            serializer = AuthorSerializer(data=request.data)
             if serializer.is_valid():
                 author = Author.objects.get(pk=author_id)
-                author.followers.add(**serializer.data)
+                follower = Author.objects.get(pk=foreign_author_id)
+                author.followers.add(follower)
+                follower.following.add(author)  # Can only do this on local authors
+                return Response(AuthorSerializer(follower).data, status=status.HTTP_201_CREATED)
             else:
-                print(serializer.error_messages)
+                print(serializer.errors)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(e)
@@ -248,19 +253,44 @@ class ImagePosts(APIView):
 
 class Comments(APIView):
 
-    def get(self, author_id, post_id):
+    def get(self, request, author_id, post_id):
         """Get all comments on post_id posted by author_id"""
-        pass
+        # TODO: Paging
+        # TODO: Format response according to spec
+        # TODO: Properly 404 if author_id or post_id doesn't exist, could check post_count
+        try:
+            comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
+            serializer = CommentSerializer(comments, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def post(self, author_id, post_id):
+    def post(self, request, author_id, post_id):
         """Add a comment (comment object in body) to post_id posted by author_id"""
-        pass
+        try:
+            request.data['_post_author_id'] = author_id
+            request.data['_post_id'] = post_id
+            serializer = CommentSerializer(data=request.data)  # request.data parses all request bodies, not just form data
+            if serializer.is_valid():
+                comment = serializer.create(serializer.data)
+                return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
+            else:
+                print(serializer.errors)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PostLikes(APIView):
 
     def get(self, request, author_id, post_id):
         """Get a list of likes on post_id posted by author_id"""
-        pass
+        try:
+            pass
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CommentLikes(APIView):
 
@@ -281,7 +311,9 @@ class InboxDetail(APIView):
         #  Require auth here
         try:
             inbox = Inbox.objects.get(author___id=author_id)
-            return Response(inbox.items, status=status.HTTP_201_CREATED)
+            print(inbox.items)
+            serializer = InboxSerializer(inbox)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -290,30 +322,35 @@ class InboxDetail(APIView):
         """Send a post to author_id"""
         # NOTE: 4 different cases based on type field in post request body
         # See https://github.com/abramhindle/CMPUT404-project-socialdistribution/blob/master/project.org#inbox
-        object = request.POST.dict()
-        inbox = Inbox.objects.get(author___id=author_id)
-        match object:
+        object = request.data
+        match object['type']:
             case 'post':
                 serializer = PostSerializer(data=object)
                 if serializer.is_valid():
-                    post = serializer.data
-                    # inbox.items
+                    post = Post.objects.get(**serializer.data)  # Will only work for local posts
+                    inbox = Inbox.objects.get(author___id=author_id)
+                    inbox.items.add(post)
+                    return Response(PostSerializer(post).data, status=status.HTTP_200_OK)
                 else:
                     print(serializer.error_messages)
                     return Response(status=status.HTTP_400_BAD_REQUEST)
             case 'follow':
                 serializer = FollowSerializer(data=object)
                 if serializer.is_valid():
-                    pass
+                    print(object)
+                    follow = serializer.create(serializer.data)
+                    return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
                 else:
                     print(serializer.error_messages)
                     return Response(status=status.HTTP_400_BAD_REQUEST)
             case 'like':
                 serializer = LikeSerializer(data=object)
                 if serializer.is_valid():
-                    pass
+                    print(serializer.data)
+                    like = serializer.create(serializer.data)
+                    return Response(LikeSerializer(like).data, status=status.HTTP_201_CREATED)
                 else:
-                    print(serializer.error_messages)
+                    print(serializer.errors)
                     return Response(status=status.HTTP_400_BAD_REQUEST)
             case 'comment':
                 serializer = CommentSerializer(data=object)
