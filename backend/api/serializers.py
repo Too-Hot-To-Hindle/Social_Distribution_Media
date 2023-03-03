@@ -18,6 +18,18 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ("_id", 'type', 'id', 'title', 'source', 'origin', 'description', 'contentType', 'content', 'author', 'categories', 'count', 'comments', 'commentsSrc', 'published', 'visibility', 'unlisted')
+        depth = 1
+
+class InboxPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ("_id", 'type', 'id', 'title', 'source', 'origin', 'description', 'contentType', 'content', 'author', 'categories', 'count', 'comments', 'commentsSrc', 'published', 'visibility', 'unlisted')
+        depth = 1
+        extra_kwargs = {
+            '_id': {
+                'validators': []
+            }
+        }
 
 class CommentSerializer(serializers.ModelSerializer):
 
