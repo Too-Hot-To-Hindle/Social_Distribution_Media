@@ -40,7 +40,19 @@ class Authors(APIView):
 
 
 class AuthorDetail(APIView):
+    serializer_class = AuthorSerializer
 
+    @extend_schema(
+        parameters=[
+            {
+                "name": "author_id",
+                "description": "The ID of the author",
+                "required": True,
+                "in": "path",
+                "schema": {"type": "string", "example": 'https://social-distribution-media.herokuapp.com/api/authors/0f975f4e-9e72-4166-9fd9-e3ce8d85ddc5'},
+            }
+        ]
+    )
     def get(self, request, author_id):
         """
         Get details for an author
@@ -53,13 +65,29 @@ class AuthorDetail(APIView):
             print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    @extend_schema(
+        request={
+            "application/json": {
+                "description": "Form data.",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "string"}
+                    },
+                },
+                "example": {
+                    "id": "https://social-distribution-media.herokuapp.com/api/authors/daec6997-24b1-46ef-8247-e2661339715a	"
+                }
+            }
+        }
+    )
     def post(self, request, author_id):
         """
         Update details for an author
         TODO: This must only be useable as a 'local' user
         """
         try:
-            serializer = AuthorSerializer(data=request.POST.dict())
+            serializer = AuthorSerializer(data=json.loads(request.body))
             if serializer.is_valid():
                 updated = Author.objects.filter(pk=author_id).update(**serializer.data)
                 if updated > 0:
@@ -75,6 +103,17 @@ class AuthorDetail(APIView):
         
 class Followers(APIView):
 
+    @extend_schema(
+        parameters=[
+            {
+                "name": "author_id",
+                "description": "The ID of the author",
+                "required": True,
+                "in": "path",
+                "schema": {"type": "string", "example": 'https://social-distribution-media.herokuapp.com/api/authors/0f975f4e-9e72-4166-9fd9-e3ce8d85ddc5'},
+            }
+        ]
+    )
     def get(self, request, author_id):
         """
         Get a list of authors following the user given by author_id
@@ -171,7 +210,7 @@ class Posts(APIView):
     def post(self, request, author_id):
         """Create a post (post object in body) for author_id, but generate the ID (compare to PUT in PostDetail)"""
         try:
-            serializer = PostSerializer(data=request.POST.dict())
+            serializer = PostSerializer(data=json.loads(request.body))
             if serializer.is_valid():
                 post = Post.objects.create(**serializer.data, author_id=author_id)
                 serializer = PostSerializer(post)
@@ -200,7 +239,7 @@ class PostDetail(APIView):
     def post(self, request, author_id, post_id):
         """Update post_id posted by author_id (post object in body)"""
         try:
-            serializer = PostSerializer(data=request.POST.dict())
+            serializer = PostSerializer(data=json.loads(request.body))
             if serializer.is_valid():
                 updated = Post.objects.filter(pk=post_id, author___id=author_id).update(**serializer.data)
                 if updated > 0:
@@ -229,7 +268,7 @@ class PostDetail(APIView):
     def put(self, request, author_id, post_id):
         """Create a post (post object in body) for author_id with id post_id"""
         try:
-            serializer = PostSerializer(data=request.POST.dict())
+            serializer = PostSerializer(data=json.loads(request.body))
             if serializer.is_valid():
                 post = Post.objects.create(**serializer.data, pk=post_id, author_id=author_id)
                 serializer = PostSerializer(post)
@@ -455,7 +494,7 @@ class AuthRegister(APIView):
         try:
             # create our user and an author, and link it with the author.
             serializer = UserSerializer(data=json.loads(request.body))
-            print(request.POST.dict())
+            print(json.loads(request.body))
             if serializer.is_valid():
                 user = serializer.data
                 user = User.objects.create_user(user['username'], password=user['password'])
