@@ -155,16 +155,18 @@ const EditPost = () => {
         if (userID) {
             // if post is markdown, make a markdown type post in backend
             if (isMarkdown(postContent)) {
-                var data = new URLSearchParams();
-                data.append('title', postTitle);
-                data.append('description', postDescription);
-                data.append('source', "https://google.com");
-                data.append('origin', "https://google.com");
-                data.append('contentType', "text/markdown");
-                data.append('content', postContent);
-                data.append('categories', postCategories.replace(/\s/g, '').split(','));
-                data.append('visibility', selectedPrivacy);
-                data.append('unlisted', unlisted);
+
+                var data = {
+                    title: postTitle,
+                    description: postDescription,
+                    source: "https://google.com",
+                    origin: "https://google.com",
+                    contentType: "text/markdown",
+                    content: postContent,
+                    categories: postCategories.replace(/\s/g, '').split(','),
+                    visibility: selectedPrivacy,
+                    unlisted: unlisted
+                }
 
                 createAPIEndpoint(`authors/${userID}/posts/${postID}`)
                     .put(data)
@@ -180,16 +182,18 @@ const EditPost = () => {
 
             // otherwise, create a plaintext post in backend
             else {
-                var data = new URLSearchParams();
-                data.append('title', postTitle);
-                data.append('description', postDescription);
-                data.append('source', "https://google.com");
-                data.append('origin', "https://google.com");
-                data.append('contentType', "text/plain");
-                data.append('content', postContent);
-                data.append('categories', postCategories.replace(/\s/g, '').split(','));
-                data.append('visibility', selectedPrivacy);
-                data.append('unlisted', unlisted);
+
+                var data = {
+                    title: postTitle,
+                    description: postDescription,
+                    source: "https://google.com",
+                    origin: "https://google.com",
+                    contentType: "text/plain",
+                    content: postContent,
+                    categories: postCategories.replace(/\s/g, '').split(','),
+                    visibility: selectedPrivacy,
+                    unlisted: unlisted
+                }
 
                 createAPIEndpoint(`authors/${userID}/posts/${postID}`)
                     .put(data)
@@ -208,28 +212,33 @@ const EditPost = () => {
     const uploadImagePost = async () => {
         setUpload(true);
         if (userID) {
-            var data = new URLSearchParams();
-            data.append('title', postTitle);
-            data.append('description', postDescription);
-            data.append('source', "https://google.com");
-            data.append('origin', "https://google.com");
-            if (imageFile) {
-                if (imageFile.type === "image/png") {
-                    data.append('contentType', "image/png;base64");
-                } else if (imageFile.type === "image/jpeg") {
-                    data.append('contentType', "image/jpeg;base64");
-                }
-            } else {
-                data.append('contentType', "image/png;base64");
-            }
+            var data = {}
+            const contentTypeToBe = "";
+            const contentToBe = "";
             if (imageType === "upload") {
-                data.append('content', imageBase64);
+                if (imageFile.type === "image/png") {
+                    contentTypeToBe = "image/png;base64";
+                    contentToBe = imageBase64;
+                } else if (imageFile.type === "image/jpeg") {
+                    contentTypeToBe = "image/jpeg;base64";
+                    contentToBe = imageBase64;
+                }
             } else if (imageType === "url") {
-                data.append('content', imageURL);
+                contentTypeToBe = "text/markdown";
+                contentToBe = `![${imageURL}](${imageURL})`;
             }
-            data.append('categories', postCategories.replace(/\s/g, '').split(','));
-            data.append('visibility', selectedPrivacy);
-            data.append('unlisted', unlisted);
+
+            data = {
+                title: postTitle,
+                description: postDescription,
+                source: "https://google.com",
+                origin: "https://google.com",
+                contentType: contentTypeToBe,
+                content: contentToBe,
+                categories: postCategories.replace(/\s/g, '').split(','),
+                visibility: selectedPrivacy,
+                unlisted: unlisted
+            }
 
             createAPIEndpoint(`authors/${userID}/posts/${postID}`)
                 .put(data)

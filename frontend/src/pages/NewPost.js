@@ -129,28 +129,34 @@ const NewPost = () => {
     const uploadImagePost = async () => {
         setUpload(true);
         if (userID) {
-            var data = new URLSearchParams();
-            data.append('title', postTitle);
-            data.append('description', postDescription);
-            data.append('source', "https://google.com");
-            data.append('origin', "https://google.com");
-
+            var data = {}
+            const contentTypeToBe = "";
+            const contentToBe = "";
             if (imageType === "upload") {
                 if (imageFile.type === "image/png") {
-                    data.append('contentType', "image/png;base64");
+                    contentTypeToBe = "image/png;base64";
+                    contentToBe = imageBase64;
                 } else if (imageFile.type === "image/jpeg") {
-                    data.append('contentType', "image/jpeg;base64");
+                    contentTypeToBe = "image/jpeg;base64";
+                    contentToBe = imageBase64;
                 }
-
-                data.append('content', imageBase64);
             } else if (imageType === "url") {
-                data.append('contentType', "text/markdown");
-                data.append('content', `![${imageURL}](${imageURL})`);
+                contentTypeToBe = "text/markdown";
+                contentToBe = `![${imageURL}](${imageURL})`;
             }
 
-            data.append('categories', postCategories.replace(/\s/g, '').split(','));
-            data.append('visibility', selectedPrivacy);
-            data.append('unlisted', unlisted);
+            data = {
+                title: postTitle,
+                description: postDescription,
+                source: "https://google.com",
+                origin: "https://google.com",
+                contentType: contentTypeToBe,
+                content: contentToBe,
+                categories: postCategories.replace(/\s/g, '').split(','),
+                visibility: selectedPrivacy,
+                unlisted: unlisted
+            }
+                
 
             createAPIEndpoint(`authors/${userID}/posts`)
                 .post(data)
