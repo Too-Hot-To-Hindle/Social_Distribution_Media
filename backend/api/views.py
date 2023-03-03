@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 # from django.contrib.auth import authenticate, login
 
-from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer
+from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, InboxObject
 
 import traceback
@@ -33,7 +33,7 @@ class Authors(APIView):
             serializer = AuthorSerializer(authors, many=True)  # Must include many=True because it is a list of authors
             return Response(serializer.data)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 
@@ -48,7 +48,7 @@ class AuthorDetail(APIView):
             serializer = AuthorSerializer(author)
             return Response(serializer.data)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id):
@@ -65,10 +65,10 @@ class AuthorDetail(APIView):
                 else:
                     return Response('author_id does not exist', status=status.HTTP_404_NOT_FOUND)
             else:
-                print(serializer.error_messages)
+                print(serializer.errors)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class Followers(APIView):
@@ -90,7 +90,7 @@ class Followers(APIView):
         except Author.DoesNotExist:
             return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             traceback.print_exc()
             return Response(status=status.HTTP_404_NOT_FOUND)
         
@@ -103,10 +103,10 @@ class FollowersDetail(APIView):
             response = {'isFollower': author.followers.filter(pk=foreign_author_id).exists()}
             return Response(response, status=status.HTTP_200_OK)
         except ValidationError as e:
-            print(e)
+            traceback.print_exc()
             return Response('author_id or foreign_author_id is not a valid uuid')
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             print(traceback.print_exc())
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -125,7 +125,7 @@ class FollowersDetail(APIView):
         except Author.DoesNotExist:
             return Response(f'The author {author_id} or {foreign_author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, author_id, foreign_author_id):
@@ -143,7 +143,7 @@ class FollowersDetail(APIView):
                 print(serializer.errors)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class Posts(APIView):
@@ -163,7 +163,7 @@ class Posts(APIView):
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id):
@@ -180,7 +180,7 @@ class Posts(APIView):
         except Author.DoesNotExist:
             return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
 
 class PostDetail(APIView):
@@ -192,7 +192,7 @@ class PostDetail(APIView):
             serializer = PostSerializer(post)
             return Response(serializer.data)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id, post_id):
@@ -209,7 +209,7 @@ class PostDetail(APIView):
                 print(serializer.errors)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, author_id, post_id):
@@ -221,7 +221,7 @@ class PostDetail(APIView):
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def put(self, request, author_id, post_id):
@@ -240,7 +240,7 @@ class PostDetail(APIView):
         except IntegrityError:
             return Response(f'post_id {post_id} already exists.', status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -263,7 +263,7 @@ class Comments(APIView):
             serializer = CommentSerializer(comments, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, author_id, post_id):
@@ -279,7 +279,7 @@ class Comments(APIView):
                 print(serializer.errors)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PostLikes(APIView):
@@ -287,22 +287,39 @@ class PostLikes(APIView):
     def get(self, request, author_id, post_id):
         """Get a list of likes on post_id posted by author_id"""
         try:
-            pass
+            if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
+                return Response('Author or post id does not exist', status=status.HTTP_404_NOT_FOUND)
+            likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}')
+            return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CommentLikes(APIView):
 
     def get(self, request_id, author_id, post_id, comment_id):
         """Get a list of likes on comment_id for post_id posted by author_id"""
-        pass
+        try:
+            if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists() and Comment.objects.filter(pk=comment_id).exists()):
+                return Response('Author, post, or comment id does not exist', status=status.HTTP_404_NOT_FOUND)
+            likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}/comments/{comment_id}')
+            return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+        except Exception as e:
+            traceback.print_exc()
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class LikedPosts(APIView):
 
     def get(self, request, author_id):
         """Get list of posts author_id has liked"""
-        pass
+        try:
+            if not (Author.objects.filter(pk=author_id).exists()):
+                return Response('Author id does not exist', status=status.HTTP_404_NOT_FOUND)
+            likes = Like.objects.filter(author___id=author_id)
+            return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+        except Exception as e:
+            traceback.print_exc()
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class InboxDetail(APIView):
 
@@ -314,8 +331,10 @@ class InboxDetail(APIView):
             print(inbox.items)
             serializer = InboxSerializer(inbox)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        except Inbox.DoesNotExist:
+            return Response('That author id does not exist',status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, author_id):
@@ -323,16 +342,17 @@ class InboxDetail(APIView):
         # NOTE: 4 different cases based on type field in post request body
         # See https://github.com/abramhindle/CMPUT404-project-socialdistribution/blob/master/project.org#inbox
         object = request.data
+        print("post")
         match object['type']:
             case 'post':
-                serializer = PostSerializer(data=object)
+                serializer = InboxPostSerializer(data=object)
                 if serializer.is_valid():
-                    post = Post.objects.get(**serializer.data)  # Will only work for local posts
+                    post = Post.objects.get(pk=serializer.validated_data['_id'])  # Will only work for local posts
                     inbox = Inbox.objects.get(author___id=author_id)
                     inbox.items.add(post)
-                    return Response(PostSerializer(post).data, status=status.HTTP_200_OK)
+                    return Response(InboxPostSerializer(post).data, status=status.HTTP_200_OK)
                 else:
-                    print(serializer.error_messages)
+                    print(serializer.errors)
                     return Response(status=status.HTTP_400_BAD_REQUEST)
             case 'follow':
                 serializer = FollowSerializer(data=object)
@@ -341,7 +361,7 @@ class InboxDetail(APIView):
                     follow = serializer.create(serializer.data)
                     return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
                 else:
-                    print(serializer.error_messages)
+                    print(serializer.errors)
                     return Response(status=status.HTTP_400_BAD_REQUEST)
             case 'like':
                 serializer = LikeSerializer(data=object)
@@ -357,7 +377,7 @@ class InboxDetail(APIView):
                 if serializer.is_valid():
                     pass
                 else:
-                    print(serializer.error_messages)
+                    print(serializer.errors)
                     return Response(status=status.HTTP_400_BAD_REQUEST)
             case _:
                 return Response("Object type must be one of 'post', 'follow', 'like', or 'comment'", status=status.HTTP_400_BAD_REQUEST)
@@ -366,10 +386,10 @@ class InboxDetail(APIView):
         """Clear author_id's inbox"""
         try:
             inbox = Inbox.objects.get(author___id=author_id)
-            # TODO: Look into querying the generic field here
-            return Response(inbox.items, status=status.HTTP_201_CREATED)
+            inbox.items.clear()  # Use clear() because we don't want to delete related posts, just remove the relation
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # not yet fully tested nor working... but we worry about csrf later
@@ -397,7 +417,7 @@ class Auth(APIView):
             else:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AuthRegister(APIView):
@@ -420,8 +440,8 @@ class AuthRegister(APIView):
                 Author.objects.create(user=user, displayName=user.username)
                 return Response(user.username, status=status.HTTP_201_CREATED)
             else:
-                print(serializer.error_messages)
+                print(serializer.errors)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
