@@ -27,9 +27,10 @@ const Auth = () => {
     const handleSignIn = (event) => {
         event.preventDefault();
         setLoading(true);
-        let data = new FormData();
-        data.append('username', username)
-        data.append('password', password)
+        let data = {
+            "username": username,
+            "password": password
+        }
 
         createAPIEndpoint(ENDPOINTS.auth)
             .post(data)
