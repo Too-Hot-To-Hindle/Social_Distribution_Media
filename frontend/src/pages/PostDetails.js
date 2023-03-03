@@ -19,6 +19,10 @@ import Comment from "../components/Comment";
 const PostDetails = () => {
 
     const { authorID, postID } = useParams()
+
+    const [commentsLoading, setCommentsLoading] = useState(true);
+    const [comments, setComments] = useState([]);
+    const [myProfile, setMyProfile] = useState(null);
     const [notFound, setNotFound] = useState(null)
     const [authorData, setAuthorData] = useState(null);
     const [postData, setPostData] = useState(null);
@@ -36,7 +40,22 @@ const PostDetails = () => {
 
     useEffect(() => {
         if (userID) {
-            // get author information
+            createAPIEndpoint(`authors/${userID}`)
+                .get()
+                .then(res => {
+                    //console.log(res.data)
+                    setMyProfile(res.data)
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                });
+        }
+    }, [userID])
+
+    useEffect(() => {
+        if (userID) {
+            // get post author information
             createAPIEndpoint(`authors/${authorID}`)
                 .get()
                 .then(res => {
@@ -66,14 +85,51 @@ const PostDetails = () => {
         }
     }, [userID]);
 
+    // get comments for post
+    useEffect(() => {
+        createAPIEndpoint(`authors/${authorID}/posts/${postID}/comments`)
+            .get()
+            .then(res => {
+                console.log(res.data)
+                setCommentsLoading(false)
+                setComments(res.data)
+            })
+            .catch(err => {
+                // TODO: Add in error handling
+                if (err.response.status === 404) {
+                    setNotFound(true)
+                }
+                console.log(err)
+            });
+    }, [])
+
     const handleCommentUpload = () => {
         setCommentUploading(true);
+        var data = {
+            "comment": commentBody,
+            "contentType": "text/plain",
+            "author": {
+                "type": "author",
+                "id": myProfile.id,
+                "host": myProfile.host,
+                "displayName": myProfile.displayName,
+                "url": myProfile.url,
+                "github": myProfile.github,
+                "profileImage": myProfile.profileImage
+            }
+        }
 
-        // TODO: upload comment to backend here
+        createAPIEndpoint(`authors/${authorID}/posts/${postID}/comments`)
+            .post(data)
+            .then(res => {
+                // refresh page
+                window.location.reload();
+            })
+            .catch(err => {
+                console.log(err)
+            })
 
-        setTimeout(() => {
-            setCommentUploading(false);
-        }, 1500);
+
     }
 
     return (
@@ -137,9 +193,26 @@ const PostDetails = () => {
                                     <Divider />
                                 </Grid>
 
-                                <Grid item xs={12}>
-                                    <Comment />
-                                </Grid>
+                                {commentsLoading &&
+                                    <Grid item xs={12}>
+                                        <CircularProgress />
+                                    </Grid>
+                                }
+
+                                {!commentsLoading && comments.length === 0 &&
+                                    <Grid item xs={12}>
+                                        <Typography variant="h6" align="center">No comments yet.</Typography>
+                                    </Grid>
+                                }
+
+                                {!commentsLoading && comments.length > 0 &&
+                                    comments.map((comment) => (
+                                        <Grid item xs={12}>
+                                            <Comment username={comment.author.displayName} content={comment.comment} />
+                                        </Grid>
+                                    ))
+                                }
+
                             </Grid>
                         </Card>
                     </>
