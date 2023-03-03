@@ -1,6 +1,7 @@
 // React helpers
 import React from "react"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+
 import { useState, useEffect } from "react";
 
 // Material UI elements
@@ -20,15 +21,16 @@ import SearchIcon from '@mui/icons-material/Search';
 const Layout = ({ children }) => {
 
     const navigate = useNavigate();
+    const { query } = useParams()
 
     const pages = ["Stream", "Explore", "Friends", "Profile", "New Post", "Post Details", "Search Results"]
-    const paths = ["/stream", "/explore", "/friends", "/profile", "/post", "/post/:id", "/searchresults"]
+    const paths = ["/stream", "/explore", "/friends", "/profile", "/post", "/post/:id", "/searchresults/:query"]
     const icons = [<DynamicFeedRoundedIcon sx={{ fontSize: "32px" }} />, <ExploreIcon sx={{ fontSize: "32px" }} />, <PeopleAltRoundedIcon sx={{ fontSize: "32px" }} />, <PersonIcon sx={{ fontSize: "32px" }} />]
 
     const pathname = window.location.pathname
     const currentPage = pages[paths.indexOf(pathname)]
 
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState(query);
 
     const [username, setUsername] = useState(null);
 
@@ -150,8 +152,7 @@ const Layout = ({ children }) => {
                                             onKeyDown={(ev) => {
                                                 if (ev.key === 'Enter') {
                                                     setSearchQuery(ev.target.value)
-                                                    navigate("/searchresults")
-                                                    setSearchQuery("")
+                                                    navigate(`/searchresults/${ev.target.value}`)
                                                 }
                                             }}></TextField>
                                     </ListItem>

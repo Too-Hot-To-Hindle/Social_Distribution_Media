@@ -19,42 +19,52 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Auth/>,
+    key: Math.random(),
   },
   {
     path: "/stream",
     element: <Stream/>,
+    key: Math.random(),
   },
   {
     path: "/post",
     element: <NewPost/>,
+    key: Math.random(),
   },
   {
     path: ":authorID/post/:postID",
     element: <PostDetails/>,
+    key: Math.random(),
   },
   {
     path: ":authorID/post/:postID/edit",
     element: <EditPost/>,
+    key: Math.random(),
   },
   {
     path: "/friends",
     element: <Friends/>,
+    key: Math.random(),
   },
   {
     path: "/profile",
     element: <Profile/>,
+    key: Math.random(),
   },
   {
-    path: "/searchresults",
+    path: "/searchresults/:query",
     element: <SearchResults/>,
+    key: Math.random(),
   },
   {
     path: "/auth",
     element: <Auth/>,
+    key: Math.random(),
   },
   {
     path: "/explore",
     element: <Explore/>,
+    key: Math.random(),
   },
 ]);
 
