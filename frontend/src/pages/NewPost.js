@@ -73,16 +73,17 @@ const NewPost = () => {
         if (userID) {
             // if post is markdown, make a markdown type post in backend
             if (isMarkdown(postContent)) {
-                var data = new URLSearchParams();
-                data.append('title', postTitle);
-                data.append('description', postDescription);
-                data.append('source', "https://google.com");
-                data.append('origin', "https://google.com");
-                data.append('contentType', "text/markdown");
-                data.append('content', postContent);
-                data.append('categories', postCategories.replace(/\s/g, '').split(','));
-                data.append('visibility', selectedPrivacy);
-                data.append('unlisted', unlisted);
+                var data = {
+                    title: postTitle,
+                    description: postDescription,
+                    source: "https://google.com",
+                    origin: "https://google.com",
+                    contentType: "text/markdown",
+                    content: postContent,
+                    categories: postCategories.replace(/\s/g, '').split(','),
+                    visibility: selectedPrivacy,
+                    unlisted: unlisted
+                }
 
                 createAPIEndpoint(`authors/${userID}/posts`)
                     .post(data)
@@ -98,16 +99,18 @@ const NewPost = () => {
 
             // otherwise, create a plaintext post in backend
             else {
-                var data = new URLSearchParams();
-                data.append('title', postTitle);
-                data.append('description', postDescription);
-                data.append('source', "https://google.com");
-                data.append('origin', "https://google.com");
-                data.append('contentType', "text/plain");
-                data.append('content', postContent);
-                data.append('categories', postCategories.replace(/\s/g, '').split(','));
-                data.append('visibility', selectedPrivacy);
-                data.append('unlisted', unlisted);
+
+                var data = {
+                    title: postTitle,
+                    description: postDescription,
+                    source: "https://google.com",
+                    origin: "https://google.com",
+                    contentType: "text/plain",
+                    content: postContent,
+                    categories: postCategories.replace(/\s/g, '').split(','),
+                    visibility: selectedPrivacy,
+                    unlisted: unlisted
+                }
 
                 createAPIEndpoint(`authors/${userID}/posts`)
                     .post(data)
