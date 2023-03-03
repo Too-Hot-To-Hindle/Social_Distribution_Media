@@ -12,8 +12,7 @@ import Friends from './pages/Friends';
 import Profile from './pages/Profile';
 import SearchResults from './pages/SearchResults';
 import Auth from './pages/Auth';
-import Login from './pages/Login';
-import SignUp from './pages/SignUp';
+import Explore from './pages/Explore';
 
 const router = createBrowserRouter([
   // need to change to splash screen/login
@@ -21,10 +20,6 @@ const router = createBrowserRouter([
     path: "/",
     element: <Auth/>,
   },
-  // {
-  //   path: "/signup",
-  //   element: <SignUp/>,
-  // },
   {
     path: "/stream",
     element: <Stream/>,
@@ -34,11 +29,11 @@ const router = createBrowserRouter([
     element: <NewPost/>,
   },
   {
-    path: "/post/:id",
+    path: ":authorID/post/:postID",
     element: <PostDetails/>,
   },
   {
-    path: "/post/:id/edit",
+    path: ":authorID/post/:postID/edit",
     element: <EditPost/>,
   },
   {
@@ -56,7 +51,11 @@ const router = createBrowserRouter([
   {
     path: "/auth",
     element: <Auth/>,
-  }
+  },
+  {
+    path: "/explore",
+    element: <Explore/>,
+  },
 ]);
 
 const theme = createTheme({

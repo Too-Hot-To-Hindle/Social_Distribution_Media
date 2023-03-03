@@ -1,7 +1,7 @@
 // React helpers
 import React from "react"
 import { useNavigate } from 'react-router-dom';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Material UI elements
 import { Card, Container, Grid, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Button, TextField, InputAdornment } from "@mui/material"
@@ -22,13 +22,19 @@ const Layout = ({ children }) => {
     const navigate = useNavigate();
 
     const pages = ["Stream", "Explore", "Friends", "Profile", "New Post", "Post Details", "Search Results"]
-    const paths = ["/stream", "/", "/friends", "/profile", "/post", "/post/:id", "/searchresults"]
+    const paths = ["/stream", "/explore", "/friends", "/profile", "/post", "/post/:id", "/searchresults"]
     const icons = [<DynamicFeedRoundedIcon sx={{ fontSize: "32px" }} />, <ExploreIcon sx={{ fontSize: "32px" }} />, <PeopleAltRoundedIcon sx={{ fontSize: "32px" }} />, <PersonIcon sx={{ fontSize: "32px" }} />]
 
     const pathname = window.location.pathname
     const currentPage = pages[paths.indexOf(pathname)]
 
     const [searchQuery, setSearchQuery] = useState("");
+
+    const [username, setUsername] = useState(null);
+
+    useEffect(() => {
+        setUsername(localStorage.getItem('username'))
+    }, [])
 
     const theme = createTheme({
 
@@ -194,24 +200,37 @@ const Layout = ({ children }) => {
 
                             </Card>
 
-                            <Card>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12}>
-                                        <List disablePadding>
-                                            <ListItem>
-                                                <ListItemIcon>
-                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5" }} />
-                                                </ListItemIcon>
-                                                <ListItemText primary="John Smith" primaryTypographyProps={{ fontSize: "24px", color: "#F5F5F5" }} secondary="@johnsmith" secondaryTypographyProps={{ color: "#F5F5F5" }} />
-                                            </ListItem>
-                                        </List>
-                                    </Grid>
+                            {username &&
+                                <Card>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12}>
+                                            <List disablePadding>
+                                                <ListItem>
+                                                    <ListItemIcon>
+                                                        <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5" }} />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={"@" + username} primaryTypographyProps={{ color: "#F5F5F5", fontSize: "24px" }} />
 
-                                    <Grid item xs={12}>
-                                        <Button variant="contained" fullWidth onClick={() => { }}>Sign out</Button>
+                                                </ListItem>
+                                            </List>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Button variant="contained" fullWidth onClick={() => {localStorage.clear(); navigate("/auth")}}>Sign out</Button>
+                                        </Grid>
                                     </Grid>
-                                </Grid>
-                            </Card>
+                                </Card>
+                            }
+
+                            {!username &&
+                                <Card>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12}>
+                                            <Button variant="contained" fullWidth onClick={() => {navigate("/auth")}}>Sign in</Button>
+                                        </Grid>
+                                    </Grid>
+                                </Card>
+                            }
                         </div>
 
 
