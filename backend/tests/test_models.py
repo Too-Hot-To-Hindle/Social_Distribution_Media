@@ -1,5 +1,5 @@
 from django.test import TestCase
-from backend.api.models import Author
+from api.models import Author
 
 # developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Testing
 class TestModelAuthor(TestCase):

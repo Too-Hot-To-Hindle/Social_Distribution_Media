@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from backend.api.views import Author
+from api.views import Author
 
 # developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Testing
 class TestModelAuthor(TestCase):
