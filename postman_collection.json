@@ -1,0 +1,820 @@
+{
+	"info": {
+		"_postman_id": "340ee38d-01d1-4b55-a78f-2a69acb4dc79",
+		"name": "Project API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25957943"
+	},
+	"item": [
+		{
+			"name": "Authors",
+			"item": [
+				{
+					"name": "Get all authors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get single author",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update author details",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "displayName",
+									"value": "Justin",
+									"type": "text"
+								},
+								{
+									"key": "github",
+									"value": "http://github.com",
+									"type": "text"
+								},
+								{
+									"key": "profileImage",
+									"value": "http://someimage.com",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "testuser8",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "testpwdwow",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/auth/register",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Followers",
+			"item": [
+				{
+					"name": "Followers list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/followers",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"followers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Is follower",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/followers/{{testAuthorId2}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"followers",
+								"{{testAuthorId2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add follower",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"author\",\n    \"id\": \"https://social-distribution-media.herokuapp.com/api/authors/8277f7ba-bbcb-4b88-8931-767c57b6be62\",\n    \"host\": \"https://social-distribution-media.herokuapp.com\",\n    \"displayName\": \"testuser2\",\n    \"url\": \"https://social-distribution-media.herokuapp.com/authors/8277f7ba-bbcb-4b88-8931-767c57b6be62\",\n    \"github\": \"\",\n    \"profileImage\": \"\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/followers/{{testAuthorId2}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"followers",
+								"{{testAuthorId2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove follower",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/followers/{{testAuthorId2}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"followers",
+								"{{testAuthorId2}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Follow Requests",
+			"item": [
+				{
+					"name": "Get requests to follow author",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId2}}/inbox/followers",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId2}}",
+								"inbox",
+								"followers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request to follow",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"follow\",\n    \"summary\": \"testuser wants to follow testuser2!\",\n    \"actor\": {\n        \"_id\": \"d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc\",\n        \"type\": \"author\",\n        \"id\": \"https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc\",\n        \"host\": \"https://social-distribution-media.herokuapp.com\",\n        \"displayName\": \"testuser1\",\n        \"url\": \"https://social-distribution-media.herokuapp.com/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc\",\n        \"github\": \"\",\n        \"profileImage\": \"\"\n    },\n    \"object\": {\n        \"_id\": \"83ee4e3d-7f1f-4d43-8698-8adb60f2e9bd\",\n        \"type\": \"author\",\n        \"id\": \"https://social-distribution-media.herokuapp.com/api/authors/83ee4e3d-7f1f-4d43-8698-8adb60f2e9bd\",\n        \"host\": \"https://social-distribution-media.herokuapp.com\",\n        \"displayName\": \"testuser2\",\n        \"url\": \"https://social-distribution-media.herokuapp.com/authors/83ee4e3d-7f1f-4d43-8698-8adb60f2e9bd\",\n        \"github\": \"\",\n        \"profileImage\": \"\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/inbox",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"inbox"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Posts",
+			"item": [
+				{
+					"name": "Get post",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/posts/{{testPostId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"posts",
+								"{{testPostId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get recent posts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/posts",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create post with ID",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "TestPostFromPUTRequest",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/posts/{{testPostId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"posts",
+								"{{testPostId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create post without ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// pm.collectionVariables.set(\"justinPostId\", \"\");",
+									"var jsonData = pm.response.json();",
+									"console.log(jsonData.id)",
+									"pm.test(\"Your test name\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    console.log(jsonData.id)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "TestPostFromPOSTRequest",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/posts",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "newTitle",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/posts/{{testPostId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"posts",
+								"{{testPostId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete post",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/posts/{{testPostId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"posts",
+								"{{testPostId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Inbox",
+			"item": [
+				{
+					"name": "Clear inbox",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/inbox",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"inbox"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Share a post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"_id\": \"67331d96-321b-4e15-b438-c568c24aed66\",\n    \"type\": \"post\",\n    \"id\": \"https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3/posts/67331d96-321b-4e15-b438-c568c24aed66\",\n    \"title\": \"TestPostFromPUTRequest\",\n    \"source\": \"\",\n    \"origin\": \"\",\n    \"description\": \"\",\n    \"contentType\": \"text/plain\",\n    \"content\": \"\",\n    \"author\": {\n        \"_id\": \"2b36204c-e37c-4aeb-bbdc-b63b886218f3\",\n        \"id\": \"https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3\",\n        \"url\": \"https://social-distribution-media.herokuapp.com/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3\",\n        \"host\": \"https://social-distribution-media.herokuapp.com\",\n        \"displayName\": \"testuser1\",\n        \"github\": \"\",\n        \"profileImage\": \"\",\n        \"user\": 7,\n        \"followers\": [],\n        \"following\": []\n    },\n    \"categories\": [],\n    \"count\": 0,\n    \"comments\": \"https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3/posts/67331d96-321b-4e15-b438-c568c24aed66/comments\",\n    \"commentsSrc\": {},\n    \"published\": \"2023-03-03T07:15:44.374719Z\",\n    \"visibility\": \"FRIENDS\",\n    \"unlisted\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/inbox",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"inbox"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Share a comment???",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"like\",\n    \"summary\": \"Test user likes your post!\",\n    \"author\": {\n        \"type\": \"author\",\n        \"id\": \"https://social-distribution-media.herokuapp.com/api/authors/d294d9dd-225a-44c8-af0f-727c34f282e6\",\n        \"host\": \"https://social-distribution-media.herokuapp.com\",\n        \"displayName\": \"testuser\",\n        \"url\": \"https://social-distribution-media.herokuapp.com/authors/d294d9dd-225a-44c8-af0f-727c34f282e6\",\n        \"github\": \"\",\n        \"profileImage\": \"\"\n    },\n    \"object\": \"https://social-distribution-media.herokuapp.com/api/authors/d294d9dd-225a-44c8-af0f-727c34f282e6/posts/67331d96-321b-4e15-b438-c568c24aed66\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/inbox",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"inbox"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get inbox",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/inbox",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"inbox"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "New request",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comments",
+			"item": [
+				{
+					"name": "Get comments on post",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/posts/{{testPostId}}/comments",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"posts",
+								"{{testPostId}}",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add comment to post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"comment\": \"Comment from postman!\",\n    \"contentType\": \"text/plain\",\n    \"author\": {\n        \"type\": \"author\",\n        \"id\": \"https://social-distribution-media.herokuapp.com/api/authors/{{testAuthorId}}\",\n        \"host\": \"https://social-distribution-media.herokuapp.com\",\n        \"displayName\": \"testuser\",\n        \"url\": \"https://social-distribution-media.herokuapp.com/authors/{{testAuthorId}}\",\n        \"github\": \"\",\n        \"profileImage\": \"\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/posts/{{testPostId}}/comments",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"posts",
+								"{{testPostId}}",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Likes",
+			"item": [
+				{
+					"name": "Get likes by author",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Get post likes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/posts/{{testPostId}}/likes",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"posts",
+								"{{testPostId}}",
+								"likes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get comment likes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/posts/{{testPostId}}/comments/{{testCommentId}}/likes",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"posts",
+								"{{testPostId}}",
+								"comments",
+								"{{testCommentId}}",
+								"likes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Like a comment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"like\",\n    \"summary\": \"Test user likes your comment!\",\n    \"author\": {\n        \"type\": \"author\",\n        \"id\": \"https://social-distribution-media.herokuapp.com/api/authors/d294d9dd-225a-44c8-af0f-727c34f282e6\",\n        \"host\": \"https://social-distribution-media.herokuapp.com\",\n        \"displayName\": \"testuser\",\n        \"url\": \"https://social-distribution-media.herokuapp.com/authors/d294d9dd-225a-44c8-af0f-727c34f282e6\",\n        \"github\": \"\",\n        \"profileImage\": \"\"\n    },\n    \"object\": \"https://social-distribution-media.herokuapp.com/api/authors/{{testAuthorId}}/posts/{{testPostId}}/comments/{{testCommentId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/inbox",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"inbox"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Like a post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"like\",\n    \"summary\": \"Test user likes your post!\",\n    \"author\": {\n        \"type\": \"author\",\n        \"id\": \"https://social-distribution-media.herokuapp.com/api/authors/d294d9dd-225a-44c8-af0f-727c34f282e6\",\n        \"host\": \"https://social-distribution-media.herokuapp.com\",\n        \"displayName\": \"testuser\",\n        \"url\": \"https://social-distribution-media.herokuapp.com/authors/d294d9dd-225a-44c8-af0f-727c34f282e6\",\n        \"github\": \"\",\n        \"profileImage\": \"\"\n    },\n    \"object\": \"https://social-distribution-media.herokuapp.com/api/authors/{{testAuthorId}}/posts/{{testPostId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/authors/{{testAuthorId}}/inbox",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"authors",
+								"{{testAuthorId}}",
+								"inbox"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "username",
+				"value": "testuser1",
+				"type": "string"
+			},
+			{
+				"key": "password",
+				"value": "testpwdwow",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "testAuthorId",
+			"value": "2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+			"type": "string"
+		},
+		{
+			"key": "testPostId",
+			"value": "67331d96-321b-4e15-b438-c568c24aed66",
+			"type": "string"
+		},
+		{
+			"key": "testAuthorId2",
+			"value": "deff525c-23ce-4d3b-b975-d6e484d21fb8",
+			"type": "string"
+		},
+		{
+			"key": "testCommentId",
+			"value": "c1dc1beb-865c-4df8-95c0-d5fcdff0fabd",
+			"type": "string"
+		}
+	]
+}
