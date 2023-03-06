@@ -107,6 +107,7 @@ Code base and project structure is cleanly organized, with frontend and backend 
 ## Test Cases
 Postman tests are setup for the majority of endpoints currently setup for the above completed and in-progress user stories. We have also begun writing unit and UI tests, in `frontend/src/App.test.js`.
 
+An export of our postman collection can be found in [`postman_collection.json`](./postman_collection.json).
 
 ## UI
 UI is cleanly organized, and provides multiple loading and status indicators. Progress made in frontend in tightly couple with progress made in backend, with a few extra strucutal pieces setup in the frontend for look and feel that we'll later integrate. A Figma diagram has been planned out and created in `UI Design Mockups.png`. 
