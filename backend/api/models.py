@@ -121,12 +121,9 @@ class Comment(models.Model):
     
     def save(self, *args, **kwargs) -> None:
         # Set the id and url fields intially, using the generated id.
-        print("in comment save")
         if not self.id:
-            print("not id")
             self.id = f"{API_BASE}/authors/{self._post_author_id}/posts/{self._post_id}/comments/{self._id}"
 
-        print(self.id)
         return super().save(*args, **kwargs)
 
 class Like(models.Model):
