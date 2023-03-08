@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/react';
-import App from './App';
+import { shallow } from 'enzyme';
+import Adapter from 'enzyme-adapter-react-15';
+import App from './App.js';
+import React from 'react';
 
 test('renders learn react link', () => {
   render(<App />);
