@@ -57,9 +57,10 @@ const Auth = () => {
     const handleSignUp = (event) => {
         event.preventDefault();
         setLoading(true);
-        let data = new FormData();
-        data.append('username', username)
-        data.append('password', password)
+        let data = {
+            "username": username,
+            "password": password
+        }
 
         createAPIEndpoint(ENDPOINTS.authRegister)
             .post(data)
@@ -67,7 +68,7 @@ const Auth = () => {
                 let authData = window.btoa(username + ':' + password);
                 Cookies.set(BASIC_AUTH_COOKIE_NAME, authData);
                 console.log(res)
-                navigate("/stream")
+                setAuthType("signin")
             })
             .catch(err => {
                 // TODO: Add in error handling
