@@ -105,7 +105,7 @@ Create Superuser
 Code base and project structure is cleanly organized, with frontend and backend aspects of projects sitting in `frontend/` and `backend/` respectively. As per development environment configration instructions in `README.md`, project can easily be cloned and run locally using the `Makefile`.
 
 ## Test Cases
-Postman tests are setup for the majority of endpoints currently setup for the above completed and in-progress user stories. We have also begun writing unit and UI tests, in `frontend/src/App.test.js`.
+Postman tests are setup for the majority of endpoints currently setup for the above completed and in-progress user stories. We have also begun writing unit and UI tests, in `backend/tests` and `frontend/src/App.test.js` respectively.
 
 An export of our postman collection can be found in [`postman_collection.json`](./postman_collection.json).
 
