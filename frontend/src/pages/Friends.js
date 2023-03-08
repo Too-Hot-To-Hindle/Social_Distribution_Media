@@ -82,13 +82,19 @@ const Friends = () => {
     }, [userID])
 
     const setupFriends = (followers, following) => {
-        const followersOnly = followers.filter(x => !following.includes(x));
-        const followingOnly = following.filter(x => !followers.includes(x));
+        const followersOnly = followers.filter(x => !isIn(following, x._id));
+        const followingOnly = following.filter(x => !isIn(followers, x._id));
         const friends = followersOnly.concat(followingOnly);
-        const trueFriends = followers.filter(x => following.includes(x));
+        const trueFriends = followers.filter(x => isIn(following, x._id));
 
         setFriends(friends);
         setTrueFriends(trueFriends);
+    }
+
+    function isIn(array, id) {
+        return array.some(function (el) {
+            return el._id === id;
+        });
     }
 
     const acceptFriendRequest = (friendRequest) => {

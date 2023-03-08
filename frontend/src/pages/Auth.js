@@ -69,6 +69,7 @@ const Auth = () => {
                 Cookies.set(BASIC_AUTH_COOKIE_NAME, authData);
                 console.log(res)
                 setAuthType("signin")
+                setLoading(false);
             })
             .catch(err => {
                 // TODO: Add in error handling

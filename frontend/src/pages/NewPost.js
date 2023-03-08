@@ -85,6 +85,8 @@ const NewPost = () => {
                     unlisted: unlisted
                 }
 
+                console.log(data)
+
                 createAPIEndpoint(`authors/${userID}/posts`)
                     .post(data)
                     .then(res => {
@@ -112,6 +114,8 @@ const NewPost = () => {
                     unlisted: unlisted
                 }
 
+                console.log(data)
+
                 createAPIEndpoint(`authors/${userID}/posts`)
                     .post(data)
                     .then(res => {
@@ -128,10 +132,11 @@ const NewPost = () => {
 
     const uploadImagePost = async () => {
         setUpload(true);
+        console.log("here...")
         if (userID) {
             var data = {}
-            const contentTypeToBe = "";
-            const contentToBe = "";
+            var contentTypeToBe = "";
+            var contentToBe = "";
             if (imageType === "upload") {
                 if (imageFile.type === "image/png") {
                     contentTypeToBe = "image/png;base64";
@@ -145,6 +150,7 @@ const NewPost = () => {
                 contentToBe = `![${imageURL}](${imageURL})`;
             }
 
+            console.log("creating data...")
             data = {
                 title: postTitle,
                 description: postDescription,
@@ -157,7 +163,7 @@ const NewPost = () => {
                 unlisted: unlisted
             }
                 
-
+            console.log("uploading...")
             createAPIEndpoint(`authors/${userID}/posts`)
                 .post(data)
                 .then(res => {

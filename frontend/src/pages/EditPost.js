@@ -86,7 +86,7 @@ const EditPost = () => {
                             setPostTitle(res.data.title)
                             setPostDescription(res.data.description)
                             setPostContent(res.data.content)
-                            setPostCategories(res.data.categories)
+                            setPostCategories(res.data.categories.join())
                             setSelectedPrivacy(res.data.visibility)
                             setUnlisted(res.data.unlisted)
 
@@ -168,8 +168,10 @@ const EditPost = () => {
                     unlisted: unlisted
                 }
 
+                console.log(data)
+
                 createAPIEndpoint(`authors/${userID}/posts/${postID}`)
-                    .put(data)
+                    .post(data)
                     .then(res => {
                         navigate("/profile")
                         setUpload(false)
@@ -195,8 +197,10 @@ const EditPost = () => {
                     unlisted: unlisted
                 }
 
+                console.log(data)
+
                 createAPIEndpoint(`authors/${userID}/posts/${postID}`)
-                    .put(data)
+                    .post(data)
                     .then(res => {
                         navigate("/profile")
                         setUpload(false)
@@ -213,8 +217,8 @@ const EditPost = () => {
         setUpload(true);
         if (userID) {
             var data = {}
-            const contentTypeToBe = "";
-            const contentToBe = "";
+            var contentTypeToBe = "";
+            var contentToBe = "";
             if (imageType === "upload") {
                 if (imageFile.type === "image/png") {
                     contentTypeToBe = "image/png;base64";
@@ -241,7 +245,7 @@ const EditPost = () => {
             }
 
             createAPIEndpoint(`authors/${userID}/posts/${postID}`)
-                .put(data)
+                .post(data)
                 .then(res => {
                     navigate("/profile")
                     setUpload(false)
