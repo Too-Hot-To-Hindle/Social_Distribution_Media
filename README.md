@@ -105,9 +105,9 @@ Create Superuser
 Code base and project structure is cleanly organized, with frontend and backend aspects of projects sitting in `frontend/` and `backend/` respectively. As per development environment configration instructions in `README.md`, project can easily be cloned and run locally using the `Makefile`.
 
 ## Test Cases
-Postman tests are setup for the majority of endpoints currently setup for the above completed and in-progress user stories. We have also begun writing unit and UI tests, in `backend/tests` and `frontend/src/App.test.js` respectively.
+Postman tests (not just the endpoints -- but tests that are run on each execution too!) are setup for the majority of endpoints currently setup for the above completed and in-progress user stories. We have also begun writing unit and UI tests, in `backend/tests` and `frontend/src/App.test.js` respectively.
 
-An export of our postman collection can be found in [`postman_collection.json`](./postman_collection.json).
+An export of our Postman collection can be found in [`postman_collection.json`](./postman_collection.json).
 
 ## UI
 UI is cleanly organized, and provides multiple loading and status indicators. Progress made in frontend in tightly couple with progress made in backend, with a few extra strucutal pieces setup in the frontend for look and feel that we'll later integrate. A Figma diagram has been planned out and created in `UI Design Mockups.png`. 
