@@ -122,17 +122,18 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# DATABASE_URL = os.getenv("DATABASE_URL")
-# DATABASES = {
-#     'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, test_options={'NAME': 'default_test', 'USER': 'udmkdbnjmqbpnv'})
-# }
-
+# Comment DATABASE_URL and DATABASE lines before running tests
+DATABASE_URL = os.getenv("DATABASE_URL")
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'mydatabase',
-    }
+    'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, test_options={'NAME': 'default_test', 'USER': 'udmkdbnjmqbpnv'})
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': 'mydatabase',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -177,4 +178,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# django_on_heroku.settings(locals(), databases=False)
+# Comment this out before running tests
+django_on_heroku.settings(locals(), databases=False)
