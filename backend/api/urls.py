@@ -23,4 +23,5 @@ urlpatterns = [
     # path('csrf/', views.Csrf.as_view()),
     path('auth', views.Auth.as_view()),
     path('auth/register', views.AuthRegister.as_view()),
+    path('remote-node-request', views.RemoteNodeRequests.as_view())
 ]
