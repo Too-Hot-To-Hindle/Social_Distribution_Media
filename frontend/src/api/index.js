@@ -12,6 +12,7 @@ export const ENDPOINTS = {
     auth: 'auth',
     authRegister: 'auth/register',
     csrf: 'csrf',
+    remoteRequest: 'remote-node-request',
 }
 
 export const createAPIEndpoint = endpoint => {

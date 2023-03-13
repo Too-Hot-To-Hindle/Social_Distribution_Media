@@ -121,12 +121,9 @@ class Comment(models.Model):
     
     def save(self, *args, **kwargs) -> None:
         # Set the id and url fields intially, using the generated id.
-        print("in comment save")
         if not self.id:
-            print("not id")
             self.id = f"{API_BASE}/authors/{self._post_author_id}/posts/{self._post_id}/comments/{self._id}"
 
-        print(self.id)
         return super().save(*args, **kwargs)
 
 class Like(models.Model):
@@ -153,6 +150,9 @@ class Follow(models.Model):
     def __str__(self) -> str:
         return f"Follow request from {self.actor.displayName} to {self.object.displayName}"
     
+    class Meta:
+        verbose_name_plural = 'Follow Requests'
+    
 # class Followers(models.Model):
 
 #     type = 'followers'
@@ -170,3 +170,31 @@ class Inbox(models.Model):
 
     def __str__(self) -> str:
         return f"{self.author.displayName}'s Inbox"
+    
+    class Meta:
+        verbose_name_plural = 'Inboxes'
+    
+class AllowedNode(models.Model):
+    """
+    List of IPs that are allowed access to remote endpoints
+    """
+    ip = models.GenericIPAddressField(blank=True, null=True)
+    host = models.URLField(blank=True)
+    detail = models.TextField(blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.ip or self.host}"
+    
+class RemoteNodeRequest(models.Model):
+    """
+    List of requests to be added as an allowed remote node
+    """
+    ip = models.GenericIPAddressField(blank=True, null=True)
+    host = models.URLField(blank=True)
+    meta = models.TextField(blank=True, null=True)
+    name = models.TextField()
+    discord = models.TextField()
+    group = models.TextField()
+
+    def __str__(self) -> str:
+        return f"Request from {self.ip or self.host}"
