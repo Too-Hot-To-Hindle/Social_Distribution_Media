@@ -13,6 +13,7 @@ import Profile from './pages/Profile';
 import SearchResults from './pages/SearchResults';
 import Auth from './pages/Auth';
 import Explore from './pages/Explore';
+import RemoteRequest from './pages/RemoteRequest'
 
 const router = createBrowserRouter([
   // need to change to splash screen/login
@@ -64,6 +65,11 @@ const router = createBrowserRouter([
   {
     path: "/explore",
     element: <Explore/>,
+    key: Math.random(),
+  },
+  {
+    path: "/remote-request",
+    element: <RemoteRequest/>,
     key: Math.random(),
   },
 ]);
