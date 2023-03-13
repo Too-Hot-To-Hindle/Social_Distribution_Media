@@ -583,7 +583,7 @@ class RemoteNodeRequests(APIView):
         meta = str(request.META)
         serializer = RemoteNodeRequestSerializer(data=request.data)
         if serializer.is_valid():
-            RemoteNodeRequest.objects.create(**serializer.data, ip=ip, host=host, meta=meta)
+            RemoteNodeRequest.objects.create(**serializer.data, ip=ip, meta=meta)
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
