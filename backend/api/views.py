@@ -9,16 +9,19 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from drf_spectacular.utils import extend_schema_serializer, extend_schema, OpenApiExample, OpenApiParameter
-import json
-# from django.contrib.auth import authenticate, login
+from pprint import pprint
 
-from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
-from .models import Author, Post, Comment, Like, Inbox, Follow
+from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer, RemoteNodeRequestSerializer
+from .models import Author, Post, Comment, Like, Inbox, Follow, RemoteNodeRequest
+from .permissions import LocalAndRemote, Local
 
 import traceback
 import uuid
+import json
 
 class Authors(APIView):
+
+    permission_classes = [LocalAndRemote]
 
     def get(self, request, format=None):
         """
@@ -40,6 +43,8 @@ class Authors(APIView):
 
 
 class AuthorDetail(APIView):
+
+    permission_classes = [LocalAndRemote]    
     serializer_class = AuthorSerializer
 
     @extend_schema(
@@ -103,6 +108,8 @@ class AuthorDetail(APIView):
         
 class Followers(APIView):
 
+    permission_classes = [LocalAndRemote]
+
     @extend_schema(
         parameters=[
             {
@@ -136,6 +143,8 @@ class Followers(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         
 class FollowersDetail(APIView):
+
+    permission_classes = [LocalAndRemote]
 
     def get(self, request, author_id, foreign_author_id):
         """Check if foreign_author_id is a follower of author_id"""
@@ -189,6 +198,8 @@ class FollowersDetail(APIView):
 
 class Posts(APIView):
 
+    permission_classes = [LocalAndRemote]
+
     def get(self, request, author_id):
         """
         Get paginated list of posts by author_id, ordered by post date with most recent first
@@ -225,6 +236,8 @@ class Posts(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
 
 class PostDetail(APIView):
+
+    permission_classes = [LocalAndRemote]
 
     def get(self, request, author_id, post_id):
         """Get post_id posted by author_id"""
@@ -287,12 +300,16 @@ class PostDetail(APIView):
 
 class ImagePosts(APIView):
 
+    permission_classes = [LocalAndRemote]
+
     def get(self, author_id, post_id):
         """Get post_id posted by author_id, converted to an image"""
         # NOTE: Should return 404 if post is not an image
         pass
 
 class Comments(APIView):
+
+    permission_classes = [LocalAndRemote]
 
     def get(self, request, author_id, post_id):
         """Get all comments on post_id posted by author_id"""
@@ -325,6 +342,8 @@ class Comments(APIView):
 
 class PostLikes(APIView):
 
+    permission_classes = [LocalAndRemote]
+
     def get(self, request, author_id, post_id):
         """Get a list of likes on post_id posted by author_id"""
         try:
@@ -337,6 +356,8 @@ class PostLikes(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CommentLikes(APIView):
+
+    permission_classes = [LocalAndRemote]
 
     def get(self, request_id, author_id, post_id, comment_id):
         """Get a list of likes on comment_id for post_id posted by author_id"""
@@ -351,6 +372,8 @@ class CommentLikes(APIView):
 
 class LikedPosts(APIView):
 
+    permission_classes = [LocalAndRemote]
+
     def get(self, request, author_id):
         """Get list of posts author_id has liked"""
         try:
@@ -363,6 +386,8 @@ class LikedPosts(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class InboxDetail(APIView):
+
+    permission_classes = [LocalAndRemote]
 
     def get(self, request, author_id):
         """Get list of posts sent to author_id"""
@@ -434,6 +459,8 @@ class InboxDetail(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class FollowRequests(APIView):
+
+    permission_classes = [Local]
 
     def get(self, request, author_id):
         """Get requests to follow author_id"""
@@ -542,3 +569,22 @@ class AuthRegister(APIView):
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class RemoteNodeRequests(APIView):
+
+    authentication_classes = []
+    permission_classes = []
+
+    def put(self, request):
+        """
+        Add a new remote node request
+        """
+        ip = request.META['REMOTE_ADDR']
+        host = request.META['REMOTE_HOST']
+        meta = str(request.META)
+        serializer = RemoteNodeRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            RemoteNodeRequest.objects.create(**serializer.data, ip=ip, host=host, meta=meta)
+            return Response(status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
