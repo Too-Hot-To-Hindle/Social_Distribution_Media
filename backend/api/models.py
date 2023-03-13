@@ -190,11 +190,10 @@ class RemoteNodeRequest(models.Model):
     List of requests to be added as an allowed remote node
     """
     ip = models.GenericIPAddressField(blank=True, null=True)
-    host = models.URLField(blank=True)
     meta = models.TextField(blank=True, null=True)
     name = models.TextField()
     discord = models.TextField()
     group = models.TextField()
 
     def __str__(self) -> str:
-        return f"Request from {self.ip or self.host}"
+        return f"Request from {self.ip}"
