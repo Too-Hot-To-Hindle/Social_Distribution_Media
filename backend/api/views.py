@@ -580,7 +580,6 @@ class RemoteNodeRequests(APIView):
         Add a new remote node request
         """
         ip = request.META['REMOTE_ADDR']
-        host = request.META['REMOTE_HOST']
         meta = str(request.META)
         serializer = RemoteNodeRequestSerializer(data=request.data)
         if serializer.is_valid():
