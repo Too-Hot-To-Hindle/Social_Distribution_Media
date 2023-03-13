@@ -141,6 +141,13 @@ const Auth = () => {
                             </div>
                         </Grid>
 
+                        <Grid item xs={12}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <Typography variant="subtitle2" align="center">Want to connect another CMPUT404 app?</Typography>
+                                <Button onClick={() => { navigate("/remote-request") }}>Request Access</Button>
+                            </div>
+                        </Grid>
+
                     </Grid>
                 </Card>
             }

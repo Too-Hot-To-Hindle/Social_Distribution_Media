@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Author, Post, Comment, Like, Follow, Inbox
+from .models import Author, Post, Comment, Like, Follow, Inbox, RemoteNodeRequest
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -83,3 +83,9 @@ class InboxSerializer(serializers.ModelSerializer):
         model = Inbox
         fields = ('type', 'author', 'items')
         depth = 1
+    
+class RemoteNodeRequestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = RemoteNodeRequest
+        fields = ('name', 'discord', 'group')
