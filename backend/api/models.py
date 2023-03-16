@@ -194,6 +194,7 @@ class RemoteNodeRequest(models.Model):
     name = models.TextField()
     discord = models.TextField()
     group = models.TextField()
+    host = models.TextField()
 
     def __str__(self) -> str:
         return f"Request from {self.ip}"

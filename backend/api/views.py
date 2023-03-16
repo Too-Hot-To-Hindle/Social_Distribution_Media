@@ -582,6 +582,7 @@ class RemoteNodeRequests(APIView):
         ip = request.META['REMOTE_ADDR']
         meta = str(request.META)
         serializer = RemoteNodeRequestSerializer(data=request.data)
+        pprint(request.META)
         if serializer.is_valid():
             RemoteNodeRequest.objects.create(**serializer.data, ip=ip, meta=meta)
             return Response(status=status.HTTP_201_CREATED)

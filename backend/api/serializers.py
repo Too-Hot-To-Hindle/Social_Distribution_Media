@@ -88,4 +88,4 @@ class RemoteNodeRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RemoteNodeRequest
-        fields = ('name', 'discord', 'group')
+        fields = ('name', 'discord', 'group', 'host')

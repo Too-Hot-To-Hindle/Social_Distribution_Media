@@ -1,16 +1,17 @@
 // React helpers
-import { useState } from "react";
+import React, { useState } from "react";
 import { createAPIEndpoint, ENDPOINTS } from '../api';
 import { useNavigate } from 'react-router';
 
 // Material UI elements
-import { Card, Typography, Grid, Button, Divider, TextField, InputAdornment, CircularProgress, IconButton } from "@mui/material";
+import { Card, Typography, Grid, Button, Divider, TextField, InputAdornment, CircularProgress, IconButton, Tooltip } from "@mui/material";
 
 // Material UI icons
 import PublicRoundedIcon from '@mui/icons-material/PublicRounded';
 import PersonIcon from '@mui/icons-material/Person';
 import AccountIcon from '@mui/icons-material/AccountCircle';
 import GroupsIcon from '@mui/icons-material/Groups';
+import AddHomeIcon from '@mui/icons-material/AddHome';
 
 const RemoteRequest = () => {
     const navigate = useNavigate();
@@ -18,12 +19,13 @@ const RemoteRequest = () => {
     const [name, setName] = useState('')
     const [discord, setDiscord] = useState('')
     const [group, setGroup] = useState('')
+    const [host, setHost] = useState('')
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = (event) => {
         event.preventDefault();
         setLoading(true);
-        let data = {name, group, discord}
+        let data = {name, group, discord, host}
 
         createAPIEndpoint(ENDPOINTS.remoteRequest)
             .put(data)
@@ -89,6 +91,25 @@ const RemoteRequest = () => {
                         InputProps={{ style: { color: '#FFFFFF', borderRadius: "40px" }, startAdornment: (<InputAdornment position="start"><GroupsIcon sx={{ color: "#FFFFFF" }} /></InputAdornment>) }}
                     >
                     </TextField>
+                </Grid>
+
+                <Grid item xs={12}>
+                    <Tooltip disableTouchListener disableFocusListener title={
+                        <React.Fragment>
+                            Where API requests for your application come from. For example, ours come from "social-distribution-media.herokuapp.com".
+                        </React.Fragment>
+                    }>   
+                        <TextField
+                            fullWidth
+                            value={host}
+                            onChange={(event) => { setHost(event.target.value) }}
+                            placeholder="Host"
+                            style={{ backgroundColor: '#535560', borderRadius: "40px" }}
+                            variant="outlined"
+                            InputProps={{ style: { color: '#FFFFFF', borderRadius: "40px" }, startAdornment: (<InputAdornment position="start"><AddHomeIcon sx={{ color: "#FFFFFF" }} /></InputAdornment>) }}
+                        >
+                        </TextField>
+                    </Tooltip>
                 </Grid>
 
                 <Grid item xs={12}>
