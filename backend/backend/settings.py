@@ -60,6 +60,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # enable these 3 lines for global pagination
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # 'PAGE_SIZE': 10,
+    # 'PAGE_SIZE_QUERY_PARAM': 'page_size',
 }
 
 SPECTACULAR_SETTINGS = {
@@ -83,6 +87,8 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000', # allow our React App to talk to our backend
     'http://127.0.0.1:3000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
