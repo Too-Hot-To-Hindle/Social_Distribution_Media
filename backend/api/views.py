@@ -5,6 +5,7 @@ from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
+from django.core.validators import URLValidator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
@@ -62,6 +63,10 @@ class AuthorDetail(APIView):
         """
         Get details for an author
         """
+        
+        validator = URLValidator()
+        validator(author_id)    
+
         try:
             author = Author.objects.get(pk=author_id)
             serializer = AuthorSerializer(author)
@@ -561,7 +566,7 @@ class AuthRegister(APIView):
                 user = User.objects.create_user(user['username'], password=user['password'])
                 # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
                 # to use for creating authors...
-                Author.objects.create(user=user, displayName=user.username)
+                Author.objects.create(user=user, displayName=user.username, host=f"http://{request.META['HTTP_HOST']}")
                 return Response(user.username, status=status.HTTP_201_CREATED)
             else:
                 print(serializer.errors)
@@ -582,7 +587,6 @@ class RemoteNodeRequests(APIView):
         ip = request.META['REMOTE_ADDR']
         meta = str(request.META)
         serializer = RemoteNodeRequestSerializer(data=request.data)
-        pprint(request.META)
         if serializer.is_valid():
             RemoteNodeRequest.objects.create(**serializer.data, ip=ip, meta=meta)
             return Response(status=status.HTTP_201_CREATED)
