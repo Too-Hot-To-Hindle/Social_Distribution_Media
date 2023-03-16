@@ -31,6 +31,9 @@ class Author(models.Model):
         first_save = self._state.adding
 
         # Set the id and url fields intially, using the generated id.
+        ## TODO: CONTINUE UPDATING THIS
+        if not self.host:
+            self.host = SERVICE_ADDRESS
         if not self.id:
             self.id = f"{self.host}/authors/{self._id}"
         if not self.url:
