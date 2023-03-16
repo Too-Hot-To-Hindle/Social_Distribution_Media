@@ -14,8 +14,8 @@ class Author(models.Model):
 
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     id = models.URLField(blank=True, default=None)
-    url = models.URLField(blank=True, default=None, editable=False)
-    host = models.URLField(default=SERVICE_ADDRESS, editable=False)
+    url = models.URLField(blank=True, default=None)
+    host = models.URLField(default=SERVICE_ADDRESS)
     displayName = models.CharField(max_length=100)
     github = models.URLField(blank=True)
     profileImage = models.URLField(blank=True)
@@ -32,9 +32,9 @@ class Author(models.Model):
 
         # Set the id and url fields intially, using the generated id.
         if not self.id:
-            self.id = f"{API_BASE}/authors/{self._id}"
+            self.id = f"{self.host}/authors/{self._id}"
         if not self.url:
-            self.url = f"{SERVICE_ADDRESS}/authors/{self._id}"
+            self.url = f"{self.host}/authors/{self._id}"
         super().save(*args, **kwargs)
 
         # Create inbox on Author creation
@@ -178,8 +178,8 @@ class AllowedNode(models.Model):
     """
     List of IPs that are allowed access to remote endpoints
     """
-    ip = models.GenericIPAddressField(blank=True, null=True)
-    host = models.URLField(blank=True)
+    ip = models.GenericIPAddressField(blank=True, null=True, editable=False)
+    host = models.CharField(blank=True, max_length=200)
     detail = models.TextField(blank=True)
 
     def __str__(self) -> str:
