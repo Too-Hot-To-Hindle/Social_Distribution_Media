@@ -41,8 +41,9 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         author_data = validated_data.pop('author')
+        print(author_data)
         # Below means that comments by authors that do not exist will fail
-        author = Author.objects.get(**author_data)
+        author = Author.objects.get(id=author_data['id'])
         return Comment.objects.create(author=author, **validated_data)
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -88,4 +89,4 @@ class RemoteNodeRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RemoteNodeRequest
-        fields = ('name', 'discord', 'group')
+        fields = ('name', 'discord', 'group', 'host')

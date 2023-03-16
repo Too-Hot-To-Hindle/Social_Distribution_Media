@@ -5,6 +5,7 @@ from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
+from django.core.validators import URLValidator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
@@ -62,6 +63,10 @@ class AuthorDetail(APIView):
         """
         Get details for an author
         """
+        
+        # validator = URLValidator()
+        # validator(author_id)    
+
         try:
             author = Author.objects.get(pk=author_id)
             serializer = AuthorSerializer(author)

@@ -1,16 +1,17 @@
 // React helpers
-import { useState } from "react";
+import React, { useState } from "react";
 import { createAPIEndpoint, ENDPOINTS } from '../api';
 import { useNavigate } from 'react-router';
 
 // Material UI elements
-import { Card, Typography, Grid, Button, Divider, TextField, InputAdornment, CircularProgress, IconButton } from "@mui/material";
+import { Card, Typography, Grid, Button, Divider, TextField, InputAdornment, CircularProgress, IconButton, Tooltip } from "@mui/material";
 
 // Material UI icons
 import PublicRoundedIcon from '@mui/icons-material/PublicRounded';
 import PersonIcon from '@mui/icons-material/Person';
 import AccountIcon from '@mui/icons-material/AccountCircle';
 import GroupsIcon from '@mui/icons-material/Groups';
+import AddHomeIcon from '@mui/icons-material/AddHome';
 
 const RemoteRequest = () => {
     const navigate = useNavigate();
@@ -18,12 +19,13 @@ const RemoteRequest = () => {
     const [name, setName] = useState('')
     const [discord, setDiscord] = useState('')
     const [group, setGroup] = useState('')
+    const [host, setHost] = useState('')
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = (event) => {
         event.preventDefault();
         setLoading(true);
-        let data = {name, group, discord}
+        let data = {name, group, discord, host}
 
         createAPIEndpoint(ENDPOINTS.remoteRequest)
             .put(data)
@@ -92,11 +94,30 @@ const RemoteRequest = () => {
                 </Grid>
 
                 <Grid item xs={12}>
+                    <Tooltip disableTouchListener disableFocusListener title={
+                        <React.Fragment>
+                            Host header in API requests from your application. This should just be the host of your website unless the header is set explicitly. For example, ours is "social-distribution-media.herokuapp.com".
+                        </React.Fragment>
+                    }>   
+                        <TextField
+                            fullWidth
+                            value={host}
+                            onChange={(event) => { setHost(event.target.value) }}
+                            placeholder="Host"
+                            style={{ backgroundColor: '#535560', borderRadius: "40px" }}
+                            variant="outlined"
+                            InputProps={{ style: { color: '#FFFFFF', borderRadius: "40px" }, startAdornment: (<InputAdornment position="start"><AddHomeIcon sx={{ color: "#FFFFFF" }} /></InputAdornment>) }}
+                        >
+                        </TextField>
+                    </Tooltip>
+                </Grid>
+
+                <Grid item xs={12}>
                     <Divider />
                 </Grid>
 
                 <Grid item xs={12}>
-                    {(group === "") ? (
+                    {([name, discord, group, host].some(e => e === "")) ? (
                         <Button disabled variant="contained" sx={{ width: "100%", backgroundColor: "#499BE9", color: "#FFFFFF" }}>Submit</Button>
                     ) : (
                         <>
