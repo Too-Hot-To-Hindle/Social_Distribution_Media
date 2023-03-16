@@ -117,7 +117,7 @@ const RemoteRequest = () => {
                 </Grid>
 
                 <Grid item xs={12}>
-                    {(group === "") ? (
+                    {([name, discord, group, host].some(e => e === "")) ? (
                         <Button disabled variant="contained" sx={{ width: "100%", backgroundColor: "#499BE9", color: "#FFFFFF" }}>Submit</Button>
                     ) : (
                         <>
