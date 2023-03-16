@@ -96,7 +96,7 @@ const RemoteRequest = () => {
                 <Grid item xs={12}>
                     <Tooltip disableTouchListener disableFocusListener title={
                         <React.Fragment>
-                            Where API requests for your application come from. For example, ours come from "social-distribution-media.herokuapp.com".
+                            Host header in API requests from your application. This should just be the host of your website unless the header is set explicitly. For example, ours is "social-distribution-media.herokuapp.com".
                         </React.Fragment>
                     }>   
                         <TextField
