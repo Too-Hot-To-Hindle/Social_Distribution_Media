@@ -566,7 +566,7 @@ class AuthRegister(APIView):
                 user = User.objects.create_user(user['username'], password=user['password'])
                 # TODO: Need to figure out if we want display name to be unique, or have another unique identifier from the registration page
                 # to use for creating authors...
-                Author.objects.create(user=user, displayName=user.username, host=f"http://{request.META['HTTP_HOST']}")
+                Author.objects.create(user=user, displayName=user.username)
                 return Response(user.username, status=status.HTTP_201_CREATED)
             else:
                 print(serializer.errors)
