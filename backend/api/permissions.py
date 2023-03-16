@@ -1,10 +1,12 @@
 from rest_framework import permissions
 
-from .models import AllowedNode
+from .models import AllowedRemoteNode, AllowedLocalNode
 
 from pprint import pprint
 
-REMOTE_GET_ALLOWED_VIEWS = ['Authors', 'Author Detail', 'Followers', 'Followers Detail', 'Post', 'Post Detail', 'Image Posts', 'Comments', 'Post Likes', 'Comment Likes', 'Liked Posts']
+LOCAL_HOSTS = ['127.0.0.1:8000', '127.0.0.1:3000', 'localhost:8000', 'localhost:3000', 'https://social-distribution-media.herokuapp.com/']
+
+REMOTE_GET_ALLOWED_VIEWS = ['Authors', 'Author Detail', 'Followers', 'Followers Detail', 'Posts', 'Post Detail', 'Image Posts', 'Comments', 'Post Likes', 'Comment Likes', 'Liked Posts']
 REMOTE_POST_ALLOWED_VIEWS = ['Inbox Detail']
 
 class LocalAndRemote(permissions.BasePermission):
@@ -14,18 +16,19 @@ class LocalAndRemote(permissions.BasePermission):
     
     def has_permission(self, request, view):
         host = request.META['HTTP_HOST']
-        operationAllowed = request.method == 'GET' and view.get_view_name() in REMOTE_GET_ALLOWED_VIEWS \
+        print(host)
+        remoteOperationAllowed = request.method == 'GET' and view.get_view_name() in REMOTE_GET_ALLOWED_VIEWS \
             or request.method == 'POST' and view.get_view_name() in REMOTE_POST_ALLOWED_VIEWS
-        nodeAllowed = AllowedNode.objects.filter(host=host).exists()
-        return operationAllowed and nodeAllowed
+        remoteNodeAllowed = AllowedRemoteNode.objects.filter(host=host).exists()
+        localNodeAllowed = AllowedLocalNode.objects.filter(host=host).exists()
+        return localNodeAllowed or (remoteOperationAllowed and remoteNodeAllowed)
 
 class Local(permissions.BasePermission):
     """
-    Permission class allowing remote nodes from certain hosts
+    Permission class allowing local access only
     """
     
     def has_permission(self, request, view):
-        ip = request.META['REMOTE_ADDR']
-        host = request.META['REMOTE_HOST']
-        allowed = True  # TODO: Update this to check for local IPs/URLs
+        host = request.META['HTTP_HOST']
+        allowed = AllowedLocalNode.objects.filter(host=host).exists()
         return allowed

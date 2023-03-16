@@ -64,8 +64,8 @@ class AuthorDetail(APIView):
         Get details for an author
         """
         
-        validator = URLValidator()
-        validator(author_id)    
+        # validator = URLValidator()
+        # validator(author_id)    
 
         try:
             author = Author.objects.get(pk=author_id)

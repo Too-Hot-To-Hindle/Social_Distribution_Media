@@ -177,7 +177,7 @@ class Inbox(models.Model):
     class Meta:
         verbose_name_plural = 'Inboxes'
     
-class AllowedNode(models.Model):
+class AllowedRemoteNode(models.Model):
     """
     List of IPs that are allowed access to remote endpoints
     """
@@ -186,7 +186,18 @@ class AllowedNode(models.Model):
     detail = models.TextField(blank=True)
 
     def __str__(self) -> str:
-        return f"{self.ip or self.host}"
+        return f"{self.host}"
+    
+class AllowedLocalNode(models.Model):
+    """
+    List of IPs that are allowed access to local endpoints
+    """
+    ip = models.GenericIPAddressField(blank=True, null=True, editable=False)
+    host = models.CharField(blank=True, max_length=200)
+    detail = models.TextField(blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.host}"
     
 class RemoteNodeRequest(models.Model):
     """
