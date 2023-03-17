@@ -3,10 +3,24 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 import uuid
+import re
 
 SERVICE_ADDRESS = "https://social-distribution-media.herokuapp.com"
 PREFIX = 'api'
 API_BASE = f"{SERVICE_ADDRESS}/{PREFIX}"
+
+def extract_author_uuid(id: str):
+    regex = r'.*authors\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}).*'
+    search = re.search(regex, id)
+    if search:
+        return search.group(1)
+    return ''
+def extract_post_uuid(id: str):
+    regex = r'.*posts\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}).*'
+    search = re.search(regex, id)
+    if search:
+        return search.group(1)
+    return ''
 
 class Author(models.Model):
 
@@ -21,7 +35,8 @@ class Author(models.Model):
     profileImage = models.URLField(blank=True)
     followers = models.ManyToManyField("self", symmetrical=False, blank=True, related_name="author_followers")
     following = models.ManyToManyField("self", symmetrical=False, blank=True, related_name="author_following")
-    user = models.OneToOneField(User, on_delete= models.CASCADE, blank=True)
+    user = models.OneToOneField(User, on_delete= models.CASCADE, blank=True, null=True)
+    remote = models.BooleanField(default=False)
 
     def __str__(self):
         return self.displayName
@@ -34,14 +49,20 @@ class Author(models.Model):
         ## TODO: CONTINUE UPDATING THIS
         if not self.host:
             self.host = SERVICE_ADDRESS
-        if not self.id:
+        
+        # If an author is created with an id, make sure _id matches
+        if self.id and first_save:
+            _id = extract_author_uuid(self.id)
+            self._id = _id
+        elif first_save:
             self.id = f"{self.host}/authors/{self._id}"
+        
         if not self.url:
             self.url = f"{self.host}/authors/{self._id}"
         super().save(*args, **kwargs)
 
         # Create inbox on Author creation
-        if first_save:
+        if first_save and not self.remote:
             Inbox.objects.create(author_id=self._id)
 
 class Post(models.Model):
@@ -71,7 +92,7 @@ class Post(models.Model):
     type = 'post'
 
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4)  # Editable for the PUT endpoint
-    id = models.URLField(blank=True, default=None, editable=False)
+    id = models.URLField(blank=True, default=None)
     title = models.TextField()
     source = models.URLField(blank=True)  # Need to clarify source and origin fields
     origin = models.URLField(blank=True)
@@ -91,8 +112,15 @@ class Post(models.Model):
         return f"Post by {self.author.displayName}"
     
     def save(self, *args, **kwargs) -> None:
+
+        # Store if this is the first or not
+        first_save = self._state.adding
+
         # Set the id and url fields intially, using the generated id.
-        if not self.id:
+        if self.id and first_save:
+            _id = extract_post_uuid(self.id)
+            self._id = _id
+        elif first_save:
             self.id = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
             self.comments = f"{self.id}/comments"
         return super().save(*args, **kwargs)
