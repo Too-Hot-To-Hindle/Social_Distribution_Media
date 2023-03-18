@@ -221,7 +221,11 @@ const Post = ({
                             {(isMarkdownImage(content)) ? (
                                 <Grid item xs={12}>
                                     <Box sx={{ backgroundColor: "#343540", minHeight: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <img src={extractMarkdownImageURL(content)} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
+                                        <img
+                                         src={extractMarkdownImageURL(content)} 
+                                         alt="Image Preview" 
+                                         style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }}
+                                         onClick={() => { navigate(`/${authorID}/post/${id}/image`) }} />                                    
                                     </Box>
                                 </Grid>
                             ) :
@@ -241,7 +245,11 @@ const Post = ({
                     {(type === "image/png;base64" || type === "image/jpeg;base64") &&
                         <Grid item xs={12}>
                             <Box sx={{ backgroundColor: "#343540", minHeight: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <img src={content} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
+                                <img 
+                                src={content} alt="Image Preview" 
+                                style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }}
+                                onClick={() => { navigate(`/${authorID}/post/${id}/image`) }} />
+                                
                             </Box>
                         </Grid>
                     }

@@ -302,10 +302,16 @@ class ImagePosts(APIView):
 
     permission_classes = [LocalAndRemote]
 
-    def get(self, author_id, post_id):
-        """Get post_id posted by author_id, converted to an image"""
-        # NOTE: Should return 404 if post is not an image
-        pass
+    #based on postdetail
+    def get(self, request, author_id, post_id):
+        """Get post_id posted by author_id"""
+        try:
+            post = Post.objects.get(pk=post_id)  # NOTE: Should we do anything with author_id?
+            serializer = PostSerializer(post)
+            return Response(serializer.data)
+        except Exception as e:
+            traceback.print_exc()
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 class Comments(APIView):
 

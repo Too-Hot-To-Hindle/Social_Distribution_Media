@@ -44,6 +44,8 @@ const NewPost = () => {
     const [username, setUsername] = useState(null);
     const [userID, setUserID] = useState(null);
 
+    const [postID, setPostID] = useState(null);
+
     useEffect(() => {
         setUsername(localStorage.getItem('username'))
         setUserID(localStorage.getItem('author_id'))
@@ -169,11 +171,20 @@ const NewPost = () => {
                 .then(res => {
                     navigate("/profile")
                     setUpload(false)
+                    console.log("RES data")
+                    console.log(res.data["_id"])
+                    //setPostID(JSON.stringify(res.data["_id"]))
+                    console.log("New URI:",`authors/${userID}/posts/${res.data["_id"]}/image`)
+                    createAPIEndpoint(`authors/${userID}/posts/${res.data["_id"]}/image`);
                 })
                 .catch(err => {
                     // TODO: Add in error handling
                     console.log(err)
                 });
+            
+            //console.log("POST ID to create Endpoint:");
+            //console.log(postID);
+            //createAPIEndpoint(`authors/${userID}/posts/${postID}/image`);
         }
     }
 
