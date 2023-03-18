@@ -5,6 +5,7 @@ from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
+from django.core.validators import URLValidator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
@@ -74,6 +75,10 @@ class AuthorDetail(APIView):
         """
         Get details for an author
         """
+        
+        # validator = URLValidator()
+        # validator(author_id)    
+
         try:
             author = Author.objects.get(pk=author_id)
             serializer = AuthorSerializer(author)
@@ -169,7 +174,6 @@ class FollowersDetail(APIView):
             return Response('author_id or foreign_author_id is not a valid uuid')
         except Exception as e:
             traceback.print_exc()
-            print(traceback.print_exc())
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, author_id, foreign_author_id):
@@ -193,7 +197,6 @@ class FollowersDetail(APIView):
     def put(self, request, author_id, foreign_author_id):
         """Add foreign_author_id as a follower of author_id"""
         try:
-            print(request.data)
             serializer = AuthorSerializer(data=request.data)
             if serializer.is_valid():
                 author = Author.objects.get(pk=author_id)
@@ -313,7 +316,6 @@ class PostDetail(APIView):
             return Response(f'post_id {post_id} already exists.', status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             traceback.print_exc()
-            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ImagePosts(APIView):
@@ -372,7 +374,7 @@ class PostLikes(APIView):
         try:
             if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
                 return Response('Author or post id does not exist', status=status.HTTP_404_NOT_FOUND)
-            likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}')
+            likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}')
             return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
         except Exception as e:
             traceback.print_exc()
@@ -387,7 +389,8 @@ class CommentLikes(APIView):
         try:
             if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists() and Comment.objects.filter(pk=comment_id).exists()):
                 return Response('Author, post, or comment id does not exist', status=status.HTTP_404_NOT_FOUND)
-            likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}/comments/{comment_id}')
+            # likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}/comments/{comment_id}')
+            likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}/comments/{comment_id}')
             return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
         except Exception as e:
             traceback.print_exc()
@@ -444,12 +447,15 @@ class InboxDetail(APIView):
         # NOTE: 4 different cases based on type field in post request body
         # See https://github.com/abramhindle/CMPUT404-project-socialdistribution/blob/master/project.org#inbox
         object = request.data
-        print("post")
         match object['type']:
             case 'post':
                 serializer = InboxPostSerializer(data=object)
                 if serializer.is_valid():
-                    post = Post.objects.get(pk=serializer.validated_data['_id'])  # Will only work for local posts
+                    # Create post and post author if they don't exist (foreign case)
+                    if Post.objects.filter(id=serializer.validated_data['id']).exists():
+                        post = Post.objects.get(id=serializer.validated_data['id'])  # Will only work for local posts
+                    else:
+                        post = serializer.create(serializer.validated_data)
                     inbox = Inbox.objects.get(author___id=author_id)
                     inbox.items.add(post)
                     return Response(InboxPostSerializer(post).data, status=status.HTTP_200_OK)
@@ -459,7 +465,6 @@ class InboxDetail(APIView):
             case 'follow':
                 serializer = FollowSerializer(data=object)
                 if serializer.is_valid():
-                    print(object)
                     follow = serializer.create(serializer.data)
                     return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
                 else:
@@ -468,7 +473,6 @@ class InboxDetail(APIView):
             case 'like':
                 serializer = LikeSerializer(data=object)
                 if serializer.is_valid():
-                    print(serializer.data)
                     like = serializer.create(serializer.data)
                     return Response(LikeSerializer(like).data, status=status.HTTP_201_CREATED)
                 else:
@@ -590,7 +594,6 @@ class AuthRegister(APIView):
         try:
             # create our user and an author, and link it with the author.
             serializer = UserSerializer(data=json.loads(request.body))
-            print(json.loads(request.body))
             if serializer.is_valid():
                 user = serializer.data
                 user = User.objects.create_user(user['username'], password=user['password'])
