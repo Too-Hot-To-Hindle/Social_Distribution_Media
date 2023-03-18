@@ -120,6 +120,11 @@ const Friends = () => {
                 });
     }
 
+    const declineFriendRequest = (friendRequest) => {
+        console.log("DECLINED");
+        console.log("FRIEND REQUESTS OBJECT:",friendRequests)
+    }
+
     return (
         <>
             <Layout>
@@ -168,13 +173,17 @@ const Friends = () => {
                                             </div>
                                         </div>
 
-                                        <div style={{ display: "flex", alignItems: "center" }}>
+                                        <div style={{ display: "flex", alignItems: "center", justifyContent:"space-between"}}>
                                             {/* <Button variant="outlined" startIcon={<CloseIcon />} sx={{ marginRight: "5px" }}>
                                                 Reject
                                             </Button> */}
                                             <Button variant="contained" endIcon={<CheckIcon />} onClick={() => {acceptFriendRequest(friendRequest)}}>
                                                 Accept
                                             </Button>
+                                            <Button variant="contained" endIcon={<CloseIcon />} onClick={() => {declineFriendRequest(friendRequest)}} style={{marginLeft: "0.5em"}}>
+                                                Decline
+                                            </Button>
+                                            
                                         </div>
 
                                     </div>
