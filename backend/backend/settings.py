@@ -130,9 +130,21 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Comment DATABASE_URL and DATABASE lines before running tests
 DATABASE_URL = os.getenv("DATABASE_URL")
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
 DATABASES = {
-    'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, test_options={'NAME': 'default_test', 'USER': 'udmkdbnjmqbpnv'})
+    'default': dj_database_url.config(
+        default=DATABASE_URL, 
+        conn_max_age=600, 
+        # test_options={'NAME': 'default_test', 'USER': 'udmkdbnjmqbpnv'}
+    ),
+    'test': dj_database_url.config(
+        default=TEST_DATABASE_URL,
+        conn_max_age=600,
+        engine='django.db.backends.postgresql',
+    )
 }
+
+TEST_RUNNER = 'tests.test_runner.RemoteHerokuTestRunner'
 
 # DATABASES = {
 #     'default': {
