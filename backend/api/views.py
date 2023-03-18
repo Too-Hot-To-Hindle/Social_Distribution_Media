@@ -327,7 +327,7 @@ class ImagePosts(APIView):
 
 class Comments(APIView):
 
-    # permission_classes = [LocalAndRemote]
+    permission_classes = [LocalAndRemote]
     pagination_class = StandardResultsSetPagination
 
     def get(self, request, author_id, post_id):
@@ -410,7 +410,7 @@ class LikedPosts(APIView):
 
 class InboxDetail(APIView):
 
-    # permission_classes = [LocalAndRemote]
+    permission_classes = [LocalAndRemote]
     pagination_class = StandardResultsSetPagination
 
     def get(self, request, author_id):
@@ -418,15 +418,21 @@ class InboxDetail(APIView):
         #  Require auth here
         try:
             inbox = Inbox.objects.get(author___id=author_id)
-            print(inbox.items)
-            # paginator = self.pagination_class()
+            inbox_items = inbox.items.all()
+            paginator = self.pagination_class()
 
-            # page = paginator.paginate_queryset(inbox, request, view=self)
+            # paginate just the inbox items
+            page = paginator.paginate_queryset(inbox_items, request, view=self)
 
+            # serialize paginated inbox items and inbox
+            inbox_posts_serializer = InboxPostSerializer(page, many=True)
             serializer = InboxSerializer(inbox)
 
-            # serializer = InboxSerializer(page)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # update the inbox data with the serialized inbox items
+            inbox_data = serializer.data
+            inbox_data['items'] = inbox_posts_serializer.data
+
+            return Response(inbox_data, status=status.HTTP_200_OK)
         except Inbox.DoesNotExist:
             return Response('That author id does not exist',status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
