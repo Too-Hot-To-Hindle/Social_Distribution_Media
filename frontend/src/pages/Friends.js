@@ -122,7 +122,44 @@ const Friends = () => {
 
     const declineFriendRequest = (friendRequest) => {
         console.log("DECLINED");
-        console.log("FRIEND REQUESTS OBJECT:",friendRequests)
+        console.log("THIS FRIEND REQUEST:",friendRequest);
+        console.log("FRIEND REQUESTS OBJECT:",friendRequests);
+        console.log("FRIEND REQUEST, REQUESTS OBJECT TYPES:",typeof(friendRequest),typeof(friendRequests));
+
+        //remove request from friendrequests 
+        for (let i in friendRequests) {
+            console.log(friendRequests[i]);
+            if (friendRequests[i] == friendRequest){
+                console.log("MATCH");
+                friendRequests.splice(i,1);
+            }
+        }
+
+        console.log("FRIEND REQUESTS AFTER:",friendRequests);
+
+        var data = {
+            "type": "author",
+            "id": friendRequest.actor.id,
+            "host": friendRequest.actor.host,
+            "displayName": friendRequest.actor.displayName,
+            "url": friendRequest.actor.url,
+            "github": friendRequest.actor.github,
+            "profileImage": friendRequest.actor.profileImage
+        }
+
+        //sign in page refuses to load
+        /*
+        createAPIEndpoint(`authors/${userID}/followers/${friendRequest.actor._id}`)
+                .delete(data)
+                .then(res => {
+                    // reload page
+                    window.location.reload();
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                });*/
+    
     }
 
     return (
