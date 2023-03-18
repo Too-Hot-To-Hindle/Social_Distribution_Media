@@ -35,7 +35,7 @@ class Authors(APIView):
         """
         Get all authors
 
-        TODO: Query params, paging
+        TODO: Query params
 
         See below for adding new fields (not in model) to response:
 

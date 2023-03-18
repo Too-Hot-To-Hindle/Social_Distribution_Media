@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 import base64
 import dotenv
 import os
+import json
 dotenv.load_dotenv()
 
 
@@ -28,6 +29,7 @@ class TestEndpoints(TestCase):
         # NOTE: This requires that an .env file is created within this directory (tests) that has a TEST_USERNAME and TEST_PASSWORD
         username = os.getenv("TEST_USERNAME")
         password = os.getenv("TEST_PASSWORD")
+        self.user_id = os.getenv("TEST_USER_ID")
         self.credentials = 'Basic ' + base64.b64encode(f'{username}:{password}'.encode('ascii')).decode("ascii")
         self.client.credentials(HTTP_AUTHORIZATION=self.credentials)
         self.client.defaults["HTTP_HOST"]="localhost:3000" # localnode 
@@ -46,6 +48,58 @@ class TestEndpoints(TestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.credentials(HTTP_AUTHORIZATION=self.credentials) # Reset the credentials
+
+    def test_authors_pagination(self):
+        """ Test that the authors endpoint returns the correct number of authors """
+        response = self.client.get("/api/authors", {'page': 1, 'size': 1})
+        self.assertEqual(len(response.data), 1)
+
+    def test_posts_pagination(self):
+        """ Test that the posts endpoint returns the correct number of posts """
+        response = self.client.get(f"/api/authors/{self.user_id}/posts", {'page': 1, 'size': 1})
+        self.assertEqual(len(response.data), 1)
+
+    def test_post_comments_pagination(self):
+        """ Test that the post comments endpoint returns the correct number of comments """
+        # create a post
+        data = self.client.post(f"/api/authors/{self.user_id}/posts", data=json.dumps({'title': 'TESTING_POST'}), content_type='application/json').json()
+
+        # get author info
+        author_info = self.client.get(f"/api/authors/{self.user_id}").json()
+
+        # create 2 comments
+        self.client.post(
+            f"/api/authors/{self.user_id}/posts/{data['_id']}/comments", 
+            data=json.dumps({
+                'comment': 'TESTING_COMMENT_1',
+                "contentType": "text/plain",
+                "author": author_info
+            }),
+            content_type='application/json'
+        )
+
+        self.client.post(
+            f"/api/authors/{self.user_id}/posts/{data['_id']}/comments", 
+            data=json.dumps({
+                'comment': 'TESTING_COMMENT_2',
+                "contentType": "text/plain",
+                "author": author_info
+            }),
+            content_type='application/json'
+        )
+
+        response = self.client.get(f"/api/authors/{self.user_id}/posts/{data['_id']}/comments", {'page': 1, 'size': 1})
+        self.assertEqual(len(response.data), 1)
+
+    def test_inbox_pagination(self):
+        """ Test that the inbox endpoint returns the correct number of posts """
+
+        # user should already have 2 posts in their inbox
+        response = self.client.get(f"/api/authors/{self.user_id}/inbox", {'page': 1, 'size': 2})
+        self.assertEqual(len(response.data['items']), 2)
+
+        response = self.client.get(f"/api/authors/{self.user_id}/inbox", {'page': 1, 'size': 1})
+        self.assertEqual(len(response.data['items']), 1)
 
     def test_get_all_authors(self):
         """ """
