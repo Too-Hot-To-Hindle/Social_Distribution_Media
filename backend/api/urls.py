@@ -10,7 +10,7 @@ urlpatterns = [
     path('authors/<author_id>/followers/<foreign_author_id>', views.FollowersDetail.as_view()),
     path('authors/<author_id>/posts', views.Posts.as_view()),
     path('authors/<author_id>/posts/<post_id>', views.PostDetail.as_view()),
-    path('authors/<author_id>/posts/<post_id>/image', views.PostDetail.as_view()),
+    path('authors/<author_id>/posts/<post_id>/image', views.ImagePosts.as_view()),
     path('authors/<author_id>/posts/<post_id>/comments', views.Comments.as_view()),
     path('authors/<author_id>/posts/<post_id>/likes', views.PostLikes.as_view()),
     path('authors/<author_id>/posts/<post_id>/comments/<comment_id>/likes', views.CommentLikes.as_view()),
