@@ -9,7 +9,7 @@ from django.core.validators import URLValidator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
-from drf_spectacular.utils import extend_schema_serializer, extend_schema, OpenApiExample, OpenApiParameter
+from drf_spectacular.utils import extend_schema_serializer, extend_schema, OpenApiExample, OpenApiParameter, OpenApiResponse
 from pprint import pprint
 
 from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer, RemoteNodeRequestSerializer
@@ -19,6 +19,21 @@ from .permissions import LocalAndRemote, Local
 import traceback
 import uuid
 import json
+
+EXTEND_SCHEMA_PARAM_AUTHOR_ID = OpenApiParameter(
+    name="author_id",
+    description="The ID of the author",
+    required=True,
+    type=str,
+    location=OpenApiParameter.PATH,
+    examples=[
+        OpenApiExample(
+            "Example 1", 
+            value="0f975f4e-9e72-4166-9fd9-e3ce8d85ddc5", 
+            summary="Example author_id"
+        )
+    ],
+)
 
 class Authors(APIView):
 
@@ -43,22 +58,13 @@ class Authors(APIView):
             traceback.print_exc()
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-
 class AuthorDetail(APIView):
 
     permission_classes = [LocalAndRemote]    
     serializer_class = AuthorSerializer
 
     @extend_schema(
-        parameters=[
-            {
-                "name": "author_id",
-                "description": "The ID of the author",
-                "required": True,
-                "in": "path",
-                "schema": {"type": "string", "example": 'https://social-distribution-media.herokuapp.com/api/authors/0f975f4e-9e72-4166-9fd9-e3ce8d85ddc5'},
-            }
-        ]
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID]
     )
     def get(self, request, author_id):
         """
@@ -77,19 +83,27 @@ class AuthorDetail(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
-        request={
-            "application/json": {
-                "description": "Form data.",
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "id": {"type": "string"}
-                    },
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        request=AuthorSerializer,
+        examples=[
+            OpenApiExample(
+                "Example Author",
+                summary="An example author",
+                value={
+                    "type": "author",
+                    "host": "https://example.com",
+                    "displayName": "John Doe",
+                    "github": "https://github.com/johndoe",
+                    "profileImage": "https://example.com/media/profile_images/johndoe.png",
+                    "followers": [],
+                    "following": [],
                 },
-                "example": {
-                    "id": "https://social-distribution-media.herokuapp.com/api/authors/daec6997-24b1-46ef-8247-e2661339715a	"
-                }
-            }
+            ),
+        ],
+        responses={
+            204: OpenApiResponse(
+                description="No Response Body.",
+            )
         }
     )
     def post(self, request, author_id):
@@ -115,17 +129,9 @@ class AuthorDetail(APIView):
 class Followers(APIView):
 
     permission_classes = [LocalAndRemote]
-
+    
     @extend_schema(
-        parameters=[
-            {
-                "name": "author_id",
-                "description": "The ID of the author",
-                "required": True,
-                "in": "path",
-                "schema": {"type": "string", "example": 'https://social-distribution-media.herokuapp.com/api/authors/0f975f4e-9e72-4166-9fd9-e3ce8d85ddc5'},
-            }
-        ]
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID],
     )
     def get(self, request, author_id):
         """
