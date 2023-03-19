@@ -24,7 +24,7 @@ def extract_post_uuid(id: str):
 
 class Author(models.Model):
 
-    type = 'author'
+    type = models.CharField(max_length=15, default='author')
 
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     id = models.URLField(blank=True, default=None)

@@ -23,6 +23,7 @@ import json
 class Authors(APIView):
 
     permission_classes = [LocalAndRemote]
+    serializer_class = AuthorSerializer
 
     def get(self, request, format=None):
         """
