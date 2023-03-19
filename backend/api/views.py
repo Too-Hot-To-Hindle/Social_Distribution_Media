@@ -9,7 +9,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from rest_framework.pagination import PageNumberPagination
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiParameter, OpenApiResponse, OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 from pprint import pprint
 import docs.docs as docs
 

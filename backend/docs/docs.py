@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiParameter, OpenApiResponse, OpenApiTypes
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, OpenApiResponse, OpenApiTypes
 
 AUTHOR_1 = {
     "_id": "9610effa-1461-4d11-85fb-45c5d45e199d",
