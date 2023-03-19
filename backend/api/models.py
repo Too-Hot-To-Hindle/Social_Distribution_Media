@@ -3,6 +3,9 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 import uuid
+import re
+
+from .utils import extract_uuid
 
 SERVICE_ADDRESS = "https://social-distribution-media.herokuapp.com"
 PREFIX = 'api'
@@ -14,14 +17,15 @@ class Author(models.Model):
 
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     id = models.URLField(blank=True, default=None)
-    url = models.URLField(blank=True, default=None, editable=False)
-    host = models.URLField(default=SERVICE_ADDRESS, editable=False)
+    url = models.URLField(blank=True, default=None)
+    host = models.URLField(default=SERVICE_ADDRESS)
     displayName = models.CharField(max_length=100)
     github = models.URLField(blank=True)
     profileImage = models.URLField(blank=True)
     followers = models.ManyToManyField("self", symmetrical=False, blank=True, related_name="author_followers")
     following = models.ManyToManyField("self", symmetrical=False, blank=True, related_name="author_following")
-    user = models.OneToOneField(User, on_delete= models.CASCADE, blank=True)
+    user = models.OneToOneField(User, on_delete= models.CASCADE, blank=True, null=True)
+    remote = models.BooleanField(default=False)
 
     def __str__(self):
         return self.displayName
@@ -31,14 +35,23 @@ class Author(models.Model):
         first_save = self._state.adding
 
         # Set the id and url fields intially, using the generated id.
-        if not self.id:
-            self.id = f"{API_BASE}/authors/{self._id}"
+        ## TODO: CONTINUE UPDATING THIS
+        if not self.host:
+            self.host = SERVICE_ADDRESS
+        
+        # If an author is created with an id, make sure _id matches
+        if self.id and first_save:
+            _id = extract_uuid('authors', self.id)
+            self._id = _id
+        elif first_save:
+            self.id = f"{self.host}/authors/{self._id}"
+        
         if not self.url:
-            self.url = f"{SERVICE_ADDRESS}/authors/{self._id}"
+            self.url = f"{self.host}/authors/{self._id}"
         super().save(*args, **kwargs)
 
         # Create inbox on Author creation
-        if first_save:
+        if first_save and not self.remote:
             Inbox.objects.create(author_id=self._id)
 
 class Post(models.Model):
@@ -68,7 +81,7 @@ class Post(models.Model):
     type = 'post'
 
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4)  # Editable for the PUT endpoint
-    id = models.URLField(blank=True, default=None, editable=False)
+    id = models.URLField(blank=True, default=None)
     title = models.TextField()
     source = models.URLField(blank=True)  # Need to clarify source and origin fields
     origin = models.URLField(blank=True)
@@ -88,8 +101,15 @@ class Post(models.Model):
         return f"Post by {self.author.displayName}"
     
     def save(self, *args, **kwargs) -> None:
+
+        # Store if this is the first or not
+        first_save = self._state.adding
+
         # Set the id and url fields intially, using the generated id.
-        if not self.id:
+        if self.id and first_save:
+            _id = extract_uuid('posts', self.id)
+            self._id = _id
+        elif first_save:
             self.id = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
             self.comments = f"{self.id}/comments"
         return super().save(*args, **kwargs)
@@ -173,27 +193,3 @@ class Inbox(models.Model):
     
     class Meta:
         verbose_name_plural = 'Inboxes'
-    
-class AllowedNode(models.Model):
-    """
-    List of IPs that are allowed access to remote endpoints
-    """
-    ip = models.GenericIPAddressField(blank=True, null=True)
-    host = models.URLField(blank=True)
-    detail = models.TextField(blank=True)
-
-    def __str__(self) -> str:
-        return f"{self.ip or self.host}"
-    
-class RemoteNodeRequest(models.Model):
-    """
-    List of requests to be added as an allowed remote node
-    """
-    ip = models.GenericIPAddressField(blank=True, null=True)
-    meta = models.TextField(blank=True, null=True)
-    name = models.TextField()
-    discord = models.TextField()
-    group = models.TextField()
-
-    def __str__(self) -> str:
-        return f"Request from {self.ip}"
