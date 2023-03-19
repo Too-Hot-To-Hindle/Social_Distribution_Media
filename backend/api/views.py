@@ -411,7 +411,7 @@ class Posts(APIView):
                     )
                 ],
                 response=OpenApiTypes.OBJECT,
-            )
+            ),
         }
     )
     def get(self, request, author_id):
