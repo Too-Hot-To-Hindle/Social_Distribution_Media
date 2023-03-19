@@ -9,6 +9,7 @@ from django.core.validators import URLValidator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
+from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema_serializer, extend_schema, OpenApiExample, OpenApiParameter
 from pprint import pprint
 
@@ -20,28 +21,39 @@ import traceback
 import uuid
 import json
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'size'
+    max_page_size = 100
+
 class Authors(APIView):
 
     permission_classes = [LocalAndRemote]
+    pagination_class = StandardResultsSetPagination
 
     def get(self, request, format=None):
         """
         Get all authors
 
-        TODO: Query params, paging
+        TODO: Query params
 
         See below for adding new fields (not in model) to response:
 
         https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
         try:
-            authors = Author.objects.all()
-            serializer = AuthorSerializer(authors, many=True)  # Must include many=True because it is a list of authors
+            authors = Author.objects.order_by('displayName') # order by display name so paginator is consistent
+            paginator = self.pagination_class()
+
+            # paginate our queryset
+            page = paginator.paginate_queryset(authors, request, view=self)
+
+            serializer = AuthorSerializer(page, many=True)  # Must include many=True because it is a list of authors
+
             return Response(serializer.data)
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_404_NOT_FOUND)
-
 
 class AuthorDetail(APIView):
 
@@ -202,6 +214,7 @@ class FollowersDetail(APIView):
 class Posts(APIView):
 
     permission_classes = [LocalAndRemote]
+    pagination_class = StandardResultsSetPagination
 
     def get(self, request, author_id):
         """
@@ -214,8 +227,13 @@ class Posts(APIView):
         https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
         try:
-            posts = Post.objects.filter(author___id=author_id).all()
-            serializer = PostSerializer(posts, many=True)
+            posts = Post.objects.filter(author___id=author_id)
+            paginator = self.pagination_class()
+
+            page = paginator.paginate_queryset(posts, request, view=self)
+
+            serializer = PostSerializer(page, many=True)
+
             return Response(serializer.data)
         except Exception as e:
             traceback.print_exc()
@@ -312,6 +330,7 @@ class ImagePosts(APIView):
 class Comments(APIView):
 
     permission_classes = [LocalAndRemote]
+    pagination_class = StandardResultsSetPagination
 
     def get(self, request, author_id, post_id):
         """Get all comments on post_id posted by author_id"""
@@ -320,7 +339,11 @@ class Comments(APIView):
         # TODO: Properly 404 if author_id or post_id doesn't exist, could check post_count
         try:
             comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
-            serializer = CommentSerializer(comments, many=True)
+            paginator = self.pagination_class()
+
+            page = paginator.paginate_queryset(comments, request, view=self)
+
+            serializer = CommentSerializer(page, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             traceback.print_exc()
@@ -391,14 +414,28 @@ class LikedPosts(APIView):
 class InboxDetail(APIView):
 
     permission_classes = [LocalAndRemote]
+    pagination_class = StandardResultsSetPagination
 
     def get(self, request, author_id):
         """Get list of posts sent to author_id"""
         #  Require auth here
         try:
             inbox = Inbox.objects.get(author___id=author_id)
+            inbox_items = inbox.items.all()
+            paginator = self.pagination_class()
+
+            # paginate just the inbox items
+            page = paginator.paginate_queryset(inbox_items, request, view=self)
+
+            # serialize paginated inbox items and inbox
+            inbox_posts_serializer = InboxPostSerializer(page, many=True)
             serializer = InboxSerializer(inbox)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+
+            # update the inbox data with the serialized inbox items
+            inbox_data = serializer.data
+            inbox_data['items'] = inbox_posts_serializer.data
+
+            return Response(inbox_data, status=status.HTTP_200_OK)
         except Inbox.DoesNotExist:
             return Response('That author id does not exist',status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -475,7 +512,6 @@ class FollowRequests(APIView):
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 # not yet fully tested nor working... but we worry about csrf later
 # class Csrf(APIView):
