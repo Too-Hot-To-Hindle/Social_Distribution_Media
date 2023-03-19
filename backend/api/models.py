@@ -5,22 +5,11 @@ from django.contrib.auth.models import User
 import uuid
 import re
 
+from .utils import extract_uuid
+
 SERVICE_ADDRESS = "https://social-distribution-media.herokuapp.com"
 PREFIX = 'api'
 API_BASE = f"{SERVICE_ADDRESS}/{PREFIX}"
-
-def extract_author_uuid(id: str):
-    regex = r'.*authors\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}).*'
-    search = re.search(regex, id)
-    if search:
-        return search.group(1)
-    return ''
-def extract_post_uuid(id: str):
-    regex = r'.*posts\/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}).*'
-    search = re.search(regex, id)
-    if search:
-        return search.group(1)
-    return ''
 
 class Author(models.Model):
 
@@ -52,7 +41,7 @@ class Author(models.Model):
         
         # If an author is created with an id, make sure _id matches
         if self.id and first_save:
-            _id = extract_author_uuid(self.id)
+            _id = extract_uuid('authors', self.id)
             self._id = _id
         elif first_save:
             self.id = f"{self.host}/authors/{self._id}"
@@ -118,7 +107,7 @@ class Post(models.Model):
 
         # Set the id and url fields intially, using the generated id.
         if self.id and first_save:
-            _id = extract_post_uuid(self.id)
+            _id = extract_uuid('posts', self.id)
             self._id = _id
         elif first_save:
             self.id = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
@@ -204,39 +193,3 @@ class Inbox(models.Model):
     
     class Meta:
         verbose_name_plural = 'Inboxes'
-    
-class AllowedRemoteNode(models.Model):
-    """
-    List of IPs that are allowed access to remote endpoints
-    """
-    ip = models.GenericIPAddressField(blank=True, null=True, editable=False)
-    host = models.CharField(blank=True, max_length=200)
-    detail = models.TextField(blank=True)
-
-    def __str__(self) -> str:
-        return f"{self.host}"
-    
-class AllowedLocalNode(models.Model):
-    """
-    List of IPs that are allowed access to local endpoints
-    """
-    ip = models.GenericIPAddressField(blank=True, null=True, editable=False)
-    host = models.CharField(blank=True, max_length=200)
-    detail = models.TextField(blank=True)
-
-    def __str__(self) -> str:
-        return f"{self.host}"
-    
-class RemoteNodeRequest(models.Model):
-    """
-    List of requests to be added as an allowed remote node
-    """
-    ip = models.GenericIPAddressField(blank=True, null=True)
-    meta = models.TextField(blank=True, null=True)
-    name = models.TextField()
-    discord = models.TextField()
-    group = models.TextField()
-    host = models.TextField()
-
-    def __str__(self) -> str:
-        return f"Request from {self.ip}"
