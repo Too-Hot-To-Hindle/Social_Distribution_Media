@@ -31,7 +31,16 @@ AUTHOR_2 = {
 }
 
 AUTHOR_3 = {
-
+    "_id": "2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+    "id": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+    "url": "https://social-distribution-media.herokuapp.com/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+    "host": "https://social-distribution-media.herokuapp.com",
+    "displayName": "testuser1",
+    "github": "",
+    "profileImage": "",
+    "user": 7,
+    "followers": [],
+    "following": []
 }
 
 POST_1 = {
