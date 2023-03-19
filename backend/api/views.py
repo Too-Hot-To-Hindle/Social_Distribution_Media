@@ -638,7 +638,7 @@ class Comments(APIView):
                 examples=[
                     OpenApiExample(
                         "Example Response",
-                        summary="",
+                        summary="List of comments on post_id posted by author_id",
                         value=(
                             {
                                 "type": "comment",
@@ -742,7 +742,61 @@ class Comments(APIView):
 
 class PostLikes(APIView):
 
-
+    @extend_schema(
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID, EXTEND_SCHEMA_PARAM_POST_ID],
+        responses={
+            200: OpenApiResponse(
+                description="Get all likes on post_id posted by author_id",
+                examples=[
+                    OpenApiExample(
+                        "Example Response",
+                        summary="",
+                        value=(
+                            {
+                                "type": "Like",
+                                "summary": "Test user likes your post!",
+                                "author": {
+                                    "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "type": "author",
+                                    "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "host": "https://social-distribution-media.herokuapp.com",
+                                    "displayName": "Justin",
+                                    "url": "https://social-distribution-media.herokuapp.com/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "followers": [
+                                        "9610effa-1461-4d11-85fb-45c5d45e199d"
+                                    ],
+                                    "following": []
+                                },
+                                "object": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/67331d96-321b-4e15-b438-c568c24aed66"
+                            },
+                            {
+                                "type": "Like",
+                                "summary": "Test user likes your post!",
+                                "author": {
+                                    "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "type": "author",
+                                    "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "host": "https://social-distribution-media.herokuapp.com",
+                                    "displayName": "Justin",
+                                    "url": "https://social-distribution-media.herokuapp.com/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "followers": [
+                                        "9610effa-1461-4d11-85fb-45c5d45e199d"
+                                    ],
+                                    "following": []
+                                },
+                                "object": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/67331d96-321b-4e15-b438-c568c24aed66"
+                            },
+                        ),
+                    ),
+                ],
+                response=OpenApiTypes.OBJECT,
+            )
+        }
+    )
     def get(self, request, author_id, post_id):
         """Get a list of likes on post_id posted by author_id"""
         
