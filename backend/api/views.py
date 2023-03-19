@@ -329,6 +329,91 @@ class Posts(APIView):
 
     pagination_class = StandardResultsSetPagination
 
+    @extend_schema(
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        responses={
+            200: OpenApiResponse(
+                description="Response body contains a list of posts by author_id, ordered by post date with most recent first",
+                examples=[
+                    OpenApiExample(
+                        "Example Response",
+                        summary="An example response",
+                        value=(
+                            {
+                                "_id": "9df262a7-a75e-481f-8998-bd57f822bd07",
+                                "type": "post",
+                                "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/9df262a7-a75e-481f-8998-bd57f822bd07",
+                                "title": "TestPostFromPOSTRequest",
+                                "source": "",
+                                "origin": "",
+                                "description": "",
+                                "contentType": "text/plain",
+                                "content": "",
+                                "author": {
+                                    "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "type": "author",
+                                    "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "url": "https://social-distribution-media.herokuapp.com/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "host": "https://social-distribution-media.herokuapp.com",
+                                    "displayName": "Justin",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "remote": False,
+                                    "user": 15,
+                                    "followers": [
+                                        "9610effa-1461-4d11-85fb-45c5d45e199d"
+                                    ],
+                                    "following": []
+                                },
+                                "categories": [],
+                                "count": 0,
+                                "comments": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/9df262a7-a75e-481f-8998-bd57f822bd07/comments",
+                                "commentsSrc": {},
+                                "published": "2023-03-19T04:46:29.073653Z",
+                                "visibility": "FRIENDS",
+                                "unlisted": False
+                            },
+                            {
+                                "_id": "0e5a9893-9607-4f99-9bc5-c08136a6432c",
+                                "type": "post",
+                                "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/0e5a9893-9607-4f99-9bc5-c08136a6432c",
+                                "title": "TestPostFromPOSTRequest",
+                                "source": "",
+                                "origin": "",
+                                "description": "",
+                                "contentType": "text/plain",
+                                "content": "",
+                                "author": {
+                                    "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "type": "author",
+                                    "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "url": "https://social-distribution-media.herokuapp.com/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "host": "https://social-distribution-media.herokuapp.com",
+                                    "displayName": "Justin",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "remote": False,
+                                    "user": 15,
+                                    "followers": [
+                                        "9610effa-1461-4d11-85fb-45c5d45e199d"
+                                    ],
+                                    "following": []
+                                },
+                                "categories": [],
+                                "count": 0,
+                                "comments": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/0e5a9893-9607-4f99-9bc5-c08136a6432c/comments",
+                                "commentsSrc": {},
+                                "published": "2023-03-16T20:40:01.796602Z",
+                                "visibility": "FRIENDS",
+                                "unlisted": False
+                            },
+                        )
+                    )
+                ],
+                response=OpenApiTypes.OBJECT,
+            )
+        }
+    )
     def get(self, request, author_id):
         """
         Get paginated list of posts by author_id, ordered by post date with most recent first
