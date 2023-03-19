@@ -630,6 +630,69 @@ class Comments(APIView):
 
     pagination_class = StandardResultsSetPagination
 
+    @extend_schema(
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID, EXTEND_SCHEMA_PARAM_POST_ID],
+        responses={
+            200: OpenApiResponse(
+                description="Get all comments on post_id posted by author_id",
+                examples=[
+                    OpenApiExample(
+                        "Example Response",
+                        summary="",
+                        value=(
+                            {
+                                "type": "comment",
+                                "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/67331d96-321b-4e15-b438-c568c24aed66/comments/3aae7c80-f1ed-4aa3-bc92-4fa8a84fa44f",
+                                "author": {
+                                    "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "type": "author",
+                                    "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "host": "https://social-distribution-media.herokuapp.com",
+                                    "displayName": "Justin",
+                                    "url": "https://social-distribution-media.herokuapp.com/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "followers": [
+                                        "9610effa-1461-4d11-85fb-45c5d45e199d"
+                                    ],
+                                    "following": []
+                                },
+                                "comment": "Comment from postman!",
+                                "contentType": "text/plain",
+                                "published": "2023-03-16T20:50:26.377955Z",
+                                "_post_author_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                "_post_id": "67331d96-321b-4e15-b438-c568c24aed66"
+                            },
+                            {
+                                "type": "comment",
+                                "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/67331d96-321b-4e15-b438-c568c24aed66/comments/2c99de18-8622-4be2-94a6-40db610471c2",
+                                "author": {
+                                    "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "type": "author",
+                                    "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "host": "https://social-distribution-media.herokuapp.com",
+                                    "displayName": "Justin",
+                                    "url": "https://social-distribution-media.herokuapp.com/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "followers": [
+                                        "9610effa-1461-4d11-85fb-45c5d45e199d"
+                                    ],
+                                    "following": []
+                                },
+                                "comment": "Comment from postman!",
+                                "contentType": "text/plain",
+                                "published": "2023-03-17T04:57:33.056945Z",
+                                "_post_author_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                "_post_id": "67331d96-321b-4e15-b438-c568c24aed66"
+                            },
+                        ),
+                    ),
+                ],
+                response=OpenApiTypes.OBJECT,
+            )
+        }
+    )
     def get(self, request, author_id, post_id):
         """Get all comments on post_id posted by author_id"""
         # TODO: Paging
