@@ -90,6 +90,9 @@ class Authors(APIView):
     pagination_class = StandardResultsSetPagination
     serializer_class = AuthorSerializer
 
+    @extend_schema(
+        tags=['Authors', 'Remote API'],
+    )
     def get(self, request, format=None):
         """
         Get all authors
@@ -119,7 +122,8 @@ class AuthorDetail(APIView):
     serializer_class = AuthorSerializer
 
     @extend_schema(
-        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID]
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        tags=['Authors', 'Remote API'],
     )
     def get(self, request, author_id):
         """
@@ -234,7 +238,8 @@ class Followers(APIView):
                 ],
                 response=OpenApiTypes.OBJECT,
             )
-        }
+        },
+        tags=['Followers', 'Remote API']
     )
     def get(self, request, author_id):
         """
@@ -285,6 +290,7 @@ class FollowersDetail(APIView):
                 response=OpenApiTypes.BOOL,
             )
         },
+        tags=['Followers', 'Remote API']
     )
     def get(self, request, author_id, foreign_author_id):
         """Check if foreign_author_id is a follower of author_id"""
@@ -442,7 +448,8 @@ class Posts(APIView):
                 ],
                 response=OpenApiTypes.OBJECT,
             ),
-        }
+        },
+        tags=['Posts', 'Remote API']
     )
     def get(self, request, author_id):
         """
@@ -545,7 +552,8 @@ class PostDetail(APIView):
                 ],
                 response=OpenApiTypes.OBJECT,
             )
-        }
+        },
+        tags=['Posts', 'Remote API']
     )
     def get(self, request, author_id, post_id):
         """Get post_id posted by author_id"""
@@ -706,7 +714,8 @@ class Comments(APIView):
                 ],
                 response=OpenApiTypes.OBJECT,
             )
-        }
+        },
+        tags=["Comments", "Remote API"],
     )
     def get(self, request, author_id, post_id):
         """Get all comments on post_id posted by author_id"""
@@ -810,7 +819,8 @@ class PostLikes(APIView):
                 ],
                 response=OpenApiTypes.OBJECT,
             )
-        }
+        },
+        tags=['Likes', 'Remote API'],
     )
     def get(self, request, author_id, post_id):
         """Get a list of likes on post_id posted by author_id"""
@@ -881,7 +891,8 @@ class CommentLikes(APIView):
                 ],
                 response=OpenApiTypes.OBJECT,
             )
-        }
+        },
+        tags=['Likes', 'Remote API'],
     )
     def get(self, request_id, author_id, post_id, comment_id):
         """Get a list of likes on comment_id for post_id posted by author_id"""
@@ -958,7 +969,8 @@ class LikedPosts(APIView):
                 ],
                 response=OpenApiTypes.OBJECT,
             )
-        }
+        },
+        tags=['Posts', 'Remote API'],
     )
     def get(self, request, author_id):
         """Get list of posts author_id has liked"""
@@ -1093,7 +1105,8 @@ class InboxDetail(APIView):
                 ],
                 response=OpenApiTypes.OBJECT,
             )
-        }
+        },
+        tags=['Inbox', 'Remote API'],
     )
     def post(self, request, author_id):
         """Send a post to author_id"""
@@ -1209,7 +1222,8 @@ class Auth(APIView):
                     "password": "pwd",
                 },
             }
-        }
+        },
+        tags=['Auth'],
     )
     def post(self, request):
         """
@@ -1252,7 +1266,8 @@ class AuthRegister(APIView):
                     "password": "my_password",
                 },
             }
-        }
+        },
+        tags=['Auth'],
     )
     def post(self, request):
         """
