@@ -1064,11 +1064,11 @@ class InboxDetail(APIView):
         ],
         responses={
             200: OpenApiResponse(
-                description="Get all posts liked by author_id",
+                description="The post that was sent to author_id's inbox",
                 examples=[
                     OpenApiExample(
                         "Example Response",
-                        summary="List of posts liked by author_id",
+                        summary="Details of post that was send to author_id",
                         value=(
                             {
                                 "_id": "67331d96-321b-4e15-b438-c568c24aed66",
