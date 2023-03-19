@@ -1013,7 +1013,43 @@ class InboxDetail(APIView):
 
     @extend_schema(
         parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID],
-        request=PostSerializer,
+        request=InboxPostSerializer,
+        examples=[
+            OpenApiExample(
+                "Example Request for sending a type POST to author_id",
+                summary="Send a post to author_id's inbox",
+                value={
+                    "_id": "67331d96-321b-4e15-b438-c568c24aed66",
+                    "type": "post",
+                    "id": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3/posts/67331d96-321b-4e15-b438-c568c24aed66",
+                    "title": "TestPostFromPUTRequest",
+                    "source": "",
+                    "origin": "",
+                    "description": "",
+                    "contentType": "text/plain",
+                    "content": "",
+                    "author": {
+                        "_id": "2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+                        "id": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+                        "url": "https://social-distribution-media.herokuapp.com/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+                        "host": "https://social-distribution-media.herokuapp.com",
+                        "displayName": "testuser1",
+                        "github": "",
+                        "profileImage": "",
+                        "user": 7,
+                        "followers": [],
+                        "following": []
+                    },
+                    "categories": [],
+                    "count": 0,
+                    "comments": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3/posts/67331d96-321b-4e15-b438-c568c24aed66/comments",
+                    "commentsSrc": {},
+                    "published": "2023-03-03T07:15:44.374719Z",
+                    "visibility": "FRIENDS",
+                    "unlisted": False
+                },
+            ),
+        ],
         responses={
             200: OpenApiResponse(
                 description="Get all posts liked by author_id",
@@ -1022,7 +1058,36 @@ class InboxDetail(APIView):
                         "Example Response",
                         summary="List of posts liked by author_id",
                         value=(
-                            
+                            {
+                                "_id": "67331d96-321b-4e15-b438-c568c24aed66",
+                                "type": "post",
+                                "id": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3/posts/67331d96-321b-4e15-b438-c568c24aed66",
+                                "title": "TestPostFromPUTRequest",
+                                "source": "",
+                                "origin": "",
+                                "description": "",
+                                "contentType": "text/plain",
+                                "content": "",
+                                "author": {
+                                    "_id": "2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+                                    "type": "author",
+                                    "id": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+                                    "host": "https://social-distribution-media.herokuapp.com",
+                                    "displayName": "testuser1",
+                                    "url": "https://social-distribution-media.herokuapp.com/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "followers": [],
+                                    "following": []
+                                },
+                                "categories": [],
+                                "count": 0,
+                                "comments": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3/posts/67331d96-321b-4e15-b438-c568c24aed66/comments",
+                                "commentsSrc": {},
+                                "published": "2023-03-19T06:27:29.944202Z",
+                                "visibility": "FRIENDS",
+                                "unlisted": False
+                            }
                         ),
                     ),
                 ],
