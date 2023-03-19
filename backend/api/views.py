@@ -65,6 +65,21 @@ EXTEND_SCHEMA_PARAM_POST_ID = OpenApiParameter(
     ]
 )
 
+EXTEND_SCHEMA_PARAM_COMMENT_ID = OpenApiParameter(
+    name="comment_id",
+    description="The ID of the comment",
+    required=True,
+    type=str,
+    location=OpenApiParameter.PATH,
+    examples=[
+        OpenApiExample(
+            "Example 1",
+            value="3aae7c80-f1ed-4aa3-bc92-4fa8a84fa44f",
+            summary="Example comment_id"
+        )
+    ]
+)
+
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'size'
@@ -750,7 +765,7 @@ class PostLikes(APIView):
                 examples=[
                     OpenApiExample(
                         "Example Response",
-                        summary="",
+                        summary="List of likes on post_id posted by author_id",
                         value=(
                             {
                                 "type": "Like",
@@ -817,7 +832,57 @@ class PostLikes(APIView):
 
 class CommentLikes(APIView):
 
-
+    @extend_schema(
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID, EXTEND_SCHEMA_PARAM_POST_ID, EXTEND_SCHEMA_PARAM_COMMENT_ID],
+        responses={
+            200: OpenApiResponse(
+                description="Get all likes of a comment with comment_id on a post_id posted by author_id",
+                examples=[
+                    OpenApiExample(
+                        "Example Response",
+                        summary="List of likes on comment_id for post_id posted by author_id",
+                        value=(
+                            {
+                                "type": "Like",
+                                "summary": "Test user likes your comment!",
+                                "author": {
+                                    "_id": "1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
+                                    "type": "author",
+                                    "id": "https://testremotehost.com/api/authors/1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
+                                    "host": "https://testremotehost.com",
+                                    "displayName": "Test Remote Author",
+                                    "url": "https://testremotehost.com/authors/1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "followers": [],
+                                    "following": []
+                                },
+                                "object": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/67331d96-321b-4e15-b438-c568c24aed66/comments/3aae7c80-f1ed-4aa3-bc92-4fa8a84fa44f"
+                            },
+                            {
+                                "type": "Like",
+                                "summary": "Test user likes your comment again! (This was just generated for documentation purposes)",
+                                "author": {
+                                    "_id": "1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
+                                    "type": "author",
+                                    "id": "https://testremotehost.com/api/authors/1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
+                                    "host": "https://testremotehost.com",
+                                    "displayName": "Test Remote Author",
+                                    "url": "https://testremotehost.com/authors/1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "followers": [],
+                                    "following": []
+                                },
+                                "object": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/67331d96-321b-4e15-b438-c568c24aed66/comments/3aae7c80-f1ed-4aa3-bc92-4fa8a84fa44f"
+                            },
+                        ),
+                    ),
+                ],
+                response=OpenApiTypes.OBJECT,
+            )
+        }
+    )
     def get(self, request_id, author_id, post_id, comment_id):
         """Get a list of likes on comment_id for post_id posted by author_id"""
         
@@ -840,7 +905,61 @@ class CommentLikes(APIView):
 
 class LikedPosts(APIView):
 
-
+    @extend_schema(
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        responses={
+            200: OpenApiResponse(
+                description="Get all posts liked by author_id",
+                examples=[
+                    OpenApiExample(
+                        "Example Response",
+                        summary="List of posts liked by author_id",
+                        value=(
+                            {
+                                "type": "Like",
+                                "summary": "Test user likes your post!",
+                                "author": {
+                                    "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "type": "author",
+                                    "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "host": "https://social-distribution-media.herokuapp.com",
+                                    "displayName": "Justin",
+                                    "url": "https://social-distribution-media.herokuapp.com/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "followers": [
+                                        "9610effa-1461-4d11-85fb-45c5d45e199d"
+                                    ],
+                                    "following": []
+                                },
+                                "object": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/67331d96-321b-4e15-b438-c568c24aed66"
+                            },
+                            {
+                                "type": "Like",
+                                "summary": "Test user likes your post!",
+                                "author": {
+                                    "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "type": "author",
+                                    "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "host": "https://social-distribution-media.herokuapp.com",
+                                    "displayName": "Justin",
+                                    "url": "https://social-distribution-media.herokuapp.com/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                    "github": "",
+                                    "profileImage": "",
+                                    "followers": [
+                                        "9610effa-1461-4d11-85fb-45c5d45e199d"
+                                    ],
+                                    "following": []
+                                },
+                                "object": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/67331d96-321b-4e15-b438-c568c24aed66"
+                            },
+                        ),
+                    ),
+                ],
+                response=OpenApiTypes.OBJECT,
+            )
+        }
+    )
     def get(self, request, author_id):
         """Get list of posts author_id has liked"""
         
@@ -892,6 +1011,25 @@ class InboxDetail(APIView):
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @extend_schema(
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        request=PostSerializer,
+        responses={
+            200: OpenApiResponse(
+                description="Get all posts liked by author_id",
+                examples=[
+                    OpenApiExample(
+                        "Example Response",
+                        summary="List of posts liked by author_id",
+                        value=(
+                            
+                        ),
+                    ),
+                ],
+                response=OpenApiTypes.OBJECT,
+            )
+        }
+    )
     def post(self, request, author_id):
         """Send a post to author_id"""
         # NOTE: 4 different cases based on type field in post request body
