@@ -9,8 +9,9 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from rest_framework.pagination import PageNumberPagination
-from drf_spectacular.utils import extend_schema_serializer, extend_schema, OpenApiExample, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 from pprint import pprint
+import docs.docs as docs
 
 from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, Follow
@@ -28,7 +29,11 @@ class StandardResultsSetPagination(PageNumberPagination):
 class Authors(APIView):
 
     pagination_class = StandardResultsSetPagination
+    serializer_class = AuthorSerializer
 
+    @extend_schema(
+        tags=['Authors', 'Remote API'],
+    )
     def get(self, request, format=None):
         """
         Get all authors
@@ -58,15 +63,8 @@ class AuthorDetail(APIView):
     serializer_class = AuthorSerializer
 
     @extend_schema(
-        parameters=[
-            {
-                "name": "author_id",
-                "description": "The ID of the author",
-                "required": True,
-                "in": "path",
-                "schema": {"type": "string", "example": 'https://social-distribution-media.herokuapp.com/api/authors/0f975f4e-9e72-4166-9fd9-e3ce8d85ddc5'},
-            }
-        ]
+        parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        tags=['Authors', 'Remote API'],
     )
     def get(self, request, author_id):
         """
@@ -87,19 +85,27 @@ class AuthorDetail(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
-        request={
-            "application/json": {
-                "description": "Form data.",
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "id": {"type": "string"}
-                    },
+        parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        request=AuthorSerializer,
+        examples=[
+            OpenApiExample(
+                "Example Author",
+                summary="An example author",
+                value={
+                    "type": "author",
+                    "host": "https://example.com",
+                    "displayName": "John Doe",
+                    "github": "https://github.com/johndoe",
+                    "profileImage": "https://example.com/media/profile_images/johndoe.png",
+                    "followers": [],
+                    "following": [],
                 },
-                "example": {
-                    "id": "https://social-distribution-media.herokuapp.com/api/authors/daec6997-24b1-46ef-8247-e2661339715a	"
-                }
-            }
+            ),
+        ],
+        responses={
+            204: OpenApiResponse(
+                description="No Response Body.",
+            )
         }
     )
     def post(self, request, author_id):
@@ -129,22 +135,17 @@ class AuthorDetail(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class Followers(APIView):
-
-
+    
     @extend_schema(
-        parameters=[
-            {
-                "name": "author_id",
-                "description": "The ID of the author",
-                "required": True,
-                "in": "path",
-                "schema": {"type": "string", "example": 'https://social-distribution-media.herokuapp.com/api/authors/0f975f4e-9e72-4166-9fd9-e3ce8d85ddc5'},
-            }
-        ]
+        parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        responses={
+            200: docs.EXTEND_SCHEMA_RESP_LIST_AUTHORS
+        },
+        tags=['Followers', 'Remote API']
     )
     def get(self, request, author_id):
         """
-        Get a list of authors following the user given by author_id
+        Get a list of authors and their data following the user given by author_id
 
         TODO: Paging? Query params?
 
@@ -171,7 +172,16 @@ class Followers(APIView):
         
 class FollowersDetail(APIView):
 
-
+    @extend_schema(
+        parameters=[
+            docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID, 
+            docs.EXTEND_SCHEMA_PARAM_FOREIGN_AUTHOR_ID
+        ],
+        responses={
+            200: docs.EXTEND_SCHEMA_RESP_IS_FOLLOWER
+        },
+        tags=['Followers', 'Remote API']
+    )
     def get(self, request, author_id, foreign_author_id):
         """Check if foreign_author_id is a follower of author_id"""
         
@@ -245,6 +255,13 @@ class Posts(APIView):
 
     pagination_class = StandardResultsSetPagination
 
+    @extend_schema(
+        parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        responses={
+            200: docs.EXTEND_SCHEMA_RESP_LIST_POSTS
+        },
+        tags=['Posts', 'Remote API']
+    )
     def get(self, request, author_id):
         """
         Get paginated list of posts by author_id, ordered by post date with most recent first
@@ -299,7 +316,16 @@ class Posts(APIView):
 
 class PostDetail(APIView):
 
-
+    @extend_schema(
+        parameters=[
+            docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID, 
+            docs.EXTEND_SCHEMA_PARAM_POST_ID
+        ],
+        responses={
+            200: docs.EXTEND_SCHEMA_RESP_POST
+        },
+        tags=['Posts', 'Remote API']
+    )
     def get(self, request, author_id, post_id):
         """Get post_id posted by author_id"""
         
@@ -398,6 +424,16 @@ class Comments(APIView):
 
     pagination_class = StandardResultsSetPagination
 
+    @extend_schema(
+        parameters=[
+            docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID, 
+            docs.EXTEND_SCHEMA_PARAM_POST_ID
+        ],
+        responses={
+            200: docs.EXTEND_SCHEMA_RESP_LIST_COMMENTS
+        },
+        tags=["Comments", "Remote API"],
+    )
     def get(self, request, author_id, post_id):
         """Get all comments on post_id posted by author_id"""
         # TODO: Paging
@@ -447,7 +483,16 @@ class Comments(APIView):
 
 class PostLikes(APIView):
 
-
+    @extend_schema(
+        parameters=[
+            docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID, 
+            docs.EXTEND_SCHEMA_PARAM_POST_ID
+        ],
+        responses={
+            200: docs.EXTEND_SCHEMA_RESP_LIST_POST_LIKES
+        },
+        tags=['Likes', 'Remote API'],
+    )
     def get(self, request, author_id, post_id):
         """Get a list of likes on post_id posted by author_id"""
         
@@ -468,7 +513,17 @@ class PostLikes(APIView):
 
 class CommentLikes(APIView):
 
-
+    @extend_schema(
+        parameters=[
+            docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID, 
+            docs.EXTEND_SCHEMA_PARAM_POST_ID, 
+            docs.EXTEND_SCHEMA_PARAM_COMMENT_ID
+        ],
+        responses={
+            200: docs.EXTEND_SCHEMA_RESP_LIST_COMMENT_LIKES
+        },
+        tags=['Likes', 'Remote API'],
+    )
     def get(self, request_id, author_id, post_id, comment_id):
         """Get a list of likes on comment_id for post_id posted by author_id"""
         
@@ -491,7 +546,13 @@ class CommentLikes(APIView):
 
 class LikedPosts(APIView):
 
-
+    @extend_schema(
+        parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        responses={
+            200: docs.EXTEND_SCHEMA_RESP_LIKED_POSTS
+        },
+        tags=['Posts', 'Remote API'],
+    )
     def get(self, request, author_id):
         """Get list of posts author_id has liked"""
         
@@ -543,6 +604,54 @@ class InboxDetail(APIView):
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @extend_schema(
+        parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        request=InboxPostSerializer,
+        examples=[
+            OpenApiExample(
+                "Example Request for sending a type POST to author_id",
+                summary="Send a post to author_id's inbox",
+                value={
+                    "_id": "67331d96-321b-4e15-b438-c568c24aed66",
+                    "type": "post",
+                    "id": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3/posts/67331d96-321b-4e15-b438-c568c24aed66",
+                    "title": "TestPostFromPUTRequest",
+                    "source": "",
+                    "origin": "",
+                    "description": "",
+                    "contentType": "text/plain",
+                    "content": "",
+                    "author": {
+                        "_id": "2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+                        "id": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+                        "url": "https://social-distribution-media.herokuapp.com/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3",
+                        "host": "https://social-distribution-media.herokuapp.com",
+                        "displayName": "testuser1",
+                        "github": "",
+                        "profileImage": "",
+                        "user": 7,
+                        "followers": [],
+                        "following": []
+                    },
+                    "categories": [],
+                    "count": 0,
+                    "comments": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3/posts/67331d96-321b-4e15-b438-c568c24aed66/comments",
+                    "commentsSrc": {},
+                    "published": "2023-03-03T07:15:44.374719Z",
+                    "visibility": "FRIENDS",
+                    "unlisted": False
+                },
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                description="The post that was sent to author_id's inbox",
+                examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_POST_BODY],
+                response=OpenApiTypes.OBJECT,
+            )
+        },
+        tags=['Inbox', 'Remote API'],
+    )
     def post(self, request, author_id):
         """Send a post to author_id"""
         # NOTE: 4 different cases based on type field in post request body
@@ -657,7 +766,8 @@ class Auth(APIView):
                     "password": "pwd",
                 },
             }
-        }
+        },
+        tags=['Auth'],
     )
     def post(self, request):
         """
@@ -700,7 +810,8 @@ class AuthRegister(APIView):
                     "password": "my_password",
                 },
             }
-        }
+        },
+        tags=['Auth'],
     )
     def post(self, request):
         """
