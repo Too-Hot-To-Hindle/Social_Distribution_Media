@@ -22,6 +22,4 @@ urlpatterns = [
     path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     # path('csrf/', views.Csrf.as_view()),
     path('auth', views.Auth.as_view()),
-    path('auth/register', views.AuthRegister.as_view()),
-    path('remote-node-request', views.RemoteNodeRequests.as_view())
-]
+    path('auth/register', views.AuthRegister.as_view()),]

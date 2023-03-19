@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Author, Post, Comment, Like, Follow, Inbox, RemoteNodeRequest
+from .models import Author, Post, Comment, Like, Follow, Inbox
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -41,7 +41,9 @@ class InboxPostSerializer(serializers.ModelSerializer):
         if Author.objects.filter(id=author_data['id']).exists():
             author = Author.objects.get(id=author_data['id'])
         else:
+            print('creating author')
             author = Author.objects.create(**author_data, remote=True)  # If creating here it is a remote user
+            print('created author')
         return Post.objects.create(author=author, **validated_data)
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -103,9 +105,3 @@ class InboxSerializer(serializers.ModelSerializer):
         model = Inbox
         fields = ('type', 'author', 'items')
         depth = 1
-    
-class RemoteNodeRequestSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = RemoteNodeRequest
-        fields = ('name', 'discord', 'group', 'host')
