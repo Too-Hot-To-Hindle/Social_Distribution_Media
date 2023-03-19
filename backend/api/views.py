@@ -9,7 +9,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from rest_framework.pagination import PageNumberPagination
-from drf_spectacular.utils import extend_schema_serializer, extend_schema, OpenApiExample, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import extend_schema_serializer, extend_schema, OpenApiExample, OpenApiParameter, OpenApiResponse, OpenApiSchemaBase, OpenApiTypes
 from pprint import pprint
 
 from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
@@ -29,23 +29,23 @@ EXTEND_SCHEMA_PARAM_AUTHOR_ID = OpenApiParameter(
     examples=[
         OpenApiExample(
             "Example 1", 
-            value="0f975f4e-9e72-4166-9fd9-e3ce8d85ddc5", 
+            value="d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc", 
             summary="Example author_id"
         )
     ],
 )
 
-EXTEND_SCHEMA_PARAM_AUTHOR_ID = OpenApiParameter(
-    name="author_id",
-    description="The ID of the author",
+EXTEND_SCHEMA_PARAM_FOREIGN_AUTHOR_ID = OpenApiParameter(
+    name="foreign_author_id",
+    description="The ID of the foreign author that is/isn't following the author_id",
     required=True,
     type=str,
     location=OpenApiParameter.PATH,
     examples=[
         OpenApiExample(
             "Example 1", 
-            value="0f975f4e-9e72-4166-9fd9-e3ce8d85ddc5", 
-            summary="Example author_id"
+            value="deff525c-23ce-4d3b-b975-d6e484d21fb8", 
+            summary="Example foreign_author_id"
         )
     ],
 )
@@ -163,10 +163,52 @@ class Followers(APIView):
     
     @extend_schema(
         parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID],
+        responses={
+            200: OpenApiResponse(
+                description="A list of authors and their data that are all following the user given by author_id",
+                examples=[
+                    OpenApiExample(
+                        "Example Authors",
+                        summary="List of example authors",
+                        value=(
+                            {
+                                "_id": "9610effa-1461-4d11-85fb-45c5d45e199d",
+                                "type": "author",
+                                "id": "https://social-distribution-media.herokuapp.com/api/authors/9610effa-1461-4d11-85fb-45c5d45e199d",
+                                "host": "https://social-distribution-media.herokuapp.com",
+                                "displayName": "John",
+                                "url": "https://social-distribution-media.herokuapp.com/authors/9610effa-1461-4d11-85fb-45c5d45e199d",
+                                "github": "",
+                                "profileImage": "",
+                                "followers": [],
+                                "following": [
+                                    "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc"
+                                ]
+                            },
+                            {
+                                "_id": "9610effa-1461-4d11-85fb-45c5d45e19sdfgsdf",
+                                "type": "author",
+                                "id": "https://social-distribution-media.herokuapp.com/api/authors/9610effa-1461-4d11-85fb-45c5d45esdfgdsfg",
+                                "host": "https://social-distribution-media.herokuapp.com",
+                                "displayName": "Johnny",
+                                "url": "https://social-distribution-media.herokuapp.com/authors/9610effa-1461-4d11-85fb-45c5d45esdfgdsfg",
+                                "github": "",
+                                "profileImage": "",
+                                "followers": [],
+                                "following": [
+                                    "d5a7f5b6-e68c-4e9e-9612-74ddb66sdfggg"
+                                ]
+                            },
+                        ),
+                    ),
+                ],
+                response=OpenApiTypes.OBJECT,
+            )
+        }
     )
     def get(self, request, author_id):
         """
-        Get a list of authors following the user given by author_id
+        Get a list of authors and their data following the user given by author_id
 
         TODO: Paging? Query params?
 
@@ -193,7 +235,27 @@ class Followers(APIView):
         
 class FollowersDetail(APIView):
 
-
+    @extend_schema(
+        parameters=[
+            EXTEND_SCHEMA_PARAM_AUTHOR_ID, 
+            EXTEND_SCHEMA_PARAM_FOREIGN_AUTHOR_ID
+        ],
+        responses={
+            200: OpenApiResponse(
+                description="Response body contains a boolean indicating if foreign_author_id is a follower of author_id",
+                examples=[
+                    OpenApiExample(
+                        "Example Response",
+                        summary="An example response",
+                        value={
+                            "isFollower": True
+                        }
+                    )
+                ],
+                response=OpenApiTypes.BOOL,
+            )
+        },
+    )
     def get(self, request, author_id, foreign_author_id):
         """Check if foreign_author_id is a follower of author_id"""
         
