@@ -1,35 +1,19 @@
 from rest_framework import permissions
 
-from .models import AllowedNode
+from .models import Author
 
-LOCAL_IPS = []
-LOCAL_URLS = []
-REMOTE_GET_ALLOWED_VIEWS = ['Authors', 'AuthorDetail', 'Followers', 'FollowersDetail', 'Post', 'PostDetail', 'ImagePosts', 'Comments', 'PostLikes', 'CommentLikes', 'LikedPosts']
-REMOTE_POST_ALLOWED_VIEWS = ['InboxDetail']
+from pprint import pprint
 
-class LocalAndRemote(permissions.BasePermission):
-    """
-    Permission class allowing remote nodes from certain IPs
-    """
-    
+LOCAL_HOSTS = ['127.0.0.1:8000', '127.0.0.1:3000', 'localhost:8000', 'localhost:3000', 'https://social-distribution-media.herokuapp.com/']
+
+REMOTE_GET_ALLOWED_VIEWS = ['Authors', 'Author Detail', 'Followers', 'Followers Detail', 'Posts', 'Post Detail', 'Image Posts', 'Comments', 'Post Likes', 'Comment Likes', 'Liked Posts']
+REMOTE_POST_ALLOWED_VIEWS = ['Inbox Detail']
+
+class AllowedRemote(permissions.BasePermission):
+
     def has_permission(self, request, view):
-        ip = request.META['REMOTE_ADDR']
-        host = request.META['REMOTE_HOST']
-        print(ip, host, request, view)
-        print(view.get_view_name())
-        print(request.method)
-        operationAllowed = request.method == 'GET' and view.get_view_name() in REMOTE_GET_ALLOWED_VIEWS \
+        """Only allow remote users to hit certain endpoints"""
+        is_remote_node = Author.objects.get(user__username=request.user).remote
+        is_remote_endpoint = request.method == 'GET' and view.get_view_name() in REMOTE_GET_ALLOWED_VIEWS \
             or request.method == 'POST' and view.get_view_name() in REMOTE_POST_ALLOWED_VIEWS
-        nodeAllowed = (AllowedNode.objects.filter(ip=ip) | AllowedNode.objects.filter(host=host)).exists()
-        return operationAllowed and nodeAllowed
-
-class Local(permissions.BasePermission):
-    """
-    Permission class allowing remote nodes from certain IPs
-    """
-    
-    def has_permission(self, request, view):
-        ip = request.META['REMOTE_ADDR']
-        host = request.META['REMOTE_HOST']
-        allowed = True  # TODO: Update this to check for local IPs/URLs
-        return allowed
+        return not is_remote_node or (is_remote_node and is_remote_endpoint)

@@ -8,43 +8,53 @@ from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
+from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema_serializer, extend_schema, OpenApiExample, OpenApiParameter
 from pprint import pprint
 
-from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer, RemoteNodeRequestSerializer
-from .models import Author, Post, Comment, Like, Inbox, Follow, RemoteNodeRequest
-from .permissions import LocalAndRemote, Local
+from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
+from .models import Author, Post, Comment, Like, Inbox, Follow
+from .utils import extract_uuid_if_url
 
 import traceback
 import uuid
 import json
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'size'
+    max_page_size = 100
+
 class Authors(APIView):
 
-    permission_classes = [LocalAndRemote]
+    pagination_class = StandardResultsSetPagination
 
     def get(self, request, format=None):
         """
         Get all authors
 
-        TODO: Query params, paging
+        TODO: Query params
 
         See below for adding new fields (not in model) to response:
 
         https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
         try:
-            authors = Author.objects.all()
-            serializer = AuthorSerializer(authors, many=True)  # Must include many=True because it is a list of authors
+            authors = Author.objects.order_by('displayName') # order by display name so paginator is consistent
+            paginator = self.pagination_class()
+
+            # paginate our queryset
+            page = paginator.paginate_queryset(authors, request, view=self)
+
+            serializer = AuthorSerializer(page, many=True)  # Must include many=True because it is a list of authors
+
             return Response(serializer.data)
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-
 class AuthorDetail(APIView):
-
-    permission_classes = [LocalAndRemote]    
+    
     serializer_class = AuthorSerializer
 
     @extend_schema(
@@ -62,6 +72,12 @@ class AuthorDetail(APIView):
         """
         Get details for an author
         """
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         try:
             author = Author.objects.get(pk=author_id)
             serializer = AuthorSerializer(author)
@@ -91,6 +107,12 @@ class AuthorDetail(APIView):
         Update details for an author
         TODO: This must only be useable as a 'local' user
         """
+
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         try:
             serializer = AuthorSerializer(data=json.loads(request.body))
             if serializer.is_valid():
@@ -108,7 +130,6 @@ class AuthorDetail(APIView):
         
 class Followers(APIView):
 
-    permission_classes = [LocalAndRemote]
 
     @extend_schema(
         parameters=[
@@ -131,6 +152,12 @@ class Followers(APIView):
 
         https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             author = Author.objects.get(pk=author_id)
             serializer = AuthorSerializer(author.followers, many=True)
@@ -144,10 +171,16 @@ class Followers(APIView):
         
 class FollowersDetail(APIView):
 
-    permission_classes = [LocalAndRemote]
 
     def get(self, request, author_id, foreign_author_id):
         """Check if foreign_author_id is a follower of author_id"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
+        if not (author_id and foreign_author_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             author = Author.objects.get(pk=author_id)
             response = {'isFollower': author.followers.filter(pk=foreign_author_id).exists()}
@@ -157,7 +190,6 @@ class FollowersDetail(APIView):
             return Response('author_id or foreign_author_id is not a valid uuid')
         except Exception as e:
             traceback.print_exc()
-            print(traceback.print_exc())
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, author_id, foreign_author_id):
@@ -166,6 +198,13 @@ class FollowersDetail(APIView):
         
         NOTE: Might be a better way to do this
         """
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
+        if not (author_id and foreign_author_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             author = Author.objects.get(pk=author_id)
             follower = Author.objects.get(pk=foreign_author_id)
@@ -180,8 +219,14 @@ class FollowersDetail(APIView):
 
     def put(self, request, author_id, foreign_author_id):
         """Add foreign_author_id as a follower of author_id"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
+        if not (author_id and foreign_author_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            print(request.data)
             serializer = AuthorSerializer(data=request.data)
             if serializer.is_valid():
                 author = Author.objects.get(pk=author_id)
@@ -198,7 +243,7 @@ class FollowersDetail(APIView):
 
 class Posts(APIView):
 
-    permission_classes = [LocalAndRemote]
+    pagination_class = StandardResultsSetPagination
 
     def get(self, request, author_id):
         """
@@ -210,9 +255,20 @@ class Posts(APIView):
 
         https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            posts = Post.objects.filter(author___id=author_id).all()
-            serializer = PostSerializer(posts, many=True)
+            posts = Post.objects.filter(author___id=author_id)
+            paginator = self.pagination_class()
+
+            page = paginator.paginate_queryset(posts, request, view=self)
+
+            serializer = PostSerializer(page, many=True)
+
             return Response(serializer.data)
         except Exception as e:
             traceback.print_exc()
@@ -220,6 +276,12 @@ class Posts(APIView):
 
     def post(self, request, author_id):
         """Create a post (post object in body) for author_id, but generate the ID (compare to PUT in PostDetail)"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             serializer = PostSerializer(data=json.loads(request.body))
             if serializer.is_valid():
@@ -237,10 +299,16 @@ class Posts(APIView):
 
 class PostDetail(APIView):
 
-    permission_classes = [LocalAndRemote]
 
     def get(self, request, author_id, post_id):
         """Get post_id posted by author_id"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        post_id = extract_uuid_if_url('post', post_id)
+        if not (author_id and post_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             post = Post.objects.get(pk=post_id)  # NOTE: Should we do anything with author_id?
             serializer = PostSerializer(post)
@@ -251,6 +319,13 @@ class PostDetail(APIView):
 
     def post(self, request, author_id, post_id):
         """Update post_id posted by author_id (post object in body)"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        post_id = extract_uuid_if_url('post', post_id)
+        if not (author_id and post_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             serializer = PostSerializer(data=json.loads(request.body))
             if serializer.is_valid():
@@ -268,6 +343,13 @@ class PostDetail(APIView):
 
     def delete(self, request, author_id, post_id):
         """Delete post_id posted by author_id"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        post_id = extract_uuid_if_url('post', post_id)
+        if not (author_id and post_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             deleted = Post.objects.filter(pk=post_id, author___id=author_id).delete()
             if deleted[0] > 0:
@@ -280,6 +362,13 @@ class PostDetail(APIView):
 
     def put(self, request, author_id, post_id):
         """Create a post (post object in body) for author_id with id post_id"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        post_id = extract_uuid_if_url('post', post_id)
+        if not (author_id and post_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             serializer = PostSerializer(data=json.loads(request.body))
             if serializer.is_valid():
@@ -295,12 +384,10 @@ class PostDetail(APIView):
             return Response(f'post_id {post_id} already exists.', status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             traceback.print_exc()
-            traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ImagePosts(APIView):
 
-    permission_classes = [LocalAndRemote]
 
     #based on postdetail
     def get(self, request, author_id, post_id):
@@ -315,16 +402,27 @@ class ImagePosts(APIView):
 
 class Comments(APIView):
 
-    permission_classes = [LocalAndRemote]
+    pagination_class = StandardResultsSetPagination
 
     def get(self, request, author_id, post_id):
         """Get all comments on post_id posted by author_id"""
         # TODO: Paging
         # TODO: Format response according to spec
         # TODO: Properly 404 if author_id or post_id doesn't exist, could check post_count
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        post_id = extract_uuid_if_url('post', post_id)
+        if not (author_id and post_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
-            serializer = CommentSerializer(comments, many=True)
+            paginator = self.pagination_class()
+
+            page = paginator.paginate_queryset(comments, request, view=self)
+
+            serializer = CommentSerializer(page, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             traceback.print_exc()
@@ -332,6 +430,13 @@ class Comments(APIView):
 
     def post(self, request, author_id, post_id):
         """Add a comment (comment object in body) to post_id posted by author_id"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        post_id = extract_uuid_if_url('post', post_id)
+        if not (author_id and post_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             request.data['_post_author_id'] = author_id
             request.data['_post_id'] = post_id
@@ -348,14 +453,20 @@ class Comments(APIView):
 
 class PostLikes(APIView):
 
-    permission_classes = [LocalAndRemote]
 
     def get(self, request, author_id, post_id):
         """Get a list of likes on post_id posted by author_id"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        post_id = extract_uuid_if_url('post', post_id)
+        if not (author_id and post_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
                 return Response('Author or post id does not exist', status=status.HTTP_404_NOT_FOUND)
-            likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}')
+            likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}')
             return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
         except Exception as e:
             traceback.print_exc()
@@ -363,14 +474,22 @@ class PostLikes(APIView):
 
 class CommentLikes(APIView):
 
-    permission_classes = [LocalAndRemote]
 
     def get(self, request_id, author_id, post_id, comment_id):
         """Get a list of likes on comment_id for post_id posted by author_id"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        post_id = extract_uuid_if_url('post', post_id)
+        comment_id = extract_uuid_if_url('comment', comment_id)
+        if not (author_id and post_id and comment_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists() and Comment.objects.filter(pk=comment_id).exists()):
                 return Response('Author, post, or comment id does not exist', status=status.HTTP_404_NOT_FOUND)
-            likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}/comments/{comment_id}')
+            # likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}/comments/{comment_id}')
+            likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}/comments/{comment_id}')
             return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
         except Exception as e:
             traceback.print_exc()
@@ -378,10 +497,15 @@ class CommentLikes(APIView):
 
 class LikedPosts(APIView):
 
-    permission_classes = [LocalAndRemote]
 
     def get(self, request, author_id):
         """Get list of posts author_id has liked"""
+        
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             if not (Author.objects.filter(pk=author_id).exists()):
                 return Response('Author id does not exist', status=status.HTTP_404_NOT_FOUND)
@@ -393,16 +517,32 @@ class LikedPosts(APIView):
 
 class InboxDetail(APIView):
 
-    permission_classes = [LocalAndRemote]
+    pagination_class = StandardResultsSetPagination
 
     def get(self, request, author_id):
         """Get list of posts sent to author_id"""
-        #  Require auth here
+        
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             inbox = Inbox.objects.get(author___id=author_id)
-            print(inbox.items)
+            inbox_items = inbox.items.all()
+            paginator = self.pagination_class()
+
+            # paginate just the inbox items
+            page = paginator.paginate_queryset(inbox_items, request, view=self)
+
+            # serialize paginated inbox items and inbox
+            inbox_posts_serializer = InboxPostSerializer(page, many=True)
             serializer = InboxSerializer(inbox)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+
+            # update the inbox data with the serialized inbox items
+            inbox_data = serializer.data
+            inbox_data['items'] = inbox_posts_serializer.data
+
+            return Response(inbox_data, status=status.HTTP_200_OK)
         except Inbox.DoesNotExist:
             return Response('That author id does not exist',status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -413,13 +553,21 @@ class InboxDetail(APIView):
         """Send a post to author_id"""
         # NOTE: 4 different cases based on type field in post request body
         # See https://github.com/abramhindle/CMPUT404-project-socialdistribution/blob/master/project.org#inbox
+        
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         object = request.data
-        print("post")
         match object['type']:
             case 'post':
                 serializer = InboxPostSerializer(data=object)
                 if serializer.is_valid():
-                    post = Post.objects.get(pk=serializer.validated_data['_id'])  # Will only work for local posts
+                    # Create post and post author if they don't exist (foreign case)
+                    if Post.objects.filter(id=serializer.validated_data['id']).exists():
+                        post = Post.objects.get(id=serializer.validated_data['id'])  # Will only work for local posts
+                    else:
+                        post = serializer.create(serializer.validated_data)
                     inbox = Inbox.objects.get(author___id=author_id)
                     inbox.items.add(post)
                     return Response(InboxPostSerializer(post).data, status=status.HTTP_200_OK)
@@ -429,7 +577,6 @@ class InboxDetail(APIView):
             case 'follow':
                 serializer = FollowSerializer(data=object)
                 if serializer.is_valid():
-                    print(object)
                     follow = serializer.create(serializer.data)
                     return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
                 else:
@@ -438,7 +585,6 @@ class InboxDetail(APIView):
             case 'like':
                 serializer = LikeSerializer(data=object)
                 if serializer.is_valid():
-                    print(serializer.data)
                     like = serializer.create(serializer.data)
                     return Response(LikeSerializer(like).data, status=status.HTTP_201_CREATED)
                 else:
@@ -456,6 +602,11 @@ class InboxDetail(APIView):
 
     def delete(self, request, author_id):
         """Clear author_id's inbox"""
+        
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             inbox = Inbox.objects.get(author___id=author_id)
             inbox.items.clear()  # Use clear() because we don't want to delete related posts, just remove the relation
@@ -466,10 +617,14 @@ class InboxDetail(APIView):
 
 class FollowRequests(APIView):
 
-    permission_classes = [Local]
 
     def get(self, request, author_id):
         """Get requests to follow author_id"""
+        
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             if not Author.objects.filter(pk=author_id).exists():
                 return Response('That author id does not exist', status=status.HTTP_404_NOT_FOUND)
@@ -478,7 +633,6 @@ class FollowRequests(APIView):
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 # not yet fully tested nor working... but we worry about csrf later
 # class Csrf(APIView):
@@ -561,7 +715,6 @@ class AuthRegister(APIView):
         try:
             # create our user and an author, and link it with the author.
             serializer = UserSerializer(data=json.loads(request.body))
-            print(json.loads(request.body))
             if serializer.is_valid():
                 user = serializer.data
                 user = User.objects.create_user(user['username'], password=user['password'])
@@ -575,21 +728,3 @@ class AuthRegister(APIView):
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class RemoteNodeRequests(APIView):
-
-    authentication_classes = []
-    permission_classes = []
-
-    def put(self, request):
-        """
-        Add a new remote node request
-        """
-        ip = request.META['REMOTE_ADDR']
-        meta = str(request.META)
-        serializer = RemoteNodeRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            RemoteNodeRequest.objects.create(**serializer.data, ip=ip, meta=meta)
-            return Response(status=status.HTTP_201_CREATED)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)

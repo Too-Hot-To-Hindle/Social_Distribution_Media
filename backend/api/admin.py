@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-from .models import Author, Post, Comment, Like, Follow, Inbox, AllowedNode, RemoteNodeRequest
-
+from .models import Author, Post, Comment, Like, Follow, Inbox
 class AuthorInline(admin.StackedInline):
     model = Author
     can_delete = False
@@ -21,5 +20,3 @@ admin.site.register(Comment)
 admin.site.register(Like)
 admin.site.register(Follow)
 admin.site.register(Inbox)
-admin.site.register(AllowedNode)
-admin.site.register(RemoteNodeRequest)
