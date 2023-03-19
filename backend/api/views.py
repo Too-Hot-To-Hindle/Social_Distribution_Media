@@ -50,6 +50,21 @@ EXTEND_SCHEMA_PARAM_FOREIGN_AUTHOR_ID = OpenApiParameter(
     ],
 )
 
+EXTEND_SCHEMA_PARAM_POST_ID = OpenApiParameter(
+    name="post_id",
+    description="The ID of the post",
+    required=True,
+    type=str,
+    location=OpenApiParameter.PATH,
+    examples=[
+        OpenApiExample(
+            "Example 1",
+            value="67331d96-321b-4e15-b438-c568c24aed66",
+            summary="Example post_id"
+        )
+    ]
+)
+
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'size'
@@ -468,7 +483,55 @@ class Posts(APIView):
 
 class PostDetail(APIView):
 
-
+    @extend_schema(
+        parameters=[EXTEND_SCHEMA_PARAM_AUTHOR_ID, EXTEND_SCHEMA_PARAM_POST_ID],
+        responses={
+            200: OpenApiResponse(
+                description="Get post_id posted by author_id",
+                examples=[
+                    OpenApiExample(
+                        "Example",
+                        summary="Example",
+                        value={
+                            "_id": "9df262a7-a75e-481f-8998-bd57f822bd07",
+                            "type": "post",
+                            "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/9df262a7-a75e-481f-8998-bd57f822bd07",
+                            "title": "TestPostFromPOSTRequest",
+                            "source": "",
+                            "origin": "",
+                            "description": "",
+                            "contentType": "text/plain",
+                            "content": "",
+                            "author": {
+                                "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                "type": "author",
+                                "id": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                "url": "https://social-distribution-media.herokuapp.com/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
+                                "host": "https://social-distribution-media.herokuapp.com",
+                                "displayName": "Justin",
+                                "github": "",
+                                "profileImage": "",
+                                "remote": False,
+                                "user": 15,
+                                "followers": [
+                                    "9610effa-1461-4d11-85fb-45c5d45e199d"
+                                ],
+                                "following": []
+                            },
+                            "categories": [],
+                            "count": 0,
+                            "comments": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/9df262a7-a75e-481f-8998-bd57f822bd07/comments",
+                            "commentsSrc": {},
+                            "published": "2023-03-19T04:46:29.073653Z",
+                            "visibility": "FRIENDS",
+                            "unlisted": False
+                        }
+                    )
+                ],
+                response=OpenApiTypes.OBJECT,
+            )
+        }
+    )
     def get(self, request, author_id, post_id):
         """Get post_id posted by author_id"""
         
