@@ -14,23 +14,27 @@ def extract_uuid_if_url(type: str, id_str: str):
     """Get the uuid out of a url if it is a url"""
     validate = URLValidator()
 
-    try:
-        validate(id_str)
-        match type.lower():
-            case 'author':
-                # return extract_author_uuid(id_str)
-                return extract_uuid('authors', id_str)
-            case 'post':
-                # return extract_post_uuid(id_str)
-                return extract_uuid('posts', id_str)
-            case 'comment':
-                # return extract_comment_uuid(id_str)
-                return extract_uuid('comments', id_str)
-            case _:
-                raise ValueError("Value of the type arguement must be either 'author', 'post', or 'comment'")
-    except ValidationError:
-        # If not a URL, just return the ID string
-        return id_str
+
+    if is_remote_url():
+        try:
+            validate(id_str)
+            match type.lower():
+                case 'author':
+                    # return extract_author_uuid(id_str)
+                    return extract_uuid('authors', id_str)
+                case 'post':
+                    # return extract_post_uuid(id_str)
+                    return extract_uuid('posts', id_str)
+                case 'comment':
+                    # return extract_comment_uuid(id_str)
+                    return extract_uuid('comments', id_str)
+                case _:
+                    raise ValueError("Value of the type arguement must be either 'author', 'post', or 'comment'")
+        except ValidationError:
+            # If not a URL, just return the ID string
+            return id_str
+    else:
+        pass
     
 def is_remote_url(id_str: str):
     validate = URLValidator()
