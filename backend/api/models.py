@@ -204,39 +204,3 @@ class Inbox(models.Model):
     
     class Meta:
         verbose_name_plural = 'Inboxes'
-    
-class AllowedRemoteNode(models.Model):
-    """
-    List of IPs that are allowed access to remote endpoints
-    """
-    ip = models.GenericIPAddressField(blank=True, null=True, editable=False)
-    host = models.CharField(blank=True, max_length=200)
-    detail = models.TextField(blank=True)
-
-    def __str__(self) -> str:
-        return f"{self.host}"
-    
-class AllowedLocalNode(models.Model):
-    """
-    List of IPs that are allowed access to local endpoints
-    """
-    ip = models.GenericIPAddressField(blank=True, null=True, editable=False)
-    host = models.CharField(blank=True, max_length=200)
-    detail = models.TextField(blank=True)
-
-    def __str__(self) -> str:
-        return f"{self.host}"
-    
-class RemoteNodeRequest(models.Model):
-    """
-    List of requests to be added as an allowed remote node
-    """
-    ip = models.GenericIPAddressField(blank=True, null=True)
-    meta = models.TextField(blank=True, null=True)
-    name = models.TextField()
-    discord = models.TextField()
-    group = models.TextField()
-    host = models.TextField()
-
-    def __str__(self) -> str:
-        return f"Request from {self.ip}"
