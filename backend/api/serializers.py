@@ -41,7 +41,9 @@ class InboxPostSerializer(serializers.ModelSerializer):
         if Author.objects.filter(id=author_data['id']).exists():
             author = Author.objects.get(id=author_data['id'])
         else:
+            print('creating author')
             author = Author.objects.create(**author_data, remote=True)  # If creating here it is a remote user
+            print('created author')
         return Post.objects.create(author=author, **validated_data)
 
 class CommentSerializer(serializers.ModelSerializer):
