@@ -12,6 +12,7 @@ from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 from pprint import pprint
 import docs.docs as docs
+import urllib.parse
 
 from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, Follow
@@ -70,9 +71,12 @@ class AuthorDetail(APIView):
         """
         Get details for an author
         """
+
+        print("in AuthorDetail")
         
         # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
         author_id = extract_uuid_if_url('author', author_id)
+
         if not author_id:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 

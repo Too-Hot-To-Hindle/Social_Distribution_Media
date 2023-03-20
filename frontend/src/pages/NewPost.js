@@ -76,8 +76,8 @@ const NewPost = () => {
                 var data = {
                     title: postTitle,
                     description: postDescription,
-                    source: "https://google.com",
-                    origin: "https://google.com",
+                    //source: "https://google.com",
+                    //origin: "https://google.com",
                     contentType: "text/markdown",
                     content: postContent,
                     categories: postCategories.replace(/\s/g, '').split(','),
@@ -85,7 +85,7 @@ const NewPost = () => {
                     unlisted: unlisted
                 }
 
-                console.log(data)
+                //console.log(data)
 
                 createAPIEndpoint(`authors/${userID}/posts`)
                     .post(data)
@@ -105,8 +105,8 @@ const NewPost = () => {
                 var data = {
                     title: postTitle,
                     description: postDescription,
-                    source: "https://google.com",
-                    origin: "https://google.com",
+                    //source: "https://google.com",
+                    //origin: "https://google.com",
                     contentType: "text/plain",
                     content: postContent,
                     categories: postCategories.replace(/\s/g, '').split(','),

@@ -176,7 +176,7 @@ const Post = ({
                     {/* Post details */}
                     <Grid item xs={12}>
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
-                            <div style={{ display: "flex", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "left" }}>
                                 <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
 
                                 <div>
@@ -280,8 +280,22 @@ const Post = ({
                         </div>
                     </Grid>
 
+
+
                     {!hideLink &&
                         <>
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Source" value={source}></TextField>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Origin" value={origin}></TextField>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+
                             <Grid item xs={12}>
                                 <TextField fullWidth label="Post URI" value={link}></TextField>
                             </Grid>
