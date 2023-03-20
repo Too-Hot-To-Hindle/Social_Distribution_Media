@@ -3,7 +3,7 @@
 class Adapter:
 
     def __init(self, prefix, id):
-        self.prefic = prefix
+        self.prefix = prefix
         self.id = id
 
     def extract_uuid(prefix: str, id):
