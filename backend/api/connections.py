@@ -6,7 +6,7 @@ class RemoteConnection():
     def __init__(self, remote_base_url):
         if (remote_base_url == "https://social-distribution-media.herokuapp.com/"):
             self.connection = TeamTESTConnection(
-                username="eric",  # read from .env
+                username="johndoe",  # read from .env
                 password="password",  # read from .env
                 base_url=remote_base_url + "api/"
             )
@@ -98,7 +98,7 @@ class TeamTESTConnection():
             pass
 
         else:
-            response_followers = response.json().get("items")
+            response_followers = response.json()
             if response_followers is None:
                 # TODO: handle error
                 pass

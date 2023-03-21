@@ -207,23 +207,34 @@ class FollowersDetail(APIView):
     )
     def get(self, request, author_id, foreign_author_id):
         """Check if foreign_author_id is a follower of author_id"""
+
+        if is_remote_url(author_id) or is_remote_url(foreign_author_id):
+            print("is remote!")
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+            foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
+            response = remote.connection.check_if_follower(author_id, foreign_author_id)
+
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
         
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
-        foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
-        if not (author_id and foreign_author_id):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            author = Author.objects.get(pk=author_id)
-            response = {'isFollower': author.followers.filter(pk=foreign_author_id).exists()}
-            return Response(response, status=status.HTTP_200_OK)
-        except ValidationError as e:
-            traceback.print_exc()
-            return Response('author_id or foreign_author_id is not a valid uuid')
-        except Exception as e:
-            traceback.print_exc()
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+            author_id = extract_uuid_if_url('author', author_id)
+            foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
+            if not (author_id and foreign_author_id):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                author = Author.objects.get(pk=author_id)
+                response = {'isFollower': author.followers.filter(pk=foreign_author_id).exists()}
+                return Response(response, status=status.HTTP_200_OK)
+            except ValidationError as e:
+                traceback.print_exc()
+                return Response('author_id or foreign_author_id is not a valid uuid')
+            except Exception as e:
+                traceback.print_exc()
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, author_id, foreign_author_id):
         """
