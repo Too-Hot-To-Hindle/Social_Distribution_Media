@@ -4,7 +4,7 @@ from requests_cache import CachedSession
 
 class RemoteConnection():
     def __init__(self, remote_base_url):
-        if (remote_base_url == "http://127.0.0.1:8000/"):
+        if (remote_base_url == "https://social-distribution-media.herokuapp.com/"):
             self.connection = TeamTESTConnection(
                 username="eric",  # read from .env
                 password="password",  # read from .env
