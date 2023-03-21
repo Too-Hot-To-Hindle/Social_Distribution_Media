@@ -168,21 +168,30 @@ class Followers(APIView):
         https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
         
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
-        if not author_id:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if is_remote_url(author_id):
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+            response = remote.connection.get_author_followers(author_id)
+
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
         
-        try:
-            author = Author.objects.get(pk=author_id)
-            serializer = AuthorSerializer(author.followers, many=True)
-            return Response(serializer.data)
-        except Author.DoesNotExist:
-            return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            traceback.print_exc()
-            traceback.print_exc()
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+            author_id = extract_uuid_if_url('author', author_id)
+            if not author_id:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                author = Author.objects.get(pk=author_id)
+                serializer = AuthorSerializer(author.followers, many=True)
+                return Response(serializer.data)
+            except Author.DoesNotExist:
+                return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                traceback.print_exc()
+                traceback.print_exc()
+                return Response(status=status.HTTP_404_NOT_FOUND)
         
 class FollowersDetail(APIView):
 
