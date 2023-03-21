@@ -13,6 +13,7 @@ import Profile from './pages/Profile';
 import SearchResults from './pages/SearchResults';
 import Auth from './pages/Auth';
 import Explore from './pages/Explore';
+import GlobalProfile from './pages/GlobalProfile';
 
 const router = createBrowserRouter([
   // need to change to splash screen/login
@@ -49,6 +50,11 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: <Profile/>,
+    key: Math.random(),
+  },
+  {
+    path:"/profile/:authorURL",
+    element: <GlobalProfile/>,
     key: Math.random(),
   },
   {

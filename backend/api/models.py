@@ -112,6 +112,11 @@ class Post(models.Model):
         elif first_save:
             self.id = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
             self.comments = f"{self.id}/comments"
+
+            # when creating a new post on our own server, we need to set the source and origin
+            # double check w/ TA if this is correct
+            self.source = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
+            self.origin = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
         return super().save(*args, **kwargs)
 
 class Comment(models.Model):

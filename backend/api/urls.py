@@ -1,14 +1,14 @@
-from django.urls import include, path
+from django.urls import include, path, re_path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from . import views
 from django.views.generic import TemplateView
 
 urlpatterns = [
     path('authors', views.Authors.as_view()),
-    path('authors/<author_id>', views.AuthorDetail.as_view()),
-    path('authors/<author_id>/followers', views.Followers.as_view()),
-    path('authors/<author_id>/followers/<foreign_author_id>', views.FollowersDetail.as_view()),
-    path('authors/<author_id>/posts', views.Posts.as_view()),
+    path('authors/<path:author_id>/followers/<path:foreign_author_id>', views.FollowersDetail.as_view()),
+    path('authors/<path:author_id>/followers', views.Followers.as_view()),
+    path('authors/<path:author_id>/posts', views.Posts.as_view()),
+    path('authors/<path:author_id>', views.AuthorDetail.as_view()),
     path('authors/<author_id>/posts/<post_id>', views.PostDetail.as_view()),
     path('authors/<author_id>/posts/<post_id>/image', views.ImagePosts.as_view()),
     path('authors/<author_id>/posts/<post_id>/comments', views.Comments.as_view()),
