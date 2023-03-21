@@ -37,8 +37,8 @@ def is_remote_url(id_str: str):
     try:
         validate(id_str)
 
-        # if id_str starts with https://social-distribution-media.herokuapp.com, return False
-        if id_str.startswith('https://social-distribution-media.herokuapp.com'):
+        # if id_str starts with http://127.0.0.1:8000, return False
+        if id_str.startswith('http://127.0.0.1:8000'):
             return False
         
         # otherwise, it's a remote URL, so return True
