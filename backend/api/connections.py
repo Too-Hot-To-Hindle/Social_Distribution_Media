@@ -161,7 +161,7 @@ class TeamTESTConnection():
 
             else:
                 comments = []
-                for comment in response_post.get("comments", []):
+                for comment in response_post.get("commentsSrc", {}).get("comments", []):
                     comments.append({
                         "type": comment.get("type", "N/A"),
                         "author": {
@@ -201,11 +201,11 @@ class TeamTESTConnection():
                     "count": response_post.get("count", "N/A"),
                     "comments": response_post.get("comments", "N/A"),
                     "commentsSrc": {
-                        "type": response_post.get("commentsSrc", {}).get("type", "N/A"),
-                        "page": response_post.get("commentsSrc", {}).get("page", "N/A"),
-                        "size": response_post.get("commentsSrc", {}).get("size", "N/A"),
-                        "post": response_post.get("commentsSrc", {}).get("post", "N/A"),
-                        "id": response_post.get("commentsSrc", {}).get("id", "N/A"),
+                        "type": response_post.get("commentsSrc", {}).get("type", "comments"),
+                        "page": response_post.get("commentsSrc", {}).get("page", 1),
+                        "size": response_post.get("commentsSrc", {}).get("size", 0),
+                        "post": response_post.get("commentsSrc", {}).get("post", response_post.get("id", "N/A")),
+                        "id": response_post.get("commentsSrc", {}).get("id", response_post.get("id", "N/A") + "/comments"),
                         "comments": comments
                     },
                     "published": response_post.get("published", "N/A"),
