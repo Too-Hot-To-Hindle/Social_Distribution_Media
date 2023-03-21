@@ -74,6 +74,7 @@ const PostDetails = () => {
                 .get()
                 .then(res => {
                     setPostData(res.data)
+                    console.log(res.data)
                 })
                 .catch(err => {
                     // TODO: Add in error handling
@@ -97,7 +98,8 @@ const PostDetails = () => {
             .catch(err => {
                 // TODO: Add in error handling
                 if (err.response.status === 404) {
-                    setNotFound(true)
+                    setCommentsLoading(false)
+                    setComments([])
                 }
                 console.log(err)
             });
