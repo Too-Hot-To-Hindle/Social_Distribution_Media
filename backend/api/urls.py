@@ -5,11 +5,11 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('authors', views.Authors.as_view()),
+    path('authors/<path:author_id>/posts/<post_id>', views.PostDetail.as_view()),
     path('authors/<path:author_id>/followers/<path:foreign_author_id>', views.FollowersDetail.as_view()),
     path('authors/<path:author_id>/followers', views.Followers.as_view()),
     path('authors/<path:author_id>/posts', views.Posts.as_view()),
     path('authors/<path:author_id>', views.AuthorDetail.as_view()),
-    path('authors/<author_id>/posts/<post_id>', views.PostDetail.as_view()),
     path('authors/<author_id>/posts/<post_id>/image', views.ImagePosts.as_view()),
     path('authors/<author_id>/posts/<post_id>/comments', views.Comments.as_view()),
     path('authors/<author_id>/posts/<post_id>/likes', views.PostLikes.as_view()),
