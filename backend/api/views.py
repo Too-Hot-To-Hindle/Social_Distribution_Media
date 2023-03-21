@@ -306,23 +306,32 @@ class Posts(APIView):
         https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
         """
         
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
-        if not author_id:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if is_remote_url(author_id):
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+            response = remote.connection.get_recent_posts(author_id)
+
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
         
-        try:
-            posts = Post.objects.filter(author___id=author_id)
-            paginator = self.pagination_class()
+        else:
+            # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+            author_id = extract_uuid_if_url('author', author_id)
+            if not author_id:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                posts = Post.objects.filter(author___id=author_id)
+                paginator = self.pagination_class()
 
-            page = paginator.paginate_queryset(posts, request, view=self)
+                page = paginator.paginate_queryset(posts, request, view=self)
 
-            serializer = PostSerializer(page, many=True)
+                serializer = PostSerializer(page, many=True)
 
-            return Response(serializer.data)
-        except Exception as e:
-            traceback.print_exc()
-            return Response(status=status.HTTP_404_NOT_FOUND)
+                return Response(serializer.data)
+            except Exception as e:
+                traceback.print_exc()
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id):
         """Create a post (post object in body) for author_id, but generate the ID (compare to PUT in PostDetail)"""
@@ -482,23 +491,32 @@ class Comments(APIView):
         # TODO: Format response according to spec
         # TODO: Properly 404 if author_id or post_id doesn't exist, could check post_count
         
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
-        post_id = extract_uuid_if_url('post', post_id)
-        if not (author_id and post_id):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if is_remote_url(author_id):
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+            response = remote.connection.get_comments(author_id, post_id)
+
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
         
-        try:
-            comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
-            paginator = self.pagination_class()
+        else:
+            # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+            author_id = extract_uuid_if_url('author', author_id)
+            post_id = extract_uuid_if_url('post', post_id)
+            if not (author_id and post_id):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
+                paginator = self.pagination_class()
 
-            page = paginator.paginate_queryset(comments, request, view=self)
+                page = paginator.paginate_queryset(comments, request, view=self)
 
-            serializer = CommentSerializer(page, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as e:
-            traceback.print_exc()
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                serializer = CommentSerializer(page, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Exception as e:
+                traceback.print_exc()
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, author_id, post_id):
         """Add a comment (comment object in body) to post_id posted by author_id"""

@@ -161,7 +161,7 @@ class TeamTESTConnection():
 
             else:
                 comments = []
-                for comment in response_post.get("comments", []):
+                for comment in response_post.get("commentsSrc", {}).get("comments", []):
                     comments.append({
                         "type": comment.get("type", "N/A"),
                         "author": {
@@ -201,11 +201,11 @@ class TeamTESTConnection():
                     "count": response_post.get("count", "N/A"),
                     "comments": response_post.get("comments", "N/A"),
                     "commentsSrc": {
-                        "type": response_post.get("commentsSrc", {}).get("type", "N/A"),
-                        "page": response_post.get("commentsSrc", {}).get("page", "N/A"),
-                        "size": response_post.get("commentsSrc", {}).get("size", "N/A"),
-                        "post": response_post.get("commentsSrc", {}).get("post", "N/A"),
-                        "id": response_post.get("commentsSrc", {}).get("id", "N/A"),
+                        "type": response_post.get("commentsSrc", {}).get("type", "comments"),
+                        "page": response_post.get("commentsSrc", {}).get("page", 1),
+                        "size": response_post.get("commentsSrc", {}).get("size", 0),
+                        "post": response_post.get("commentsSrc", {}).get("post", response_post.get("id", "N/A")),
+                        "id": response_post.get("commentsSrc", {}).get("id", response_post.get("id", "N/A") + "/comments"),
                         "comments": comments
                     },
                     "published": response_post.get("published", "N/A"),
@@ -215,7 +215,7 @@ class TeamTESTConnection():
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/
     def get_recent_posts(self, author_id):
-        url = self.base_url + "authors/" + author_id
+        url = self.base_url + "authors/" + author_id + "/posts"
         response = self.session.get(url)
 
         if response.status_code != 200:
@@ -233,7 +233,7 @@ class TeamTESTConnection():
                 posts = []
                 for post in response_posts:
                     comments = []
-                    for comment in post.get("comments", []):
+                    for comment in post.get("commentsSrc", {}).get("comments", []):
                         comments.append({
                             "type": comment.get("type", "N/A"),
                             "author": {
@@ -273,11 +273,11 @@ class TeamTESTConnection():
                         "count": post.get("count", "N/A"),
                         "comments": post.get("comments", "N/A"),
                         "commentsSrc": {
-                            "type": post.get("commentsSrc", {}).get("type", "N/A"),
-                            "page": post.get("commentsSrc", {}).get("page", "N/A"),
-                            "size": post.get("commentsSrc", {}).get("size", "N/A"),
-                            "post": post.get("commentsSrc", {}).get("post", "N/A"),
-                            "id": post.get("commentsSrc", {}).get("id", "N/A"),
+                            "type": post.get("commentsSrc", {}).get("type", "comments"),
+                            "page": post.get("commentsSrc", {}).get("page", 1),
+                            "size": post.get("commentsSrc", {}).get("size", 0),
+                            "post": post.get("commentsSrc", {}).get("post", post.get("id", "N/A")),
+                            "id": post.get("commentsSrc", {}).get("id", post.get("id", "N/A") + "/comments"),
                             "comments": comments
                         },
                         "published": post.get("published", "N/A"),
@@ -294,13 +294,18 @@ class TeamTESTConnection():
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     def get_comments(self, author_id, post_id):
+
         url = self.base_url + "authors/" + author_id + "/posts/" + post_id + "/comments"
         response = self.session.get(url)
 
         if response.status_code != 200:
             # TODO: handle error
             # look in cache?
-            pass
+            if response.status_code == 404:
+                return []
+            
+            else:
+                pass
 
         else:
             response = response.json()
