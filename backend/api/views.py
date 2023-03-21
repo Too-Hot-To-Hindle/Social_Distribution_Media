@@ -209,7 +209,6 @@ class FollowersDetail(APIView):
         """Check if foreign_author_id is a follower of author_id"""
 
         if is_remote_url(author_id) or is_remote_url(foreign_author_id):
-            print("is remote!")
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
             author_id = extract_uuid_if_url('author', author_id)
@@ -363,19 +362,28 @@ class PostDetail(APIView):
     def get(self, request, author_id, post_id):
         """Get post_id posted by author_id"""
         
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
-        post_id = extract_uuid_if_url('post', post_id)
-        if not (author_id and post_id):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if is_remote_url(author_id):
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+            response = remote.connection.get_single_post(author_id, post_id)
+
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
         
-        try:
-            post = Post.objects.get(pk=post_id)  # NOTE: Should we do anything with author_id?
-            serializer = PostSerializer(post)
-            return Response(serializer.data)
-        except Exception as e:
-            traceback.print_exc()
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+            author_id = extract_uuid_if_url('author', author_id)
+            post_id = extract_uuid_if_url('post', post_id)
+            if not (author_id and post_id):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                post = Post.objects.get(pk=post_id)  # NOTE: Should we do anything with author_id?
+                serializer = PostSerializer(post)
+                return Response(serializer.data)
+            except Exception as e:
+                traceback.print_exc()
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id, post_id):
         """Update post_id posted by author_id (post object in body)"""
