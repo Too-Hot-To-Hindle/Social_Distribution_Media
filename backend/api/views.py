@@ -17,6 +17,9 @@ import urllib.parse
 from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, Follow
 from .utils import extract_uuid_if_url
+from .utils import is_remote_url
+from .utils import get_remote_url
+from .connections import RemoteConnection
 
 import traceback
 import uuid
@@ -72,21 +75,28 @@ class AuthorDetail(APIView):
         Get details for an author
         """
 
-        print("in AuthorDetail")
-        
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
+        if is_remote_url(author_id):
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+            response = remote.connection.get_single_author(author_id)
 
-        if not author_id:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
 
-        try:
-            author = Author.objects.get(pk=author_id)
-            serializer = AuthorSerializer(author)
-            return Response(serializer.data)
-        except Exception as e:
-            traceback.print_exc()
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+            author_id = extract_uuid_if_url('author', author_id)
+
+            if not author_id:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                author = Author.objects.get(pk=author_id)
+                serializer = AuthorSerializer(author)
+                return Response(serializer.data)
+            except Exception as e:
+                traceback.print_exc()
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
         parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],

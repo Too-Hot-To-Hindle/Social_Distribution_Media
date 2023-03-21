@@ -31,3 +31,27 @@ def extract_uuid_if_url(type: str, id_str: str):
     except ValidationError:
         # If not a URL, just return the ID string
         return id_str
+    
+def is_remote_url(id_str: str):
+    validate = URLValidator()
+    try:
+        validate(id_str)
+
+        # if id_str starts with https://social-distribution-media.herokuapp.com, return False
+        if id_str.startswith('https://social-distribution-media.herokuapp.com'):
+            return False
+        
+        # otherwise, it's a remote URL, so return True
+        else:
+            return True
+    
+    except ValidationError:
+        # If not a URL, just return False
+        return False
+    
+def get_remote_url(url: str):
+    # gets base API url from a remote hosted URI
+    # for example, `https://social-distribution-media.herokuapp.com/authors/1234/posts/5678/comments/91011`
+    # would return `https://social-distribution-media.herokuapp.com/`
+    # since all URIs start with 'authors'
+    return url.split("authors")[0]
