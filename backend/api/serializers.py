@@ -23,6 +23,14 @@ class AuthorsSerializer(serializers.Serializer):
     def get_type(self, obj):
         return 'authors'
 
+class FollowersSerializer(serializers.Serializer):
+
+    type = serializers.SerializerMethodField()
+    items = AuthorSerializer(many=True)
+
+    def get_type(self, obj):
+        return 'followers'
+
 class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
