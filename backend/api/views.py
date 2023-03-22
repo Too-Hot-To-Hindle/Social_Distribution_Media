@@ -14,7 +14,7 @@ from pprint import pprint
 import docs.docs as docs
 import urllib.parse
 
-from .serializers import AuthorSerializer, AuthorsSerializer, FollowersSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
+from .serializers import AuthorSerializer, AuthorsSerializer, FollowersSerializer, PostSerializer, CommentSerializer, LikeRequestSerializer, LikeResponseSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, Follow
 from .utils import extract_uuid_if_url
 from .utils import is_remote_url
@@ -570,7 +570,7 @@ class PostLikes(APIView):
                 if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
                     return Response('Author or post id does not exist', status=status.HTTP_404_NOT_FOUND)
                 likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}')
-                return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+                return Response(LikeResponseSerializer(likes, many=True).data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -609,10 +609,12 @@ class CommentLikes(APIView):
             
             try:
                 if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists() and Comment.objects.filter(pk=comment_id).exists()):
+                    print(comment_id)
+                    print(Author.objects.filter(pk=author_id).exists(), Post.objects.filter(pk=post_id).exists(), Comment.objects.filter(pk=comment_id).exists())
                     return Response('Author, post, or comment id does not exist', status=status.HTTP_404_NOT_FOUND)
                 # likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}/comments/{comment_id}')
                 likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}/comments/{comment_id}')
-                return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+                return Response(LikeResponseSerializer(likes, many=True).data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -647,7 +649,7 @@ class LikedPosts(APIView):
                 if not (Author.objects.filter(pk=author_id).exists()):
                     return Response('Author id does not exist', status=status.HTTP_404_NOT_FOUND)
                 likes = Like.objects.filter(author___id=author_id)
-                return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+                return Response(LikeResponseSerializer(likes, many=True).data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -800,10 +802,10 @@ class InboxDetail(APIView):
                         print(serializer.errors)
                         return Response(status=status.HTTP_400_BAD_REQUEST)
                 case 'like':
-                    serializer = LikeSerializer(data=object)
+                    serializer = LikeRequestSerializer(data=object)
                     if serializer.is_valid():
                         like = serializer.create(serializer.data)
-                        return Response(LikeSerializer(like).data, status=status.HTTP_201_CREATED)
+                        return Response(LikeResponseSerializer(like).data, status=status.HTTP_201_CREATED)
                     else:
                         print(serializer.errors)
                         return Response(status=status.HTTP_400_BAD_REQUEST)

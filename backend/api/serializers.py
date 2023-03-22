@@ -83,13 +83,15 @@ class CommentSerializer(serializers.ModelSerializer):
         pprint(validated_data)
         return Comment.objects.create(author=author, **validated_data)
 
-class LikeSerializer(serializers.ModelSerializer):
+class LikeRequestSerializer(serializers.ModelSerializer):
 
     author = AuthorSerializer()
+    # context = serializers.CharField(source="@context")
 
     class Meta:
         model = Like
         fields = ('type', 'summary', 'author', 'object')
+        optional_fields = ['context', ]
         depth = 1
 
     def create(self, validated_data):
@@ -100,6 +102,29 @@ class LikeSerializer(serializers.ModelSerializer):
         else:
             author = Author.objects.create(**author_data, remote=True)  # If creating here it is a remote user
         return Like.objects.create(author=author, **validated_data)
+
+class LikeResponseSerializer(serializers.ModelSerializer):
+
+    author = AuthorSerializer()
+
+    class Meta:
+        model = Like
+        fields = ('type', 'summary', 'author', 'object', 'context')
+        depth = 1
+
+    def create(self, validated_data):
+        author_data = validated_data.pop('author')
+        # Retrieve or create the author of this like
+        if Author.objects.filter(id=author_data['id']).exists():
+            author = Author.objects.get(id=author_data['id'])
+        else:
+            author = Author.objects.create(**author_data, remote=True)  # If creating here it is a remote user
+        return Like.objects.create(author=author, **validated_data)
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['@context'] = data.pop('context', '')
+        return data
 
 class FollowSerializer(serializers.ModelSerializer):
 
