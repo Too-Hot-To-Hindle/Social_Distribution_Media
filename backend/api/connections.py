@@ -489,7 +489,8 @@ class Team6Connection():
             "team6_cache", backend="sqlite", expire_after=300)
         self.session.auth = (self.username, self.password)
 
-    # URL: ://service/authors/
+    # URL: ://authors/
+    # TODO
     def get_authors(self):
         url = self.base_url + "authors"
         response = self.session.get(url)
@@ -525,6 +526,7 @@ class Team6Connection():
                 }
 
     # URL: ://service/authors/{AUTHOR_ID}/
+    # TODO
     def get_single_author(self, author_id):
         url = self.base_url + "authors/" + author_id
         response = self.session.get(url)
@@ -552,6 +554,7 @@ class Team6Connection():
                 }
 
     # URL: ://service/authors/{AUTHOR_ID}/followers
+    # TODO
     def get_author_followers(self, author_id):
         url = self.base_url + "authors/" + author_id + "/followers"
         response = self.session.get(url)
@@ -587,6 +590,7 @@ class Team6Connection():
                 }
 
     # URL: ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    # TODO
     def check_if_follower(self, author_id, follower_id):
         url = self.base_url + "authors/" + author_id + "/followers/" + follower_id
         response = self.session.get(url)
@@ -608,6 +612,7 @@ class Team6Connection():
                 }
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}
+    # TODO
     def get_single_post(self, author_id, post_id):
         url = self.base_url + "authors/" + author_id + "/posts/" + post_id
         response = self.session.get(url)
@@ -678,6 +683,7 @@ class Team6Connection():
                 }
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/
+    # TODO
     def get_recent_posts(self, author_id):
         url = self.base_url + "authors/" + author_id + "/posts"
         response = self.session.get(url)
@@ -752,11 +758,13 @@ class Team6Connection():
                 return posts
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/image
+    # TODO
     def get_image_post(self, author_id, post_id):
         # TODO: implement this method
         pass
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
+    # TODO
     def get_comments(self, author_id, post_id):
 
         url = self.base_url + "authors/" + author_id + "/posts/" + post_id + "/comments"
@@ -800,6 +808,7 @@ class Team6Connection():
                 return comments
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
+    # TODO
     def send_like(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox"
         response = self.session.post(url, body)
@@ -813,6 +822,7 @@ class Team6Connection():
             return
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
+    # TODO
     def get_post_likes(self, author_id, post_id):
         url = self.base_url + "authors/" + author_id + "/posts/" + post_id + "/likes"
         response = self.session.get(url)
@@ -849,6 +859,7 @@ class Team6Connection():
                 return likes
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
+    # TODO
     def get_comment_likes(self, author_id, post_id, comment_id):
         url = self.base_url + "authors/" + author_id + "/posts/" + post_id + "/comments/" + comment_id + "/likes"
         response = self.session.get(url)
@@ -887,6 +898,7 @@ class Team6Connection():
                 return comments
 
     # URL: ://service/authors/{AUTHOR_ID}/liked
+    # TODO
     def get_author_liked(self, author_id):
         url = self.base_url + "authors/" + author_id + "/liked"
         response = self.session.get(url)
@@ -922,6 +934,7 @@ class Team6Connection():
                 return likes
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox
+    # TODO
     def send_to_inbox(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox"
         response = self.session.post(url, body)
