@@ -7,12 +7,13 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiTypes
 from pprint import pprint
 import docs.docs as docs
 import urllib.parse
+import base64
 
 from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, Follow
@@ -465,11 +466,32 @@ class PostDetail(APIView):
 
 class ImagePosts(APIView):
 
-
-    def get(self, author_id, post_id):
+    def get(self, request, author_id, post_id):
         """Get post_id posted by author_id, converted to an image"""
         # NOTE: Should return 404 if post is not an image
-        pass
+
+        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+        author_id = extract_uuid_if_url('author', author_id)
+        post_id = extract_uuid_if_url('post', post_id)
+
+        if not (author_id and post_id):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            post = Post.objects.get(pk=post_id)  # NOTE: Should we do anything with author_id?
+            serializer = PostSerializer(post)
+
+            if (serializer.data["contentType"] == "image/png;base64" or serializer.data["contentType"] == "image/jpeg;base64"):
+                image_data = serializer.data["content"].partition('base64,')[2]
+                binary = base64.b64decode(image_data)
+                return HttpResponse(binary, content_type=serializer.data["contentType"])
+            
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            
+        except Exception as e:
+            traceback.print_exc()
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 class Comments(APIView):
 
