@@ -126,6 +126,14 @@ class LikeResponseSerializer(serializers.ModelSerializer):
         data['@context'] = data.pop('context', '')
         return data
 
+class LikedSerializer(serializers.Serializer):
+
+    type = serializers.SerializerMethodField()
+    items = LikeResponseSerializer(many=True)
+
+    def get_type(self, obj):
+        return 'liked'
+
 class FollowSerializer(serializers.ModelSerializer):
 
     actor = AuthorSerializer()
@@ -144,7 +152,7 @@ class FollowSerializer(serializers.ModelSerializer):
             actor = Author.objects.get(id=actor_data['id'])
         else:
             actor = Author.objects.create(**actor_data, remote=True)  # If creating here it is a remote user
-        object = Author.objects.get(**object_data)
+        object = Author.objects.get(id=object_data['id'])
         return Follow.objects.create(actor=actor, object=object, **validated_data)
 
 class InboxSerializer(serializers.ModelSerializer):

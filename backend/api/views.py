@@ -14,7 +14,7 @@ from pprint import pprint
 import docs.docs as docs
 import urllib.parse
 
-from .serializers import AuthorSerializer, AuthorsSerializer, FollowersSerializer, PostSerializer, CommentSerializer, LikeRequestSerializer, LikeResponseSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
+from .serializers import AuthorSerializer, AuthorsSerializer, FollowersSerializer, PostSerializer, CommentSerializer, LikeRequestSerializer, LikeResponseSerializer, LikedSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, Follow
 from .utils import extract_uuid_if_url
 from .utils import is_remote_url
@@ -629,7 +629,7 @@ class LikedPosts(APIView):
         tags=['Posts', 'Remote API'],
     )
     def get(self, request, author_id):
-        """Get list of posts author_id has liked"""
+        """Get a list of likes originating from this author"""
         
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
@@ -649,7 +649,7 @@ class LikedPosts(APIView):
                 if not (Author.objects.filter(pk=author_id).exists()):
                     return Response('Author id does not exist', status=status.HTTP_404_NOT_FOUND)
                 likes = Like.objects.filter(author___id=author_id)
-                return Response(LikeResponseSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+                return Response(LikedSerializer({'items': likes}).data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
