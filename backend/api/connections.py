@@ -11,6 +11,14 @@ class RemoteConnection():
                 base_url=remote_base_url + "api/"
             )
 
+        # Team 6
+        elif (remote_base_url == "https://cmput404-group6-instatonne.herokuapp.com/"):
+            self.connection = Team6Connection(
+                username="johndoe",  # read from .env
+                password="password",  # read from .env
+                base_url=remote_base_url + "api/"
+            )
+
         else:
             raise Exception("Invalid remote base URL")
 
