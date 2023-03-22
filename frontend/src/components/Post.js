@@ -72,6 +72,8 @@ const Post = ({
             createAPIEndpoint(`authors/${userID}/posts/${id}/likes`)
                 .get()
                 .then(res => {
+                    console.log(`authors/${userID}/posts/${id}/likes`)
+                    console.log(res.data)
                     setLikes(res.data)
                     for (const like of res.data) {
                         if (like.author._id === userID) {
