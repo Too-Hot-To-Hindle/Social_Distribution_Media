@@ -527,7 +527,7 @@ class Team6Connection():
             "team6_cache", backend="sqlite", expire_after=300)
         self.session.auth = (self.username, self.password)
 
-    # URL: ://authors/
+    # URL: ://service/authors/
     def get_authors(self):
         url = self.base_url + "authors"
         response = self.session.get(url)
@@ -562,7 +562,7 @@ class Team6Connection():
                     "items": cleaned_authors
                 }
 
-    # TODO: Single author was not specified in yaml
+    # URL: ://service/authors/{author_id}
     def get_single_author(self, author_id):
         url = self.base_url + "authors/" + author_id
         response = self.session.get(url)
