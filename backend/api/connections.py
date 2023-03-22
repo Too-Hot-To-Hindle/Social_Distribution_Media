@@ -624,7 +624,7 @@ class Team6Connection():
                     "items": cleaned_followers
                 }
 
-    # URL: ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    # URL: ://service/authors/{AUTHOR_ID}/followers/{hostencoded}/authors/{FOREIGN_AUTHOR_ID}
     def check_if_follower(self, author_id, follower_id):
         url = self.base_url + "authors/" + author_id + "/followers/" + follower_id
         response = self.session.get(url)
@@ -715,7 +715,7 @@ class Team6Connection():
                     "unlisted": response_post.get("unlisted", "N/A"),
                 }
 
-    # URL: ://service/authors/{AUTHOR_ID}/posts/
+    # URL: ://service/authors/{AUTHOR_ID}/posts
     def get_recent_posts(self, author_id):
         url = self.base_url + "authors/" + author_id + "/posts"
         response = self.session.get(url)
@@ -909,7 +909,7 @@ class Team6Connection():
                 
                 return likes
 
-    # URL: ://service/authors/{AUTHOR_ID}/liked
+    # URL: ://service/authors/{hostencoded}/authors/{AUTHOR_ID}/liked
     def get_author_liked(self, author_id):
         url = self.base_url + "authors/" + author_id + "/liked"
         response = self.session.get(url)
@@ -962,7 +962,7 @@ class Team6Connection():
         
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_like(self, author_id, body):
-        url = self.base_url + "authors/" + author_id + "/inbox"
+        url = self.base_url + "authors/" + author_id + "/inbox/"
         response = self.session.post(url=url, json=body)
 
         if response.status_code != 201:
@@ -978,7 +978,7 @@ class Team6Connection():
         
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_comment(self, author_id, body):
-        url = self.base_url + "authors/" + author_id + "/inbox"
+        url = self.base_url + "authors/" + author_id + "/inbox/"
         response = self.session.post(url=url, json=body)
 
         if response.status_code != 201:
@@ -994,7 +994,7 @@ class Team6Connection():
         
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_follow(self, author_id, body):
-        url = self.base_url + "authors/" + author_id + "/inbox"
+        url = self.base_url + "authors/" + author_id + "/inbox/"
         response = self.session.post(url=url, json=body)
 
         if response.status_code != 201:
