@@ -15,7 +15,7 @@ import docs.docs as docs
 import urllib.parse
 import base64
 
-from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
+from .serializers import AuthorSerializer, AuthorsSerializer, FollowersSerializer, PostSerializer, CommentSerializer, LikeRequestSerializer, LikeResponseSerializer, LikedSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, Follow
 from .utils import extract_uuid_if_url
 from .utils import is_remote_url
@@ -53,10 +53,10 @@ class Authors(APIView):
             authors = Author.objects.order_by('displayName') # order by display name so paginator is consistent
             paginator = self.pagination_class()
 
-            # paginate our queryset
+            # # paginate our queryset
             page = paginator.paginate_queryset(authors, request, view=self)
 
-            serializer = AuthorSerializer(page, many=True)  # Must include many=True because it is a list of authors
+            serializer = AuthorsSerializer({'items': page})
 
             return Response(serializer.data)
         except Exception as e:
@@ -185,7 +185,8 @@ class Followers(APIView):
             
             try:
                 author = Author.objects.get(pk=author_id)
-                serializer = AuthorSerializer(author.followers, many=True)
+                # serializer = AuthorSerializer(author.followers, many=True)
+                serializer = FollowersSerializer({'items': author.followers})
                 return Response(serializer.data)
             except Author.DoesNotExist:
                 return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
@@ -529,7 +530,8 @@ class Comments(APIView):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             
             try:
-                comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
+                # comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
+                comments = Comment.objects.filter(id__contains=f'{author_id}/posts/{post_id}')
                 paginator = self.pagination_class()
 
                 page = paginator.paginate_queryset(comments, request, view=self)
@@ -543,22 +545,15 @@ class Comments(APIView):
     def post(self, request, author_id, post_id):
         """Add a comment (comment object in body) to post_id posted by author_id"""
         
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
-        post_id = extract_uuid_if_url('post', post_id)
-        if not (author_id and post_id):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        
         try:
-            request.data['_post_author_id'] = author_id
-            request.data['_post_id'] = post_id
+            # TODO: Fix get comments above now that these are gone
             serializer = CommentSerializer(data=request.data)  # request.data parses all request bodies, not just form data
             if serializer.is_valid():
                 comment = serializer.create(serializer.data)
                 return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
             else:
                 print(serializer.errors)
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response('Bad request, maybe a comment with this ID already exists?', status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -597,7 +592,7 @@ class PostLikes(APIView):
                 if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
                     return Response('Author or post id does not exist', status=status.HTTP_404_NOT_FOUND)
                 likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}')
-                return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+                return Response(LikeResponseSerializer(likes, many=True).data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -636,10 +631,12 @@ class CommentLikes(APIView):
             
             try:
                 if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists() and Comment.objects.filter(pk=comment_id).exists()):
+                    print(comment_id)
+                    print(Author.objects.filter(pk=author_id).exists(), Post.objects.filter(pk=post_id).exists(), Comment.objects.filter(pk=comment_id).exists())
                     return Response('Author, post, or comment id does not exist', status=status.HTTP_404_NOT_FOUND)
                 # likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}/comments/{comment_id}')
                 likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}/comments/{comment_id}')
-                return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+                return Response(LikeResponseSerializer(likes, many=True).data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -654,7 +651,7 @@ class LikedPosts(APIView):
         tags=['Posts', 'Remote API'],
     )
     def get(self, request, author_id):
-        """Get list of posts author_id has liked"""
+        """Get a list of likes originating from this author"""
         
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
@@ -674,7 +671,7 @@ class LikedPosts(APIView):
                 if not (Author.objects.filter(pk=author_id).exists()):
                     return Response('Author id does not exist', status=status.HTTP_404_NOT_FOUND)
                 likes = Like.objects.filter(author___id=author_id)
-                return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+                return Response(LikedSerializer({'items': likes}).data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -766,7 +763,10 @@ class InboxDetail(APIView):
         # NOTE: 4 different cases based on type field in post request body
         # See https://github.com/abramhindle/CMPUT404-project-socialdistribution/blob/master/project.org#inbox
         
+        print('in post')
+
         if is_remote_url(author_id):
+            print('is remote')
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
             author_id = extract_uuid_if_url('author', author_id)
@@ -824,17 +824,18 @@ class InboxDetail(APIView):
                         print(serializer.errors)
                         return Response(status=status.HTTP_400_BAD_REQUEST)
                 case 'like':
-                    serializer = LikeSerializer(data=object)
+                    serializer = LikeRequestSerializer(data=object)
                     if serializer.is_valid():
                         like = serializer.create(serializer.data)
-                        return Response(LikeSerializer(like).data, status=status.HTTP_201_CREATED)
+                        return Response(LikeResponseSerializer(like).data, status=status.HTTP_201_CREATED)
                     else:
                         print(serializer.errors)
                         return Response(status=status.HTTP_400_BAD_REQUEST)
                 case 'comment':
                     serializer = CommentSerializer(data=object)
                     if serializer.is_valid():
-                        pass
+                        comment = serializer.create(serializer.data)
+                        return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
                     else:
                         print(serializer.errors)
                         return Response(status=status.HTTP_400_BAD_REQUEST)
