@@ -562,7 +562,7 @@ class Team6Connection():
                     "items": cleaned_authors
                 }
 
-    # URL: ://service/authors/{AUTHOR_ID}/
+    # TODO: Single author was not specified in yaml
     def get_single_author(self, author_id):
         url = self.base_url + "authors/" + author_id
         response = self.session.get(url)
