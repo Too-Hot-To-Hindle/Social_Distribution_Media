@@ -596,22 +596,31 @@ class CommentLikes(APIView):
     def get(self, request_id, author_id, post_id, comment_id):
         """Get a list of likes on comment_id for post_id posted by author_id"""
         
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
-        post_id = extract_uuid_if_url('post', post_id)
-        comment_id = extract_uuid_if_url('comment', comment_id)
-        if not (author_id and post_id and comment_id):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if is_remote_url(author_id):
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+            response = remote.connection.get_comment_likes(author_id, post_id, comment_id)
+
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
         
-        try:
-            if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists() and Comment.objects.filter(pk=comment_id).exists()):
-                return Response('Author, post, or comment id does not exist', status=status.HTTP_404_NOT_FOUND)
-            # likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}/comments/{comment_id}')
-            likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}/comments/{comment_id}')
-            return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
-        except Exception as e:
-            traceback.print_exc()
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+            author_id = extract_uuid_if_url('author', author_id)
+            post_id = extract_uuid_if_url('post', post_id)
+            comment_id = extract_uuid_if_url('comment', comment_id)
+            if not (author_id and post_id and comment_id):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists() and Comment.objects.filter(pk=comment_id).exists()):
+                    return Response('Author, post, or comment id does not exist', status=status.HTTP_404_NOT_FOUND)
+                # likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}/comments/{comment_id}')
+                likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}/comments/{comment_id}')
+                return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+            except Exception as e:
+                traceback.print_exc()
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class LikedPosts(APIView):
 
@@ -735,51 +744,80 @@ class InboxDetail(APIView):
         # NOTE: 4 different cases based on type field in post request body
         # See https://github.com/abramhindle/CMPUT404-project-socialdistribution/blob/master/project.org#inbox
         
-        author_id = extract_uuid_if_url('author', author_id)
-        if not author_id:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if is_remote_url(author_id):
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+
+            object = request.data
+            match object['type']:
+                case 'post':
+                    response = remote.connection.send_post(author_id, request.data)
+
+                    return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            
+                case 'follow':
+                    response = remote.connection.send_follow(author_id, request.data)
+
+                    return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+                
+                case 'like':
+                    response = remote.connection.send_like(author_id, request.data)
+
+                    return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+                
+                case 'comment':
+                    response = remote.connection.send_comment(author_id, request.data)
+
+                    return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
         
-        object = request.data
-        match object['type']:
-            case 'post':
-                serializer = InboxPostSerializer(data=object)
-                if serializer.is_valid():
-                    # Create post and post author if they don't exist (foreign case)
-                    if Post.objects.filter(id=serializer.validated_data['id']).exists():
-                        post = Post.objects.get(id=serializer.validated_data['id'])  # Will only work for local posts
+        
+        else:
+            author_id = extract_uuid_if_url('author', author_id)
+            if not author_id:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+            object = request.data
+            match object['type']:
+                case 'post':
+                    serializer = InboxPostSerializer(data=object)
+                    if serializer.is_valid():
+                        # Create post and post author if they don't exist (foreign case)
+                        if Post.objects.filter(id=serializer.validated_data['id']).exists():
+                            post = Post.objects.get(id=serializer.validated_data['id'])  # Will only work for local posts
+                        else:
+                            post = serializer.create(serializer.validated_data)
+                        inbox = Inbox.objects.get(author___id=author_id)
+                        inbox.items.add(post)
+                        return Response(InboxPostSerializer(post).data, status=status.HTTP_200_OK)
                     else:
-                        post = serializer.create(serializer.validated_data)
-                    inbox = Inbox.objects.get(author___id=author_id)
-                    inbox.items.add(post)
-                    return Response(InboxPostSerializer(post).data, status=status.HTTP_200_OK)
-                else:
-                    print(serializer.errors)
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-            case 'follow':
-                serializer = FollowSerializer(data=object)
-                if serializer.is_valid():
-                    follow = serializer.create(serializer.data)
-                    return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
-                else:
-                    print(serializer.errors)
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-            case 'like':
-                serializer = LikeSerializer(data=object)
-                if serializer.is_valid():
-                    like = serializer.create(serializer.data)
-                    return Response(LikeSerializer(like).data, status=status.HTTP_201_CREATED)
-                else:
-                    print(serializer.errors)
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-            case 'comment':
-                serializer = CommentSerializer(data=object)
-                if serializer.is_valid():
-                    pass
-                else:
-                    print(serializer.errors)
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-            case _:
-                return Response("Object type must be one of 'post', 'follow', 'like', or 'comment'", status=status.HTTP_400_BAD_REQUEST)
+                        print(serializer.errors)
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+                case 'follow':
+                    serializer = FollowSerializer(data=object)
+                    if serializer.is_valid():
+                        follow = serializer.create(serializer.data)
+                        return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
+                    else:
+                        print(serializer.errors)
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+                case 'like':
+                    serializer = LikeSerializer(data=object)
+                    if serializer.is_valid():
+                        like = serializer.create(serializer.data)
+                        return Response(LikeSerializer(like).data, status=status.HTTP_201_CREATED)
+                    else:
+                        print(serializer.errors)
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+                case 'comment':
+                    serializer = CommentSerializer(data=object)
+                    if serializer.is_valid():
+                        pass
+                    else:
+                        print(serializer.errors)
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+                case _:
+                    return Response("Object type must be one of 'post', 'follow', 'like', or 'comment'", status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, author_id):
         """Clear author_id's inbox"""
@@ -920,9 +958,48 @@ class RemoteGetAllAuthors(APIView):
         try:
             if is_remote_url(remote_url):
                 formatted_remote_url = get_remote_url(remote_url)
-                print(formatted_remote_url)
                 remote = RemoteConnection(formatted_remote_url)
                 response = remote.connection.get_authors()
+                return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            
+            else:
+                # TODO: return error message
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        except Exception as e:
+            traceback.print_exc()
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class RemoteSendToInbox(APIView):
+    def post(self, request, remote_url):
+        """
+        Extra endpoint to help proxy requests to remote servers to send to inbox
+        """
+        try:
+            if is_remote_url(remote_url):
+                formatted_remote_url = get_remote_url(remote_url)
+                remote = RemoteConnection(formatted_remote_url)
+                response = remote.connection.send_to_inbox(request.data)
+                return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            
+            else:
+                # TODO: return error message
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            traceback.print_exc()
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class RemoteSendLike(APIView):
+    def post(self, request, remote_url):
+        """
+        Extra endpoint to help proxy requests to remote servers to send like
+        """
+        try:
+            if is_remote_url(remote_url):
+                formatted_remote_url = get_remote_url(remote_url)
+                remote = RemoteConnection(formatted_remote_url)
+                response = remote.connection.send_like(request.data)
                 return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
             
             else:
