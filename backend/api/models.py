@@ -110,13 +110,13 @@ class Post(models.Model):
             _id = extract_uuid('posts', self.id)
             self._id = _id
         elif first_save:
-            self.id = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
+            self.id = f"{SERVICE_ADDRESS}/authors/{self.author._id}/posts/{self._id}"
             self.comments = f"{self.id}/comments"
 
             # when creating a new post on our own server, we need to set the source and origin
             # double check w/ TA if this is correct
-            self.source = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
-            self.origin = f"{API_BASE}/authors/{self.author._id}/posts/{self._id}"
+            self.source = f"{SERVICE_ADDRESS}/authors/{self.author._id}/posts/{self._id}"
+            self.origin = f"{SERVICE_ADDRESS}/authors/{self.author._id}/posts/{self._id}"
         return super().save(*args, **kwargs)
 
 class Comment(models.Model):
@@ -132,10 +132,10 @@ class Comment(models.Model):
     type = "comment"
 
     _id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    _post_author_id = models.UUIDField(blank=True)
-    _post_id = models.UUIDField(blank=True)
+    _post_author_id = models.UUIDField(blank=True, null=True)
+    _post_id = models.UUIDField(blank=True, null=True)
     
-    id = models.URLField(blank=True, default=None, editable=False)
+    id = models.URLField(blank=True, default=None, unique=True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, blank=True)
     comment = models.TextField()
     contentType = models.TextField(choices=CONTENT_TYPES)
@@ -144,13 +144,6 @@ class Comment(models.Model):
     def __str__(self) -> str:
         return f"Comment by {Author.displayName}"
     
-    def save(self, *args, **kwargs) -> None:
-        # Set the id and url fields intially, using the generated id.
-        if not self.id:
-            self.id = f"{API_BASE}/authors/{self._post_author_id}/posts/{self._post_id}/comments/{self._id}"
-
-        return super().save(*args, **kwargs)
-
 class Like(models.Model):
 
     type = 'Like'
@@ -198,3 +191,7 @@ class Inbox(models.Model):
     
     class Meta:
         verbose_name_plural = 'Inboxes'
+
+class AllowedRemoteNode(models.Model):
+
+    pass
