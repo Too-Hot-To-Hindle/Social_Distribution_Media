@@ -15,7 +15,7 @@ import docs.docs as docs
 import urllib.parse
 import base64
 
-from .serializers import AuthorSerializer, AuthorsSerializer, FollowersSerializer, PostSerializer, CommentSerializer, LikeRequestSerializer, LikeResponseSerializer, LikedSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
+from .serializers import AuthorSerializer, AuthorsSerializer, FollowersSerializer, PostSerializer, PostsSerializer, CommentSerializer, CommentsSerializer, LikeRequestSerializer, LikeResponseSerializer, LikedSerializer, LikesSerializer, FollowSerializer, FollowsSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, Follow
 from .utils import extract_uuid_if_url
 from .utils import is_remote_url
@@ -40,15 +40,7 @@ class Authors(APIView):
         tags=['Authors', 'Remote API'],
     )
     def get(self, request, format=None):
-        """
-        Get all authors
-
-        TODO: Query params
-
-        See below for adding new fields (not in model) to response:
-
-        https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
-        """
+        """Get all authors"""
         try:
             authors = Author.objects.order_by('displayName') # order by display name so paginator is consistent
             paginator = self.pagination_class()
@@ -72,9 +64,7 @@ class AuthorDetail(APIView):
         tags=['Authors', 'Remote API'],
     )
     def get(self, request, author_id):
-        """
-        Get details for an author
-        """
+        """Get details for an author"""
 
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
@@ -131,10 +121,7 @@ class AuthorDetail(APIView):
         }
     )
     def post(self, request, author_id):
-        """
-        Update details for an author
-        TODO: This must only be useable as a 'local' user
-        """
+        """Update details for an author"""
 
         # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
         author_id = extract_uuid_if_url('author', author_id)
@@ -166,15 +153,7 @@ class Followers(APIView):
         tags=['Followers', 'Remote API']
     )
     def get(self, request, author_id):
-        """
-        Get a list of authors and their data following the user given by author_id
-
-        TODO: Paging? Query params?
-
-        See below for adding new fields (not in model) to response:
-
-        https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
-        """
+        """Get a list of authors and their data following the user given by author_id"""
         
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
@@ -252,18 +231,13 @@ class FollowersDetail(APIView):
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, author_id, foreign_author_id):
-        """
-        Remove foreign_author_id as a follower of author_id
-        
-        NOTE: Might be a better way to do this
-        """
+        """Remove foreign_author_id as a follower of author_id"""
         
         # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
         author_id = extract_uuid_if_url('author', author_id)
         foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
         if not (author_id and foreign_author_id):
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        
         try:
             author = Author.objects.get(pk=author_id)
             follower = Author.objects.get(pk=foreign_author_id)
@@ -312,15 +286,7 @@ class Posts(APIView):
         tags=['Posts', 'Remote API']
     )
     def get(self, request, author_id):
-        """
-        Get paginated list of posts by author_id, ordered by post date with most recent first
-        
-        TODO: Query params, paging
-
-        See below for adding new fields (not in model) to response:
-
-        https://stackoverflow.com/questions/37943339/django-rest-framework-how-to-add-a-custom-field-to-the-response-of-the-get-req
-        """
+        """Get paginated list of posts by author_id, ordered by post date with most recent first"""
         
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
@@ -342,7 +308,7 @@ class Posts(APIView):
 
                 page = paginator.paginate_queryset(posts, request, view=self)
 
-                serializer = PostSerializer(page, many=True)
+                serializer = PostsSerializer({'items': page})
 
                 return Response(serializer.data)
             except Exception as e:
@@ -524,7 +490,6 @@ class Comments(APIView):
     )
     def get(self, request, author_id, post_id):
         """Get all comments on post_id posted by author_id"""
-        # TODO: Paging
         # TODO: Format response according to spec
         # TODO: Properly 404 if author_id or post_id doesn't exist, could check post_count
         
@@ -550,7 +515,7 @@ class Comments(APIView):
 
                 page = paginator.paginate_queryset(comments, request, view=self)
 
-                serializer = CommentSerializer(page, many=True)
+                serializer = CommentsSerializer({'items': page})
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
@@ -606,7 +571,8 @@ class PostLikes(APIView):
                 if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
                     return Response('Author or post id does not exist', status=status.HTTP_404_NOT_FOUND)
                 likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}')
-                return Response(LikeResponseSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+                serializer = LikesSerializer({'items': likes})
+                return Response(serializer.data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -650,7 +616,8 @@ class CommentLikes(APIView):
                     return Response('Author, post, or comment id does not exist', status=status.HTTP_404_NOT_FOUND)
                 # likes = Like.objects.filter(author___id=author_id, object__endswith=f'/posts/{post_id}/comments/{comment_id}')
                 likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}/comments/{comment_id}')
-                return Response(LikeResponseSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+                serializer = LikesSerializer({'items': likes})
+                return Response(serializer.data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -685,7 +652,8 @@ class LikedPosts(APIView):
                 if not (Author.objects.filter(pk=author_id).exists()):
                     return Response('Author id does not exist', status=status.HTTP_404_NOT_FOUND)
                 likes = Like.objects.filter(author___id=author_id)
-                return Response(LikedSerializer({'items': likes}).data, status=status.HTTP_200_OK)
+                serializer = LikedSerializer({'items': likes})
+                return Response(serializer.data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -773,14 +741,9 @@ class InboxDetail(APIView):
         tags=['Inbox', 'Remote API'],
     )
     def post(self, request, author_id):
-        """Send a post to author_id"""
-        # NOTE: 4 different cases based on type field in post request body
-        # See https://github.com/abramhindle/CMPUT404-project-socialdistribution/blob/master/project.org#inbox
+        """Send a object to author_id"""
         
-        print('in post')
-
         if is_remote_url(author_id):
-            print('is remote')
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
             author_id = extract_uuid_if_url('author', author_id)
@@ -884,8 +847,9 @@ class FollowRequests(APIView):
         try:
             if not Author.objects.filter(pk=author_id).exists():
                 return Response('That author id does not exist', status=status.HTTP_404_NOT_FOUND)
-            requests = Follow.objects.filter(object___id=author_id)
-            return Response(FollowSerializer(requests, many=True).data, status=status.HTTP_200_OK)
+            follows = Follow.objects.filter(object___id=author_id)
+            serializer = FollowsSerializer({'items': follows})
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -923,9 +887,7 @@ class Auth(APIView):
         tags=['Auth'],
     )
     def post(self, request):
-        """
-        login a user with a username and password
-        """
+        """Login a user with a username and password"""
         try:
             data = json.loads(request.body)
             user = authenticate(request, username=data['username'], password=data['password'])
@@ -967,9 +929,7 @@ class AuthRegister(APIView):
         tags=['Auth'],
     )
     def post(self, request):
-        """
-        register a new user
-        """
+        """Register a new user"""
         try:
             # create our user and an author, and link it with the author.
             serializer = UserSerializer(data=json.loads(request.body))
@@ -989,9 +949,7 @@ class AuthRegister(APIView):
         
 class RemoteGetAllAuthors(APIView):
     def get(self, request, remote_url):
-        """
-        Extra endpoint to help proxy requests to remote servers to get all authors
-        """
+        """Extra endpoint to help proxy requests to remote servers to get all authors"""
         try:
             if is_remote_url(remote_url):
                 formatted_remote_url = get_remote_url(remote_url)
@@ -1008,9 +966,7 @@ class RemoteGetAllAuthors(APIView):
         
 class RemoteSendToInbox(APIView):
     def post(self, request, remote_url):
-        """
-        Extra endpoint to help proxy requests to remote servers to send to inbox
-        """
+        """Extra endpoint to help proxy requests to remote servers to send to inbox"""
         try:
             if is_remote_url(remote_url):
                 formatted_remote_url = get_remote_url(remote_url)
@@ -1028,9 +984,7 @@ class RemoteSendToInbox(APIView):
         
 class RemoteSendLike(APIView):
     def post(self, request, remote_url):
-        """
-        Extra endpoint to help proxy requests to remote servers to send like
-        """
+        """Extra endpoint to help proxy requests to remote servers to send like"""
         try:
             if is_remote_url(remote_url):
                 formatted_remote_url = get_remote_url(remote_url)
