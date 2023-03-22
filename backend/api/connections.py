@@ -1,13 +1,22 @@
 import requests
 from requests_cache import CachedSession
 
+# define custom exception for resource not found on remote server
+class Remote404(Exception):
+    "Raised when remote resource retruned a 404"
+    pass
+
+# define custom exception for remote server error
+class RemoteServerError(Exception):
+    "Raised when remote server returned a non-404 error"
+    pass
 
 class RemoteConnection():
     def __init__(self, remote_base_url):
-        if (remote_base_url == "https://social-distribution-media.herokuapp.com/"):
-            self.connection = TeamTESTConnection(
-                username="johndoe",  # read from .env
-                password="password",  # read from .env
+        if (remote_base_url == "https://social-distribution-media-2.herokuapp.com/"):
+            self.connection = TeamCloneConnection(
+                username="joshdoe",  # read from .env
+                password="SocialDistribution!",  # read from .env
                 base_url=remote_base_url + "api/"
             )
 
@@ -23,7 +32,7 @@ class RemoteConnection():
             raise Exception("Invalid remote base URL")
 
 
-class TeamTESTConnection():
+class TeamCloneConnection():
     def __init__(self, username, password, base_url):
         # TODO: configure username, password, and base_url
         self.username = username
@@ -35,101 +44,113 @@ class TeamTESTConnection():
 
     # URL: ://service/authors/
     def get_authors(self):
-        # TODO: handle pagination better
         url = self.base_url + "authors"
-        response = self.session.get(url, params={"page": 1, "size": 500})
+        
+        # handle pagination
+        # start at page 1, loop until no items are returned - in which case our server throws a 404
+        page = 1
+        authors = []
+        while True:
+            response = self.session.get(url, params={"page": page, "size": 10})
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+            # no need to handle the 404 using an exception, just return the authors we have/or the empty array
+            if response.status_code == 404:
+                break
 
-        else:
+            elif response.status_code != 200:
+                raise RemoteServerError("Error getting authors from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+            
             response_authors = response.json()
             if response_authors is None:
-                # TODO: handle error
-                pass
+                raise RemoteServerError("Error getting authors from remote server: https://social-distribution-media-2.herokuapp.com/. Response body was empty.")
+            
+            items = response_authors.get("items", [])
+            if len(items) > 0:
+                authors.extend(items)
+                page += 1
+            
 
-            else:
-                cleaned_authors = []
-                for author in response_authors.get("items", []):
-                    # TODO: set default value for missing field?
-                    cleaned_authors.append({
-                        "type": author.get("type", "N/A"),
-                        "id": author.get("id", "N/A"),
-                        "url": author.get("url", "N/A"),
-                        "host": author.get("host", "N/A"),
-                        "displayName": author.get("displayName", "N/A"),
-                        "github": author.get("github", "N/A"),
-                        "profileImage": author.get("profileImage", "N/A"),
-                    })
+        return {
+                "type": "authors",
+                "items": authors
+               }
 
-                return {
-                    "type": "authors",
-                    "items": cleaned_authors
-                }
 
     # URL: ://service/authors/{AUTHOR_ID}/
     def get_single_author(self, author_id):
         url = self.base_url + "authors/" + author_id
         response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+        # if the author is not found, throw an exception
+        if response.status_code == 404:
+            raise Remote404("Author with id " + author_id + " not found on remote server: https://social-distribution-media-2.herokuapp.com/")
+        
+        # if the server returns an error, throw an exception
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            response_author = response.json()
-            if response_author is None:
-                # TODO: handle error
-                pass
+            try:
+                response_author = response.json()
 
-            else:
-                return {
-                    "type": response_author.get("type", "N/A"),
-                    "id": response_author.get("id", "N/A"),
-                    "host": response_author.get("host", "N/A"),
-                    "displayName": response_author.get("displayName", "N/A"),
-                    "url": response_author.get("url", "N/A"),
-                    "github": response_author.get("github", "N/A"),
-                    "profileImage": response_author.get("profileImage", "N/A"),
-                }
+                # if the response body is empty, throw an exception
+                if response_author is None:
+                    raise RemoteServerError("Error getting author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/. Response body was empty.")
+
+                else:
+                    return {
+                        "type": response_author.get("type"),
+                        "id": response_author.get("id"),
+                        "host": response_author.get("host"),
+                        "displayName": response_author.get("displayName"),
+                        "url": response_author.get("url"),
+                        "github": response_author.get("github"),
+                        "profileImage": response_author.get("profileImage"),
+                    }
+                
+            except Exception as e:
+                raise RemoteServerError("Error getting author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/. Exception: " + str(e))
 
     # URL: ://service/authors/{AUTHOR_ID}/followers
     def get_author_followers(self, author_id):
         url = self.base_url + "authors/" + author_id + "/followers"
         response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+        # if the author is not found, throw an exception
+        if response.status_code == 404:
+            raise Remote404("Author with id " + author_id + " not found on remote server: https://social-distribution-media-2.herokuapp.com/")
+        
+        # if the server returns an error, throw an exception
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting followers for author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            response_followers = response.json()
-            if response_followers is None:
-                # TODO: handle error
-                pass
+            try:
+                response_followers = response.json().get("items", [])
+                if response_followers is None:
+                    raise RemoteServerError("Error getting followers for author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/. Response body was empty.")
 
-            else:
-                cleaned_followers = []
-                for author in response_followers:
-                    # TODO: set default value for missing field?
-                    cleaned_followers.append({
-                        "type": author.get("type", "N/A"),
-                        "id": author.get("id", "N/A"),
-                        "url": author.get("url", "N/A"),
-                        "host": author.get("host", "N/A"),
-                        "displayName": author.get("displayName", "N/A"),
-                        "github": author.get("github", "N/A"),
-                        "profileImage": author.get("profileImage", "N/A"),
-                    })
+                else:
+                    cleaned_followers = []
+                    for author in response_followers:
+                        cleaned_followers.append({
+                            "type": author.get("type"),
+                            "id": author.get("id"),
+                            "url": author.get("url"),
+                            "host": author.get("host"),
+                            "displayName": author.get("displayName"),
+                            "github": author.get("github"),
+                            "profileImage": author.get("profileImage"),
+                        })
 
-                return {
-                    "type": "followers",
-                    "items": cleaned_followers
-                }
+                    return {
+                        "type": "followers",
+                        "items": cleaned_followers
+                    }
+                
+            except Exception as e:
+                raise RemoteServerError("Error getting followers for author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/. Exception: " + str(e))
+
 
     # URL: ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     def check_if_follower(self, author_id, follower_id):
@@ -514,8 +535,6 @@ class TeamTESTConnection():
             # might wanna return something, parse the response...
             print("sent remotely!")
             return response.json()
-
-
 
 
 class Team6Connection():

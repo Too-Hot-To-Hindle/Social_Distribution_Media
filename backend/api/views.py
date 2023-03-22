@@ -20,7 +20,7 @@ from .models import Author, Post, Comment, Like, Inbox, Follow
 from .utils import extract_uuid_if_url
 from .utils import is_remote_url
 from .utils import get_remote_url
-from .connections import RemoteConnection
+from .connections import RemoteConnection, RemoteServerError, Remote404
 
 import traceback
 import uuid
@@ -80,10 +80,17 @@ class AuthorDetail(APIView):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
             author_id = extract_uuid_if_url('author', author_id)
-            response = remote.connection.get_single_author(author_id)
-
-            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
-
+            
+            try:
+                response = remote.connection.get_single_author(author_id)
+                return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            
+            except Remote404 as e:
+                return Response(e.args, status=status.HTTP_404_NOT_FOUND)
+            
+            except RemoteServerError as e:
+                return Response(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
         else:
             # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
             author_id = extract_uuid_if_url('author', author_id)
@@ -173,9 +180,16 @@ class Followers(APIView):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
             author_id = extract_uuid_if_url('author', author_id)
-            response = remote.connection.get_author_followers(author_id)
 
-            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            try:
+                response = remote.connection.get_author_followers(author_id)
+                return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            
+            except Remote404 as e:
+                return Response(e.args, status=status.HTTP_404_NOT_FOUND)
+            
+            except RemoteServerError as e:
+                return Response(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         else:
             # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
@@ -986,7 +1000,6 @@ class RemoteGetAllAuthors(APIView):
                 return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
             
             else:
-                # TODO: return error message
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:

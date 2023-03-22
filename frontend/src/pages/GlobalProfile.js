@@ -99,7 +99,7 @@ const GlobalProfile = () => {
                 .get()
                 .then(res => {
                     setAuthorDetails(res.data)
-                    setAuthorServer("Remote-self")
+                    setAuthorServer("Remote Clone")
 
                     createAPIEndpoint(`authors/${authorURLDecoded}/posts`)
                         .get()

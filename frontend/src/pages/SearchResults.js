@@ -71,7 +71,7 @@ const SearchResults = () => {
                 });
 
             // our own team's remote URL
-            const testRemoteTeamURL = encodeURIComponent("https://social-distribution-media.herokuapp.com/")
+            const testRemoteTeamURL = encodeURIComponent("https://social-distribution-media-2.herokuapp.com/")
             createAPIEndpoint(`remote/authors/${testRemoteTeamURL}`)
                 .get()
                 .then(res => {
@@ -227,7 +227,7 @@ const SearchResults = () => {
                             {(remoteAuthors !== null && remoteAuthors.length === 0) &&
                                 <>
                                     <PagesIcon sx={{ fontSize: "60px" }} />
-                                    <Typography variant="h6" component="h2" sx={{ textAlign: "center" }}>No remote-self results.</Typography>
+                                    <Typography variant="h6" component="h2" sx={{ textAlign: "center" }}>No remote clone results.</Typography>
                                 </>
                             }
 
@@ -236,7 +236,7 @@ const SearchResults = () => {
                                     <Grid container spacing={2}>
 
                                         <Grid item xs={12}>
-                                            <Typography variant="h6" align="left">Remote-self Authors</Typography>
+                                            <Typography variant="h6" align="left">Remote Clone Authors</Typography>
                                         </Grid>
 
                                         <Grid item xs={12}>
