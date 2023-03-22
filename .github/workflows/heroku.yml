@@ -43,3 +43,10 @@ jobs:
           heroku_app_name: "social-distribution-media" #Must be unique in Heroku
           heroku_email: "jboileau@ualberta.ca"
           appdir: "backend"
+          
+      - uses: akhileshns/heroku-deploy@v3.12.13 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY_2}}
+          heroku_app_name: "social-distribution-media-2" #Must be unique in Heroku
+          heroku_email: "ebrisson@ualberta.ca"
+          appdir: "backend"
