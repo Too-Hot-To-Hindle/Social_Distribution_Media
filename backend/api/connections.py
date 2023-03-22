@@ -33,7 +33,7 @@ class TeamTESTConnection():
             "teamTEST_cache", backend="sqlite", expire_after=300)
         self.session.auth = (self.username, self.password)
 
-# URL: ://service/authors/
+    # URL: ://service/authors/
     def get_authors(self):
         url = self.base_url + "authors"
         response = self.session.get(url)
