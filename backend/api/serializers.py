@@ -15,6 +15,14 @@ class AuthorSerializer(serializers.ModelSerializer):
         model = Author
         fields = ("_id", 'type', 'id', 'host', 'displayName', 'url', 'github', 'profileImage', 'followers', 'following')
 
+class AuthorsSerializer(serializers.Serializer):
+
+    type = serializers.SerializerMethodField()
+    items = AuthorSerializer(many=True)
+
+    def get_type(self, obj):
+        return 'authors'
+
 class PostSerializer(serializers.ModelSerializer):
 
     class Meta:

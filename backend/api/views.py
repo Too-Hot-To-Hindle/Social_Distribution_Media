@@ -14,7 +14,7 @@ from pprint import pprint
 import docs.docs as docs
 import urllib.parse
 
-from .serializers import AuthorSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
+from .serializers import AuthorSerializer, AuthorsSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, Follow
 from .utils import extract_uuid_if_url
 from .utils import is_remote_url
@@ -52,10 +52,10 @@ class Authors(APIView):
             authors = Author.objects.order_by('displayName') # order by display name so paginator is consistent
             paginator = self.pagination_class()
 
-            # paginate our queryset
+            # # paginate our queryset
             page = paginator.paginate_queryset(authors, request, view=self)
 
-            serializer = AuthorSerializer(page, many=True)  # Must include many=True because it is a list of authors
+            serializer = AuthorsSerializer({'items': page})
 
             return Response(serializer.data)
         except Exception as e:
