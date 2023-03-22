@@ -14,7 +14,7 @@ from pprint import pprint
 import docs.docs as docs
 import urllib.parse
 
-from .serializers import AuthorSerializer, AuthorsSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
+from .serializers import AuthorSerializer, AuthorsSerializer, FollowersSerializer, PostSerializer, CommentSerializer, LikeSerializer, FollowSerializer, UserSerializer, InboxSerializer, InboxPostSerializer
 from .models import Author, Post, Comment, Like, Inbox, Follow
 from .utils import extract_uuid_if_url
 from .utils import is_remote_url
@@ -184,7 +184,8 @@ class Followers(APIView):
             
             try:
                 author = Author.objects.get(pk=author_id)
-                serializer = AuthorSerializer(author.followers, many=True)
+                # serializer = AuthorSerializer(author.followers, many=True)
+                serializer = FollowersSerializer({'items': author.followers})
                 return Response(serializer.data)
             except Author.DoesNotExist:
                 return Response(f'The author {author_id} does not exist.', status=status.HTTP_404_NOT_FOUND)
@@ -507,7 +508,8 @@ class Comments(APIView):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             
             try:
-                comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
+                # comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
+                comments = Comment.objects.filter(id__contains=f'{author_id}/posts/{post_id}')
                 paginator = self.pagination_class()
 
                 page = paginator.paginate_queryset(comments, request, view=self)
