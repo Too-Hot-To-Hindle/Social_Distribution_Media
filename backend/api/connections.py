@@ -478,7 +478,7 @@ class Team6Connection():
         self.password = password
         self.base_url = base_url
         self.session = CachedSession(
-            "teamTEST_cache", backend="sqlite", expire_after=300)
+            "team6_cache", backend="sqlite", expire_after=300)
         self.session.auth = (self.username, self.password)
 
     # URL: ://service/authors/
