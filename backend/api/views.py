@@ -556,20 +556,29 @@ class PostLikes(APIView):
     def get(self, request, author_id, post_id):
         """Get a list of likes on post_id posted by author_id"""
         
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
-        post_id = extract_uuid_if_url('post', post_id)
-        if not (author_id and post_id):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if is_remote_url(author_id):
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+            response = remote.connection.get_post_likes(author_id, post_id)
+
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
         
-        try:
-            if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
-                return Response('Author or post id does not exist', status=status.HTTP_404_NOT_FOUND)
-            likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}')
-            return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
-        except Exception as e:
-            traceback.print_exc()
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+            author_id = extract_uuid_if_url('author', author_id)
+            post_id = extract_uuid_if_url('post', post_id)
+            if not (author_id and post_id):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
+                    return Response('Author or post id does not exist', status=status.HTTP_404_NOT_FOUND)
+                likes = Like.objects.filter(object__endswith=f'authors/{author_id}/posts/{post_id}')
+                return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+            except Exception as e:
+                traceback.print_exc()
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CommentLikes(APIView):
 
@@ -616,19 +625,28 @@ class LikedPosts(APIView):
     def get(self, request, author_id):
         """Get list of posts author_id has liked"""
         
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
-        if not author_id:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if is_remote_url(author_id):
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+            response = remote.connection.get_author_liked(author_id)
+
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
         
-        try:
-            if not (Author.objects.filter(pk=author_id).exists()):
-                return Response('Author id does not exist', status=status.HTTP_404_NOT_FOUND)
-            likes = Like.objects.filter(author___id=author_id)
-            return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
-        except Exception as e:
-            traceback.print_exc()
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+            author_id = extract_uuid_if_url('author', author_id)
+            if not author_id:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                if not (Author.objects.filter(pk=author_id).exists()):
+                    return Response('Author id does not exist', status=status.HTTP_404_NOT_FOUND)
+                likes = Like.objects.filter(author___id=author_id)
+                return Response(LikeSerializer(likes, many=True).data, status=status.HTTP_200_OK)
+            except Exception as e:
+                traceback.print_exc()
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class InboxDetail(APIView):
 
@@ -746,7 +764,6 @@ class InboxDetail(APIView):
                     print(serializer.errors)
                     return Response(status=status.HTTP_400_BAD_REQUEST)
             case 'like':
-                print("sending a like!")
                 serializer = LikeSerializer(data=object)
                 if serializer.is_valid():
                     like = serializer.create(serializer.data)
@@ -891,6 +908,27 @@ class AuthRegister(APIView):
             else:
                 print(serializer.errors)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            traceback.print_exc()
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class RemoteGetAllAuthors(APIView):
+    def get(self, request, remote_url):
+        """
+        Extra endpoint to help proxy requests to remote servers to get all authors
+        """
+        try:
+            if is_remote_url(remote_url):
+                formatted_remote_url = get_remote_url(remote_url)
+                print(formatted_remote_url)
+                remote = RemoteConnection(formatted_remote_url)
+                response = remote.connection.get_authors()
+                return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            
+            else:
+                # TODO: return error message
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)

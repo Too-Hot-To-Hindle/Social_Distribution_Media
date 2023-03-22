@@ -36,7 +36,7 @@ class TeamTESTConnection():
             pass
 
         else:
-            response_authors = response.json().get("items")
+            response_authors = response.json()
             if response_authors is None:
                 # TODO: handle error
                 pass
@@ -423,7 +423,7 @@ class TeamTESTConnection():
                 return comments
 
     # URL: ://service/authors/{AUTHOR_ID}/liked
-    def get_author_likes(self, author_id):
+    def get_author_liked(self, author_id):
         url = self.base_url + "authors/" + author_id + "/liked"
         response = self.session.get(url)
 
@@ -439,26 +439,23 @@ class TeamTESTConnection():
                 pass
 
             else:
-                comments = []
-                for comment in response:
-                    comments.append({
-                        "type": comment.get("type", "N/A"),
-                        "id": comment.get("id", "N/A"),
+                likes = []
+                for like in response:
+                    likes.append({
+                        "type": like.get("type", "N/A"),
                         "author": {
-                            "type": comment.get("author", {}).get("type", "N/A"),
-                            "id": comment.get("author", {}).get("id", "N/A"),
-                            "host": comment.get("author", {}).get("host", "N/A"),
-                            "displayName": comment.get("author", {}).get("displayName", "N/A"),
-                            "url": comment.get("author", {}).get("url", "N/A"),
-                            "github": comment.get("author", {}).get("github", "N/A"),
-                            "profileImage": comment.get("author", {}).get("profileImage", "N/A"),
+                            "type": like.get("author", {}).get("type", "N/A"),
+                            "id": like.get("author", {}).get("id", "N/A"),
+                            "host": like.get("author", {}).get("host", "N/A"),
+                            "displayName": like.get("author", {}).get("displayName", "N/A"),
+                            "url": like.get("author", {}).get("url", "N/A"),
+                            "github": like.get("author", {}).get("github", "N/A"),
+                            "profileImage": like.get("author", {}).get("profileImage", "N/A"),
                         },
-                        "comment": comment.get("comment", "N/A"),
-                        "contentType": comment.get("contentType", "N/A"),
-                        "published": comment.get("published", "N/A"),
+                        "object": like.get("object", "N/A"),
                     })
                 
-                return comments
+                return likes
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox
     def send_to_inbox(self, author_id, body):
