@@ -35,8 +35,9 @@ class TeamTESTConnection():
 
     # URL: ://service/authors/
     def get_authors(self):
+        # TODO: handle pagination better
         url = self.base_url + "authors"
-        response = self.session.get(url)
+        response = self.session.get(url, params={"page": 1, "size": 500})
 
         if response.status_code != 200:
             # TODO: handle error
@@ -51,7 +52,7 @@ class TeamTESTConnection():
 
             else:
                 cleaned_authors = []
-                for author in response_authors:
+                for author in response_authors.get("items", []):
                     # TODO: set default value for missing field?
                     cleaned_authors.append({
                         "type": author.get("type", "N/A"),

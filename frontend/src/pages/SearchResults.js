@@ -19,8 +19,12 @@ const SearchResults = () => {
 
     const { query } = useParams()
 
-    const [loading, setLoading] = useState(true);
-    const [authors, setAuthors] = useState([]);
+    const navigate = useNavigate();
+
+
+    const [localAuthors, setLocalAuthors] = useState(null);
+    const [remoteAuthors, setRemoteAuthors] = useState(null);
+
     const [myProfile, setMyProfile] = useState(null);
     const [following, setFollowing] = useState([]);
     const [sentFriendRequests, setSentFriendRequests] = useState([]);
@@ -38,9 +42,7 @@ const SearchResults = () => {
             createAPIEndpoint(`authors/${userID}`)
                 .get()
                 .then(res => {
-                    //console.log(res.data)
                     setMyProfile(res.data)
-                    setLoading(false)
                 })
                 .catch(err => {
                     // TODO: Add in error handling
@@ -50,21 +52,37 @@ const SearchResults = () => {
     }, [userID])
 
     useEffect(() => {
-        setLoading(true)
+
+        setLocalAuthors(null)
+        setRemoteAuthors(null)
         if (userID) {
-            createAPIEndpoint(`authors`)
+            // TODO: make pagination better
+
+            createAPIEndpoint(`authors?page=1&size=500`)
                 .get()
                 .then(res => {
-                    //console.log(res)
-                    setAuthors(res.data
+                    setLocalAuthors(res.data.items
                         .filter(author => author["_id"] !== localStorage.getItem('author_id'))
                         .filter(author => author["displayName"].toLowerCase().includes(query.toLowerCase())))
-                    setLoading(false)
                 })
                 .catch(err => {
                     // TODO: Add in error handling
                     console.log(err)
                 });
+
+            // our own team's remote URL
+            const testRemoteTeamURL = encodeURIComponent("https://social-distribution-media.herokuapp.com/")
+            createAPIEndpoint(`remote/authors/${testRemoteTeamURL}`)
+                .get()
+                .then(res => {
+                    setRemoteAuthors(res.data.items
+                        .filter(author => author["displayName"].toLowerCase().includes(query.toLowerCase())))
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                });
+
         }
 
     }, [query, userID])
@@ -76,7 +94,7 @@ const SearchResults = () => {
         var data = {
             "type": "follow",
             "summary": username + " has requested to follow you.",
-            
+
             "actor": {
                 "type": "author",
                 "id": myProfile["id"],
@@ -118,7 +136,7 @@ const SearchResults = () => {
                     <Grid item xs={12}>
                         <Card>
 
-                            {loading &&
+                            {(localAuthors === null) &&
                                 <Grid container spacing={2}>
                                     <Grid item xs={12}>
                                         <CircularProgress />
@@ -126,103 +144,131 @@ const SearchResults = () => {
                                 </Grid>
                             }
 
-                            {(!loading && authors.length === 0) &&
+                            {(localAuthors !== null && localAuthors.length === 0) &&
                                 <>
                                     <PagesIcon sx={{ fontSize: "60px" }} />
-                                    <Typography variant="h6" component="h2" sx={{ textAlign: "center" }}>No search results.</Typography>
+                                    <Typography variant="h6" component="h2" sx={{ textAlign: "center" }}>No local results.</Typography>
                                 </>
                             }
 
-                            {(!loading && authors.length > 0) &&
+                            {(localAuthors !== null && localAuthors.length > 0) &&
                                 <>
                                     <Grid container spacing={2}>
+
                                         <Grid item xs={12}>
-                                            <Typography variant="h6" align="left">Authors</Typography>
+                                            <Typography variant="h6" align="left">Local Authors</Typography>
                                         </Grid>
 
-                                        {authors.map((author, index) => {
-                                            return (
-
-                                                <>
-                                                    <Grid item xs={12}>
-                                                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                                            <div style={{ display: "flex", alignItems: "center" }}>
-                                                                <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
-                                                                <div>
-                                                                    <Typography variant="h6" align="left">@{author.displayName}</Typography>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* if userID is not in author.followers, show Send Friend Request button */}
-                                                            {!author.followers.includes(userID) &&
-
+                                        <Grid item xs={12}>
+                                            {localAuthors.map((author, index) => {
+                                                return (
+                                                    <Grid container key={index} spacing={2}>
+                                                        <Grid item xs={12}>
+                                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
                                                                 <div style={{ display: "flex", alignItems: "center" }}>
-                                                                    {/* if author._id is in sentFriendRequests, show Sent button */}
-                                                                    {sentFriendRequests.includes(author._id) &&
-                                                                        <Button variant="contained" disabled>Sent</Button>
-                                                                    }
-
-                                                                    {/* if author._id is not in sentFriendRequests, show Send Friend Request button */}
-                                                                    {!sentFriendRequests.includes(author._id) &&
-                                                                        <Button variant="contained" onClick={() => handleFollowRequests(author)}>Send Friend Request</Button>
-                                                                    }
-
+                                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+                                                                    <div>
+                                                                        <Typography variant="h6" align="left">@{author.displayName}</Typography>
+                                                                    </div>
                                                                 </div>
-                                                            }
-                                                        </div>
-                                                    </Grid>
 
-                                                    <Grid item xs={12}>
-                                                        <Divider />
-                                                    </Grid>
+                                                                <Button variant="contained" onClick={() => {navigate(`/profile/${author["_id"]}`)}}>View</Button>
 
-                                                    {/* <Grid item xs={12}>
-                                                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                                            <div style={{ display: "flex", alignItems: "center" }}>
-                                                                <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
-                                                                <div>
-                                                                    <Typography variant="h6" align="left">John Doe</Typography>
-                                                                    <Typography variant="body1" align="left">@johndoe</Typography>
-                                                                </div>
+
+                                                                {/* if userID is not in author.followers, show Send Friend Request button */}
+                                                                {!author.followers.includes(userID) &&
+
+                                                                    <div style={{ display: "flex", alignItems: "center" }}>
+                                                                        {/* if author._id is in sentFriendRequests, show Sent button */}
+                                                                        {sentFriendRequests.includes(author._id) &&
+                                                                            <Button variant="contained" disabled>Sent</Button>
+                                                                        }
+
+                                                                        {/* if author._id is not in sentFriendRequests, show Send Friend Request button */}
+                                                                        {!sentFriendRequests.includes(author._id) &&
+                                                                            <Button variant="contained" onClick={() => handleFollowRequests(author)}>Send Friend Request</Button>
+                                                                        }
+
+                                                                    </div>
+                                                                }
                                                             </div>
+                                                        </Grid>
 
-                                                            <div style={{ display: "flex", alignItems: "center" }}>
-                                                                <IconButton>
-                                                                    <CloseIcon />
-                                                                </IconButton>
-                                                            </div>
-                                                        </div>
+                                                        <Grid item xs={12}>
+                                                            <Divider />
+                                                        </Grid>
+
+
                                                     </Grid>
-
-                                                    <Grid item xs={12}>
-                                                        <Divider />
-                                                    </Grid>
-
-                                                    <Grid item xs={12}>
-                                                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                                            <div style={{ display: "flex", alignItems: "center" }}>
-                                                                <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
-                                                                <div>
-                                                                    <Typography variant="h6" align="left">James Appleseed</Typography>
-                                                                    <Typography variant="body1" align="left">@jamesappleseed</Typography>
-                                                                </div>
-                                                            </div>
-
-                                                            <div style={{ display: "flex", alignItems: "center" }}>
-                                                                <Chip label="True Friend" sx={{ marginRight: "10px" }} />
-                                                                <IconButton>
-                                                                    <CloseIcon />
-                                                                </IconButton>
-                                                            </div>
-                                                        </div>
-                                                    </Grid> */}
-                                                </>
-
-                                            )
-                                        })}
+                                                )
+                                            })}
+                                        </Grid>
                                     </Grid>
                                 </>
+                            }
+                        </Card>
+                    </Grid>
 
+                    <Grid item xs={12}>
+                        <Divider />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <Card>
+
+                            {(remoteAuthors === null) &&
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <CircularProgress />
+                                    </Grid>
+                                </Grid>
+                            }
+
+                            {(remoteAuthors !== null && remoteAuthors.length === 0) &&
+                                <>
+                                    <PagesIcon sx={{ fontSize: "60px" }} />
+                                    <Typography variant="h6" component="h2" sx={{ textAlign: "center" }}>No remote-self results.</Typography>
+                                </>
+                            }
+
+                            {(remoteAuthors !== null && remoteAuthors.length > 0) &&
+                                <>
+                                    <Grid container spacing={2}>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="h6" align="left">Remote-self Authors</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            {remoteAuthors.map((author, index) => {
+                                                return (
+                                                    <Grid container key={index} spacing={2}>
+                                                        <Grid item xs={12}>
+                                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+                                                                    <div>
+                                                                        <Typography variant="h6" align="left">@{author.displayName}</Typography>
+                                                                    </div>
+                                                                </div>
+
+                                                                <Button variant="contained" onClick={() => {navigate(`/profile/${encodeURIComponent(author.id)}`)}}>View</Button>
+
+                                                                {/* Need to redo friend request logic for remote authors */}
+                                                            </div>
+                                                        </Grid>
+
+                                                        <Grid item xs={12}>
+                                                            <Divider />
+                                                        </Grid>
+
+
+                                                    </Grid>
+                                                )
+                                            })}
+                                        </Grid>
+                                    </Grid>
+                                </>
                             }
                         </Card>
                     </Grid>

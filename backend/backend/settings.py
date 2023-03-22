@@ -92,12 +92,14 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
     'https://cmput404-group6-instatonne.herokuapp.com',
     'https://t20-social-distribution.herokuapp.com',
+    'https://social-distribution-media-2.herokuapp.com'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'https://cmput404-group6-instatonne.herokuapp.com',
     'https://t20-social-distribution.herokuapp.com',
+    'https://social-distribution-media-2.herokuapp.com'
 ]
 
 CORS_ALLOW_CREDENTIALS = True

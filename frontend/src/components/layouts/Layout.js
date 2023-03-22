@@ -152,7 +152,7 @@ const Layout = ({ children }) => {
                                             onKeyDown={(ev) => {
                                                 if (ev.key === 'Enter') {
                                                     setSearchQuery(ev.target.value)
-                                                    navigate(`/searchresults/${ev.target.value}`)
+                                                    navigate(`/searchresults/${ev.target.value}`)                                                    
                                                 }
                                             }}></TextField>
                                     </ListItem>

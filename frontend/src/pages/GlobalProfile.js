@@ -17,6 +17,18 @@ import FaceIcon from '@mui/icons-material/Face';
 import PagesIcon from '@mui/icons-material/Pages';
 import ErrorIcon from '@mui/icons-material/Error';
 
+// Helper functions
+// getPostIDFromURL
+// takes in a URL, say of example https://social-distribution-media.herokuapp.com/author/abc123/posts/def456
+// and returns the post ID, here, def456
+const getPostIDFromURL = (url) => {
+    // make sure "posts" is in url
+    if (url.includes("posts")) {
+        const urlSplit = url.split("/")
+        return urlSplit[urlSplit.length - 1]
+    }
+}
+
 const GlobalProfile = () => {
 
     const navigate = useNavigate();
@@ -50,13 +62,44 @@ const GlobalProfile = () => {
             setLoading(false)
         }
 
+        // otherwise, if authorURL decoded doesn't start with http, use createAPIEndpoint to get author details + recent posts locally
+        else if (!authorURLDecoded.startsWith("http")) {
+            createAPIEndpoint(`authors/${authorURLDecoded}`)
+                .get()
+                .then(res => {
+                    setAuthorDetails(res.data)
+                    setAuthorServer("Local")
+
+                    createAPIEndpoint(`authors/${authorURLDecoded}/posts`)
+                        .get()
+                        .then(res => {
+                            setAuthorPosts(res.data)
+                            setLoading(false)
+                        })
+                        .catch(err => {
+                            // TODO: Add in error handling
+                            console.log(err)
+                            setError(true)
+                            setErrorMessage("An unexpected error occurred loading profile content.")
+                            setLoading(false)
+                        });
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                    setError(true)
+                    setErrorMessage("An unexpected error occurred loading profile content.")
+                    setLoading(false)
+                });
+        }
+
         // otherwise, if authorURLDecoded starts with https://social-distribution-media.herokuapp.com, use createAPIEndpoint to get author details + recent posts
         else if (authorURLDecoded.startsWith("https://social-distribution-media.herokuapp.com")) {
             createAPIEndpoint(`authors/${authorURLDecoded}`)
                 .get()
                 .then(res => {
                     setAuthorDetails(res.data)
-                    setAuthorServer("Local")
+                    setAuthorServer("Remote-self")
 
                     createAPIEndpoint(`authors/${authorURLDecoded}/posts`)
                         .get()
@@ -104,7 +147,7 @@ const GlobalProfile = () => {
             var allLocalFollowers = []
             for (let follower of authorDetails.followers) {
                 const response = await createAPIEndpoint(`authors/${follower}`).get()
-                allLocalFollowers.push(response.data)
+                allLocalFollowers.push(response.data.items)
             }
 
             setAuthorFollowerDetails(allLocalFollowers)
@@ -119,7 +162,7 @@ const GlobalProfile = () => {
     return (
         <>
             <Layout>
-                <Dialog open={showFollowers} style={{ padding: "20px" }}>
+                {/* <Dialog open={showFollowers} style={{ padding: "20px" }}>
                     <DialogTitle>Followers</DialogTitle>
 
                     <DialogContent>
@@ -145,7 +188,7 @@ const GlobalProfile = () => {
                             }
                         </Grid>
                     </DialogContent>
-                </Dialog>
+                </Dialog> */}
 
                 <Grid container spacing={2}>
                     {loading &&
@@ -180,15 +223,15 @@ const GlobalProfile = () => {
                                 </Card>
                             </Grid>
 
-                            <Grid item xs={12}>
+                            {/* <Grid item xs={12}>
                                 <Divider />
                             </Grid>
 
                             <Grid item xs={12}>
                                 <Typography variant="h6" align="left">Followers</Typography>
-                            </Grid>
+                            </Grid> */}
 
-                            <Grid item xs={12}>
+                            {/* <Grid item xs={12}>
                                 <Card>
                                     {authorDetails.followers.length === 0 &&
                                         <Typography variant="body1" align="left">No followers.</Typography>
@@ -202,7 +245,7 @@ const GlobalProfile = () => {
                                         </div>
                                     }
                                 </Card>
-                            </Grid>
+                            </Grid> */}
 
                             <Grid item xs={12}>
                                 <Divider />
@@ -223,7 +266,7 @@ const GlobalProfile = () => {
                             {authorPosts.map((post, index) => (
                                 <Grid item xs={12} key={index}>
                                     <Post
-                                        id={post["_id"]}
+                                        id={getPostIDFromURL(post["id"])}
                                         title={post.title}
                                         description={post.description}
                                         source={post.source}

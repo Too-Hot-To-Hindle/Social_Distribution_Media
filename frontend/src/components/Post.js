@@ -72,8 +72,6 @@ const Post = ({
             createAPIEndpoint(`authors/${userID}/posts/${id}/likes`)
                 .get()
                 .then(res => {
-                    console.log(`authors/${userID}/posts/${id}/likes`)
-                    console.log(res.data)
                     setLikes(res.data)
                     for (const like of res.data) {
                         if (like.author._id === userID) {
@@ -108,7 +106,6 @@ const Post = ({
             createAPIEndpoint(`authors/${userID}/posts/${id}`)
                 .delete()
                 .then(res => {
-                    console.log(res.data)
                     navigate("/profile");
                 })
                 .catch(err => {
@@ -123,7 +120,6 @@ const Post = ({
             if (!liked) {
                 setLiked(true)
 
-                console.log(myAuthorData)
                 var data = {
                     "type": "like",
                     "summary": `${username} likes your post!`,
@@ -139,7 +135,6 @@ const Post = ({
                     "object": `https://social-distribution-media.herokuapp.com/api/authors/${authorID}/posts/${id}`
                 }
 
-                console.log(data)
 
                 createAPIEndpoint(`authors/${authorID}/inbox`)
                     .post(data)
