@@ -746,6 +746,7 @@ class InboxDetail(APIView):
                     print(serializer.errors)
                     return Response(status=status.HTTP_400_BAD_REQUEST)
             case 'like':
+                print("sending a like!")
                 serializer = LikeSerializer(data=object)
                 if serializer.is_valid():
                     like = serializer.create(serializer.data)
