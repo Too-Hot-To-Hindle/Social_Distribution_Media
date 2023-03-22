@@ -141,6 +141,13 @@ class Comment(models.Model):
     contentType = models.TextField(choices=CONTENT_TYPES)
     published = models.DateTimeField(auto_now_add=True)  # Sets to timezone.now on first creation
 
+    def save(self, *args, **kwargs) -> None:
+
+        if self._state.adding:
+            self._id = extract_uuid('comments', self.id)
+
+        return super().save(*args, **kwargs)
+
     def __str__(self) -> str:
         return f"Comment by {Author.displayName}"
     
@@ -152,6 +159,7 @@ class Like(models.Model):
     summary = models.TextField()
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     object = models.URLField()
+    context = "https://www.w3.org/ns/activitystreams"
 
     def __str__(self) -> str:
         return f"Like by {self.author.displayName}"
