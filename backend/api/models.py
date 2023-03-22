@@ -47,7 +47,7 @@ class Author(models.Model):
             self.id = f"{self.host}/authors/{self._id}"
         
         if not self.url:
-            self.url = f"{self.host}/authors/{self._id}"
+            self.url = f"{self.host}/api/authors/{self._id}"
         super().save(*args, **kwargs)
 
         # Create inbox on Author creation
