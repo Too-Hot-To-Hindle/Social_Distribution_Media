@@ -944,9 +944,9 @@ class Team6Connection():
                 
                 return likes
 
-    # URL: ://service/authors/{AUTHOR_ID}/inbox
+    # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_post(self, author_id, body):
-        url = self.base_url + "authors/" + author_id + "/inbox"
+        url = self.base_url + "authors/" + author_id + "/inbox/"
         response = self.session.post(url=url, json=body)
 
         if response.status_code != 200 and response.status_code != 201:
