@@ -443,37 +443,30 @@ class TeamCloneConnection():
     # URL: ://service/authors/{AUTHOR_ID}/liked
     def get_author_liked(self, author_id):
         url = self.base_url + "authors/" + author_id + "/liked"
+
+        likes = []
+        
         response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+        # no need to handle the 404 using an exception, just return the likes we have/or the empty list
+        if response.status_code == 404:
+            likes = []
 
-        else:
-            response = response.json()
-            if response is None:
-                # TODO: handle error
-                pass
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting likes for author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+        
+        response_likes = response.json()
+        if response_likes is None:
+            raise RemoteServerError("Error getting likes for author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; no JSON was received in response.")
+        
+        items = response_likes.get("items")
+        if len(items) > 0:
+            likes.extend(items)
 
-            else:
-                likes = []
-                for like in response:
-                    likes.append({
-                        "type": like.get("type", "N/A"),
-                        "author": {
-                            "type": like.get("author", {}).get("type", "N/A"),
-                            "id": like.get("author", {}).get("id", "N/A"),
-                            "host": like.get("author", {}).get("host", "N/A"),
-                            "displayName": like.get("author", {}).get("displayName", "N/A"),
-                            "url": like.get("author", {}).get("url", "N/A"),
-                            "github": like.get("author", {}).get("github", "N/A"),
-                            "profileImage": like.get("author", {}).get("profileImage", "N/A"),
-                        },
-                        "object": like.get("object", "N/A"),
-                    })
-                
-                return likes
+        return {
+            "type": "likes",
+            "items": likes
+        }
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox
     def send_post(self, author_id, body):
