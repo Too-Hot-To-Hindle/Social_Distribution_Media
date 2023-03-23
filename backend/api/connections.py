@@ -354,46 +354,36 @@ class TeamCloneConnection():
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     def get_comments(self, author_id, post_id):
-
         url = self.base_url + "authors/" + author_id + "/posts/" + post_id + "/comments"
-        response = self.session.get(url)
+        
+        # handle pagination
+        # start at page 1, loop until no items are returned - in which case our server throws a 404
+        page = 1
+        comments = []
+        while True:
+            print("in loop...")
+            response = self.session.get(url, params={"page": page, "size": 10})
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
+            # no need to handle the 404 using an exception, just return the comments we have/or the empty list
             if response.status_code == 404:
-                return []
+                break
+
+            elif response.status_code != 200:
+                raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
             
-            else:
-                pass
+            response_comments = response.json()
+            if response_comments is None:
+                raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; no JSON was received in response.")
+            
+            items = response_comments.get("items")
+            if len(items) > 0:
+                comments.extend(items)
+                page += 1
 
-        else:
-            response = response.json()
-            if response is None:
-                # TODO: handle error
-                pass
-
-            else:
-                comments = []
-                for comment in response:
-                    comments.append({
-                        "type": comment.get("type", "N/A"),
-                        "id": comment.get("id", "N/A"),
-                        "author": {
-                            "type": comment.get("author", {}).get("type", "N/A"),
-                            "id": comment.get("author", {}).get("id", "N/A"),
-                            "host": comment.get("author", {}).get("host", "N/A"),
-                            "displayName": comment.get("author", {}).get("displayName", "N/A"),
-                            "url": comment.get("author", {}).get("url", "N/A"),
-                            "github": comment.get("author", {}).get("github", "N/A"),
-                            "profileImage": comment.get("author", {}).get("profileImage", "N/A"),
-                        },
-                        "comment": comment.get("comment", "N/A"),
-                        "contentType": comment.get("contentType", "N/A"),
-                        "published": comment.get("published", "N/A"),
-                    })
-                
-                return comments
+        return {
+            "type": "comments",
+            "items": comments
+        }
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
     def get_post_likes(self, author_id, post_id):
