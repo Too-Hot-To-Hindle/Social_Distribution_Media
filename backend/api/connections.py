@@ -474,15 +474,18 @@ class TeamCloneConnection():
         response = self.session.post(url=url, json=body)
 
         if response.status_code != 200 and response.status_code != 201:
-            # TODO: handle error
-            # look in cache?
-            print("error occurred")
-            pass
+            raise RemoteServerError("Error sending post to author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            # might wanna return something, parse the response...
-            print("sent remotely!")
-            return response.json()
+            try:
+                response_json = response.json()
+                return response_json
+            
+            # if there was an issue parsing the JSON response but we still got a 200/201, it's likely that we sent
+            # the post successfully, and don't need to parse the response
+            except Exception as e:
+                print("Error parsing response from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+                return None
         
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_like(self, author_id, body):

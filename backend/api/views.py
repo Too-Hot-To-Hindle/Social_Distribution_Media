@@ -825,7 +825,7 @@ class InboxDetail(APIView):
             object = request.data
             match object['type']:
                 case 'post':
-                    serializer = InboxPostSerializer(data=object)
+                    serializer = InboxPostSerializer(data=object["object"])
                     if serializer.is_valid():
                         # Create post and post author if they don't exist (foreign case)
                         if Post.objects.filter(id=serializer.validated_data['id']).exists():
@@ -839,7 +839,7 @@ class InboxDetail(APIView):
                         print(serializer.errors)
                         return Response(status=status.HTTP_400_BAD_REQUEST)
                 case 'follow':
-                    serializer = FollowSerializer(data=object)
+                    serializer = FollowSerializer(data=object["object"])
                     if serializer.is_valid():
                         follow = serializer.create(serializer.data)
                         return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
@@ -847,7 +847,7 @@ class InboxDetail(APIView):
                         print(serializer.errors)
                         return Response(status=status.HTTP_400_BAD_REQUEST)
                 case 'like':
-                    serializer = LikeRequestSerializer(data=object)
+                    serializer = LikeRequestSerializer(data=object["object"])
                     if serializer.is_valid():
                         like = serializer.create(serializer.data)
                         return Response(LikeResponseSerializer(like).data, status=status.HTTP_201_CREATED)
@@ -855,7 +855,7 @@ class InboxDetail(APIView):
                         print(serializer.errors)
                         return Response(status=status.HTTP_400_BAD_REQUEST)
                 case 'comment':
-                    serializer = CommentSerializer(data=object)
+                    serializer = CommentSerializer(data=object["object"])
                     if serializer.is_valid():
                         comment = serializer.create(serializer.data)
                         return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
