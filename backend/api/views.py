@@ -588,16 +588,20 @@ class PostLikes(APIView):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
             author_id = extract_uuid_if_url('author', author_id)
-            response = remote.connection.get_post_likes(author_id, post_id)
 
-            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            try:
+                response = remote.connection.get_post_likes(author_id, post_id)
+                return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            
+            except Exception as e:
+                return Response(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         else:
             # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
             author_id = extract_uuid_if_url('author', author_id)
             post_id = extract_uuid_if_url('post', post_id)
             if not (author_id and post_id):
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(status=status.HTTP_404_NOT_FOUND)
             
             try:
                 if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
@@ -607,7 +611,7 @@ class PostLikes(APIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except Exception as e:
                 traceback.print_exc()
-                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
 class CommentLikes(APIView):
 
