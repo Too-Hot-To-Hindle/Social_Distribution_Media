@@ -466,28 +466,39 @@ class ImagePosts(APIView):
         """Get post_id posted by author_id, converted to an image"""
         # NOTE: Should return 404 if post is not an image
 
-        # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-        author_id = extract_uuid_if_url('author', author_id)
-        post_id = extract_uuid_if_url('post', post_id)
+        if is_remote_url(author_id):
+            remote_url = get_remote_url(author_id)
+            remote = RemoteConnection(remote_url)
+            author_id = extract_uuid_if_url('author', author_id)
+            response = remote.connection.get_image_post(author_id, post_id)
 
-        if not (author_id and post_id):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            binary = response[0]
+            content_type = response[1]
+            return HttpResponse(binary, content_type=content_type)
+        
+        else:
+            # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
+            author_id = extract_uuid_if_url('author', author_id)
+            post_id = extract_uuid_if_url('post', post_id)
 
-        try:
-            post = Post.objects.get(pk=post_id)  # NOTE: Should we do anything with author_id?
-            serializer = PostSerializer(post)
+            if not (author_id and post_id):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            if (serializer.data["contentType"] == "image/png;base64" or serializer.data["contentType"] == "image/jpeg;base64"):
-                image_data = serializer.data["content"].partition('base64,')[2]
-                binary = base64.b64decode(image_data)
-                return HttpResponse(binary, content_type=serializer.data["contentType"])
-            
-            else:
+            try:
+                post = Post.objects.get(pk=post_id)  # NOTE: Should we do anything with author_id?
+                serializer = PostSerializer(post)
+
+                if (serializer.data["contentType"] == "image/png;base64" or serializer.data["contentType"] == "image/jpeg;base64"):
+                    image_data = serializer.data["content"].partition('base64,')[2]
+                    binary = base64.b64decode(image_data)
+                    return HttpResponse(binary, content_type=serializer.data["contentType"])
+                
+                else:
+                    return Response(status=status.HTTP_404_NOT_FOUND)
+                
+            except Exception as e:
+                traceback.print_exc()
                 return Response(status=status.HTTP_404_NOT_FOUND)
-            
-        except Exception as e:
-            traceback.print_exc()
-            return Response(status=status.HTTP_404_NOT_FOUND)
 
 class Comments(APIView):
 
@@ -532,9 +543,10 @@ class Comments(APIView):
 
                 serializer = CommentsSerializer({'items': page})
                 return Response(serializer.data, status=status.HTTP_200_OK)
+            
             except Exception as e:
                 traceback.print_exc()
-                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, author_id, post_id):
         """Add a comment (comment object in body) to post_id posted by author_id"""

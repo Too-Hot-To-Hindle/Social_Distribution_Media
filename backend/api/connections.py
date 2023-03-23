@@ -75,7 +75,6 @@ class TeamCloneConnection():
                 "items": authors
                }
 
-
     # URL: ://service/authors/{AUTHOR_ID}/
     def get_single_author(self, author_id):
         url = self.base_url + "authors/" + author_id
@@ -338,8 +337,20 @@ class TeamCloneConnection():
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/image
     def get_image_post(self, author_id, post_id):
-        # TODO: implement this method
-        pass
+        url = self.base_url + "authors/" + author_id + "/posts/" + post_id + "/image"
+        response = self.session.get(url)
+
+        # if the post doesn't exist, or isn't an image, throw a 404 exception
+        if response.status_code == 404:
+            raise Remote404("Post with id " + post_id + " from author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/ does not exist, or is not an image.")
+
+        # if the server returns an error, throw an exception
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting image post with id " + post_id + " from author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+        
+        # otherwise, return the raw image data and the content type
+        else:
+            return (response.content, response.headers.get("Content-Type"))
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     def get_comments(self, author_id, post_id):
