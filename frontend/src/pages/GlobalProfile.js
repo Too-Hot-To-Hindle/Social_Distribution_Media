@@ -104,7 +104,7 @@ const GlobalProfile = () => {
                     createAPIEndpoint(`authors/${authorURLDecoded}/posts`)
                         .get()
                         .then(res => {
-                            setAuthorPosts(res.data)
+                            setAuthorPosts(res.data.items)
                             setLoading(false)
                         })
                         .catch(err => {
@@ -127,8 +127,33 @@ const GlobalProfile = () => {
 
         // otherwise, if authorURLDecoded does not start with https://social-distribution-media.herokuapp.com, make request some other way
         else if (!authorURLDecoded.startsWith("https://social-distribution-media.herokuapp.com")) {
-            // TODO: get remote author details
-            setLoading(false)
+            createAPIEndpoint(`authors/${authorURLDecoded}`)
+                .get()
+                .then(res => {
+                    setAuthorDetails(res.data)
+                    setAuthorServer("Remote Clone")
+
+                    createAPIEndpoint(`authors/${authorURLDecoded}/posts`)
+                        .get()
+                        .then(res => {
+                            setAuthorPosts(res.data.items)
+                            setLoading(false)
+                        })
+                        .catch(err => {
+                            // TODO: Add in error handling
+                            console.log(err)
+                            setError(true)
+                            setErrorMessage("An unexpected error occurred loading profile content.")
+                            setLoading(false)
+                        });
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                    setError(true)
+                    setErrorMessage("An unexpected error occurred loading profile content.")
+                    setLoading(false)
+                });
         }
 
         // otherwise, show error message

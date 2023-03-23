@@ -151,7 +151,6 @@ class TeamCloneConnection():
             except Exception as e:
                 raise RemoteServerError("Error getting followers for author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/. Exception: " + str(e))
 
-
     # URL: ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     def check_if_follower(self, author_id, follower_id):
         url = self.base_url + "authors/" + author_id + "/followers/" + follower_id
@@ -261,7 +260,6 @@ class TeamCloneConnection():
         while True:
             response = self.session.get(url, params={"page": page, "size": 10})
 
-            print(response.status_code)
             # no need to handle the 404 using an exception, just return the posts we have/or the empty array
             if response.status_code == 404:
                 break
@@ -333,7 +331,10 @@ class TeamCloneConnection():
                 "unlisted": post.get("unlisted"),
             })
 
-        return cleaned_posts
+        return {
+            "type": "posts",
+            "items": cleaned_posts,
+        }
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/image
     def get_image_post(self, author_id, post_id):
