@@ -154,7 +154,6 @@ class Followers(APIView):
     )
     def get(self, request, author_id):
         """Get a list of authors and their data following the user given by author_id"""
-        
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
@@ -292,9 +291,13 @@ class Posts(APIView):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
             author_id = extract_uuid_if_url('author', author_id)
-            response = remote.connection.get_recent_posts(author_id)
 
-            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            try:
+                response = remote.connection.get_recent_posts(author_id)
+                return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            
+            except Exception as e:
+                return Response(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         else:
             # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
@@ -302,8 +305,13 @@ class Posts(APIView):
             if not author_id:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             
+            # first, check if the author exists
+            author = Author.objects.filter(pk=author_id)
+            if not author:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            
             try:
-                posts = Post.objects.filter(author___id=author_id)
+                posts = Post.objects.filter(author_id=author_id)
                 paginator = self.pagination_class()
 
                 page = paginator.paginate_queryset(posts, request, view=self)
@@ -357,9 +365,16 @@ class PostDetail(APIView):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
             author_id = extract_uuid_if_url('author', author_id)
-            response = remote.connection.get_single_post(author_id, post_id)
 
-            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            try:
+                response = remote.connection.get_single_post(author_id, post_id)
+                return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            
+            except Remote404 as e:
+                return Response(e.args, status=status.HTTP_404_NOT_FOUND)
+            
+            except RemoteServerError as e:
+                return Response(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         else:
             # Extract a uuid if id was given in the form http://somehost/authors/<uuid>

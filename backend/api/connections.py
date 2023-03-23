@@ -178,92 +178,24 @@ class TeamCloneConnection():
         url = self.base_url + "authors/" + author_id + "/posts/" + post_id
         response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+        # if the author/post is not found, throw an exception
+        if response.status_code == 404:
+            raise Remote404("Post with id " + post_id + " from author with id " + author_id + " not found on remote server: https://social-distribution-media-2.herokuapp.com/")
+
+        # if the server returns an error, throw an exception
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting post with id " + post_id + " from author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            response_post = response.json()
-            if response_post is None:
-                # TODO: handle error
-                pass
+            try:
+                response_post = response.json()
+                if response_post is None:
+                    # TODO: handle error
+                    pass
 
-            else:
-                comments = []
-                for comment in response_post.get("commentsSrc", {}).get("comments", []):
-                    comments.append({
-                        "type": comment.get("type", "N/A"),
-                        "author": {
-                            "type": comment.get("author", {}).get("type", "N/A"),
-                            "id": comment.get("author", {}).get("id", "N/A"),
-                            "host": comment.get("author", {}).get("host", "N/A"),
-                            "displayName": comment.get("author", {}).get("displayName", "N/A"),
-                            "url": comment.get("author", {}).get("url", "N/A"),
-                            "github": comment.get("author", {}).get("github", "N/A"),
-                            "profileImage": comment.get("author", {}).get("profileImage", "N/A"),
-                        },
-                        "comment": comment.get("comment", "N/A"),
-                        "contentType": comment.get("contentType", "N/A"),
-                        "published": comment.get("published", "N/A"),
-                        "id": comment.get("id", "N/A"),
-                    })
-
-                return {
-                    "type": response_post.get("type", "N/A"),
-                    "title": response_post.get("title", "N/A"),
-                    "id": response_post.get("id", "N/A"),
-                    "source": response_post.get("source", "N/A"),
-                    "origin": response_post.get("origin", "N/A"),
-                    "description": response_post.get("description", "N/A"),
-                    "contentType": response_post.get("contentType", "N/A"),
-                    "content": response_post.get("content", "N/A"),
-                    "author": {
-                        "type": response_post.get("author", {}).get("type", "N/A"),
-                        "id": response_post.get("author", {}).get("id", "N/A"),
-                        "host": response_post.get("author", {}).get("host", "N/A"),
-                        "displayName": response_post.get("author", {}).get("displayName", "N/A"),
-                        "url": response_post.get("author", {}).get("url", "N/A"),
-                        "github": response_post.get("author", {}).get("github", "N/A"),
-                        "profileImage": response_post.get("author", {}).get("profileImage", "N/A"),
-                    },
-                    "categories": response_post.get("categories", "N/A"),
-                    "count": response_post.get("count", "N/A"),
-                    "comments": response_post.get("comments", "N/A"),
-                    "commentsSrc": {
-                        "type": response_post.get("commentsSrc", {}).get("type", "comments"),
-                        "page": response_post.get("commentsSrc", {}).get("page", 1),
-                        "size": response_post.get("commentsSrc", {}).get("size", 0),
-                        "post": response_post.get("commentsSrc", {}).get("post", response_post.get("id", "N/A")),
-                        "id": response_post.get("commentsSrc", {}).get("id", response_post.get("id", "N/A") + "/comments"),
-                        "comments": comments
-                    },
-                    "published": response_post.get("published", "N/A"),
-                    "visibility": response_post.get("visibility", "N/A"),
-                    "unlisted": response_post.get("unlisted", "N/A"),
-                }
-
-    # URL: ://service/authors/{AUTHOR_ID}/posts/
-    def get_recent_posts(self, author_id):
-        url = self.base_url + "authors/" + author_id + "/posts"
-        response = self.session.get(url)
-
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
-
-        else:
-            response_posts = response.json()
-            if response_posts is None:
-                # TODO: handle error
-                pass
-
-            else:
-                posts = []
-                for post in response_posts:
+                else:
                     comments = []
-                    for comment in post.get("commentsSrc", {}).get("comments", []):
+                    for comment in response_post.get("commentsSrc", {}).get("comments", []):
                         comments.append({
                             "type": comment.get("type", "N/A"),
                             "author": {
@@ -281,41 +213,127 @@ class TeamCloneConnection():
                             "id": comment.get("id", "N/A"),
                         })
 
-                    posts.append({
-                        "type": post.get("type", "N/A"),
-                        "title": post.get("title", "N/A"),
-                        "id": post.get("id", "N/A"),
-                        "source": post.get("source", "N/A"),
-                        "origin": post.get("origin", "N/A"),
-                        "description": post.get("description", "N/A"),
-                        "contentType": post.get("contentType", "N/A"),
-                        "content": post.get("content", "N/A"),
+                    return {
+                        "type": response_post.get("type", "N/A"),
+                        "title": response_post.get("title", "N/A"),
+                        "id": response_post.get("id", "N/A"),
+                        "source": response_post.get("source", "N/A"),
+                        "origin": response_post.get("origin", "N/A"),
+                        "description": response_post.get("description", "N/A"),
+                        "contentType": response_post.get("contentType", "N/A"),
+                        "content": response_post.get("content", "N/A"),
                         "author": {
-                            "type": post.get("author", {}).get("type", "N/A"),
-                            "id": post.get("author", {}).get("id", "N/A"),
-                            "host": post.get("author", {}).get("host", "N/A"),
-                            "displayName": post.get("author", {}).get("displayName", "N/A"),
-                            "url": post.get("author", {}).get("url", "N/A"),
-                            "github": post.get("author", {}).get("github", "N/A"),
-                            "profileImage": post.get("author", {}).get("profileImage", "N/A"),
+                            "type": response_post.get("author", {}).get("type", "N/A"),
+                            "id": response_post.get("author", {}).get("id", "N/A"),
+                            "host": response_post.get("author", {}).get("host", "N/A"),
+                            "displayName": response_post.get("author", {}).get("displayName", "N/A"),
+                            "url": response_post.get("author", {}).get("url", "N/A"),
+                            "github": response_post.get("author", {}).get("github", "N/A"),
+                            "profileImage": response_post.get("author", {}).get("profileImage", "N/A"),
                         },
-                        "categories": post.get("categories", "N/A"),
-                        "count": post.get("count", "N/A"),
-                        "comments": post.get("comments", "N/A"),
+                        "categories": response_post.get("categories", "N/A"),
+                        "count": response_post.get("count", "N/A"),
+                        "comments": response_post.get("comments", "N/A"),
                         "commentsSrc": {
-                            "type": post.get("commentsSrc", {}).get("type", "comments"),
-                            "page": post.get("commentsSrc", {}).get("page", 1),
-                            "size": post.get("commentsSrc", {}).get("size", 0),
-                            "post": post.get("commentsSrc", {}).get("post", post.get("id", "N/A")),
-                            "id": post.get("commentsSrc", {}).get("id", post.get("id", "N/A") + "/comments"),
+                            "type": response_post.get("commentsSrc", {}).get("type", "comments"),
+                            "page": response_post.get("commentsSrc", {}).get("page", 1),
+                            "size": response_post.get("commentsSrc", {}).get("size", 0),
+                            "post": response_post.get("commentsSrc", {}).get("post", response_post.get("id", "N/A")),
+                            "id": response_post.get("commentsSrc", {}).get("id", response_post.get("id", "N/A") + "/comments"),
                             "comments": comments
                         },
-                        "published": post.get("published", "N/A"),
-                        "visibility": post.get("visibility", "N/A"),
-                        "unlisted": post.get("unlisted", "N/A"),
-                    })
+                        "published": response_post.get("published", "N/A"),
+                        "visibility": response_post.get("visibility", "N/A"),
+                        "unlisted": response_post.get("unlisted", "N/A"),
+                    }
 
-                return posts
+            except Exception as e:
+                raise RemoteServerError("Error getting post with id " + post_id + " from author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; exception " + str(e) + " was thrown.")
+            
+    # URL: ://service/authors/{AUTHOR_ID}/posts/
+    def get_recent_posts(self, author_id):
+        url = self.base_url + "authors/" + author_id + "/posts"
+
+        # handle pagination
+        # start at page 1, loop until no items are returned - in which case our server throws a 404
+        page = 1
+        posts = []
+        while True:
+            response = self.session.get(url, params={"page": page, "size": 10})
+
+            print(response.status_code)
+            # no need to handle the 404 using an exception, just return the posts we have/or the empty array
+            if response.status_code == 404:
+                break
+
+            elif response.status_code != 200:
+                raise RemoteServerError("Error getting recent posts from author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+            
+            response_posts = response.json()
+            if response_posts is None:
+                raise RemoteServerError("Error getting recent posts from author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/. Response body was empty.")
+            
+            items = response_posts.get("items", [])
+            if len(items) > 0:
+                posts.extend(items)
+                page += 1
+
+        cleaned_posts = []
+        for post in posts:
+            comments = []
+            for comment in post.get("commentsSrc", {}).get("comments", []):
+                comments.append({
+                    "type": comment.get("type"),
+                    "author": {
+                        "type": comment.get("author", {}).get("type"),
+                        "id": comment.get("author", {}).get("id"),
+                        "host": comment.get("author", {}).get("host"),
+                        "displayName": comment.get("author", {}).get("displayName"),
+                        "url": comment.get("author", {}).get("url"),
+                        "github": comment.get("author", {}).get("github"),
+                        "profileImage": comment.get("author", {}).get("profileImage"),
+                    },
+                    "comment": comment.get("comment"),
+                    "contentType": comment.get("contentType"),
+                    "published": comment.get("published"),
+                    "id": comment.get("id"),
+                })
+
+            cleaned_posts.append({
+                "type": post.get("type"),
+                "title": post.get("title"),
+                "id": post.get("id"),
+                "source": post.get("source"),
+                "origin": post.get("origin"),
+                "description": post.get("description"),
+                "contentType": post.get("contentType"),
+                "content": post.get("content"),
+                "author": {
+                    "type": post.get("author", {}).get("type"),
+                    "id": post.get("author", {}).get("id"),
+                    "host": post.get("author", {}).get("host"),
+                    "displayName": post.get("author", {}).get("displayName"),
+                    "url": post.get("author", {}).get("url"),
+                    "github": post.get("author", {}).get("github"),
+                    "profileImage": post.get("author", {}).get("profileImage"),
+                },
+                "categories": post.get("categories"),
+                "count": post.get("count"),
+                "comments": post.get("comments"),
+                "commentsSrc": {
+                    "type": post.get("commentsSrc", {}).get("type", "comments"),
+                    "page": post.get("commentsSrc", {}).get("page", 1),
+                    "size": post.get("commentsSrc", {}).get("size", 0),
+                    "post": post.get("commentsSrc", {}).get("post", post.get("id")),
+                    "id": post.get("commentsSrc", {}).get("id", post.get("id") + "/comments"),
+                    "comments": comments
+                },
+                "published": post.get("published"),
+                "visibility": post.get("visibility"),
+                "unlisted": post.get("unlisted"),
+            })
+
+        return cleaned_posts
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/image
     def get_image_post(self, author_id, post_id):
