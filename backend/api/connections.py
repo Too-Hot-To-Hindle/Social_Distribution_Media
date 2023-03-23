@@ -156,15 +156,14 @@ class TeamCloneConnection():
         response = self.session.get(url)
 
         if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+            return {
+                    "isFollower": response.get("isFollower", False)
+                }
 
         else:
             response = response.json()
             if response is None:
-                # TODO: handle error
-                pass
+                raise RemoteServerError("Error checking if author with id " + follower_id + " is a follower of author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/. Response body was empty.")
 
             else:
                 return {
