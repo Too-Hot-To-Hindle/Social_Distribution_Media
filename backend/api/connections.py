@@ -30,10 +30,10 @@ class RemoteConnection():
             )
 
         # Team 11
-        elif (remote_base_url == "https://cmput404-group11.herokuapp.com/"):
+        elif (remote_base_url == "https://quickcomm-dev1.herokuapp.com/"):
             self.connection = Team11Connection(
-                username="johndoe",  # read from .env
-                password="password",  # read from .env
+                username="Z6cpWvdTQsVSGaKQYFbw",  # read from .env
+                password="1LE7jxqA8n3os60mU48v",  # read from .env
                 base_url=remote_base_url + "api/"
             )
 

@@ -23,7 +23,8 @@ const SearchResults = () => {
 
 
     const [localAuthors, setLocalAuthors] = useState(null);
-    const [remoteAuthors, setRemoteAuthors] = useState(null);
+    const [remoteCloneAuthors, setRemoteCloneAuthors] = useState(null);
+    const [team11Authors, setTeam11Authors] = useState(null);
 
     const [myProfile, setMyProfile] = useState(null);
     const [following, setFollowing] = useState([]);
@@ -54,7 +55,8 @@ const SearchResults = () => {
     useEffect(() => {
 
         setLocalAuthors(null)
-        setRemoteAuthors(null)
+        setRemoteCloneAuthors(null)
+        setTeam11Authors(null)
         if (userID) {
             // TODO: make pagination better
 
@@ -75,11 +77,23 @@ const SearchResults = () => {
             createAPIEndpoint(`remote/authors/${testRemoteTeamURL}`)
                 .get()
                 .then(res => {
-                    setRemoteAuthors(res.data.items
+                    setRemoteCloneAuthors(res.data.items
                         .filter(author => author["displayName"].toLowerCase().includes(query.toLowerCase())))
                 })
                 .catch(err => {
                     // TODO: Add in error handling
+                    console.log(err)
+                });
+
+            // team 11's remote URL
+            const team11RemoteTeamURL = encodeURIComponent("https://quickcomm-dev1.herokuapp.com/")
+            createAPIEndpoint(`remote/authors/${team11RemoteTeamURL}`)
+                .get()
+                .then(res => {
+                    setTeam11Authors(res.data.items
+                        .filter(author => author["displayName"].toLowerCase().includes(query.toLowerCase())))
+                })
+                .catch(err => {
                     console.log(err)
                 });
 
@@ -216,7 +230,7 @@ const SearchResults = () => {
                     <Grid item xs={12}>
                         <Card>
 
-                            {(remoteAuthors === null) &&
+                            {(remoteCloneAuthors === null) &&
                                 <Grid container spacing={2}>
                                     <Grid item xs={12}>
                                         <CircularProgress />
@@ -224,14 +238,14 @@ const SearchResults = () => {
                                 </Grid>
                             }
 
-                            {(remoteAuthors !== null && remoteAuthors.length === 0) &&
+                            {(remoteCloneAuthors !== null && remoteCloneAuthors.length === 0) &&
                                 <>
                                     <PagesIcon sx={{ fontSize: "60px" }} />
                                     <Typography variant="h6" component="h2" sx={{ textAlign: "center" }}>No remote clone results.</Typography>
                                 </>
                             }
 
-                            {(remoteAuthors !== null && remoteAuthors.length > 0) &&
+                            {(remoteCloneAuthors !== null && remoteCloneAuthors.length > 0) &&
                                 <>
                                     <Grid container spacing={2}>
 
@@ -240,7 +254,71 @@ const SearchResults = () => {
                                         </Grid>
 
                                         <Grid item xs={12}>
-                                            {remoteAuthors.map((author, index) => {
+                                            {remoteCloneAuthors.map((author, index) => {
+                                                return (
+                                                    <Grid container key={index} spacing={2}>
+                                                        <Grid item xs={12}>
+                                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+                                                                    <div>
+                                                                        <Typography variant="h6" align="left">@{author.displayName}</Typography>
+                                                                    </div>
+                                                                </div>
+
+                                                                <Button variant="contained" onClick={() => {navigate(`/profile/${encodeURIComponent(author.id)}`)}}>View</Button>
+
+                                                                {/* Need to redo friend request logic for remote authors */}
+                                                            </div>
+                                                        </Grid>
+
+                                                        <Grid item xs={12}>
+                                                            <Divider />
+                                                        </Grid>
+
+
+                                                    </Grid>
+                                                )
+                                            })}
+                                        </Grid>
+                                    </Grid>
+                                </>
+                            }
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <Divider />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <Card>
+
+                            {(team11Authors === null) &&
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <CircularProgress />
+                                    </Grid>
+                                </Grid>
+                            }
+
+                            {(team11Authors !== null && team11Authors.length === 0) &&
+                                <>
+                                    <PagesIcon sx={{ fontSize: "60px" }} />
+                                    <Typography variant="h6" component="h2" sx={{ textAlign: "center" }}>No remote team 11 results.</Typography>
+                                </>
+                            }
+
+                            {(team11Authors !== null && team11Authors.length > 0) &&
+                                <>
+                                    <Grid container spacing={2}>
+
+                                        <Grid item xs={12}>
+                                            <Typography variant="h6" align="left">Remote Team 11 Authors</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            {team11Authors.map((author, index) => {
                                                 return (
                                                     <Grid container key={index} spacing={2}>
                                                         <Grid item xs={12}>

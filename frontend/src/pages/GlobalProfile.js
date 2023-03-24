@@ -73,7 +73,7 @@ const GlobalProfile = () => {
                     createAPIEndpoint(`authors/${authorURLDecoded}/posts`)
                         .get()
                         .then(res => {
-                            setAuthorPosts(res.data)
+                            setAuthorPosts(res.data.items)
                             setLoading(false)
                         })
                         .catch(err => {
