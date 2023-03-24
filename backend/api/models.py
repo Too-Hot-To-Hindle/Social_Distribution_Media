@@ -7,9 +7,9 @@ import re
 
 from .utils import extract_uuid
 
-SERVICE_ADDRESS = "https://social-distribution-media.herokuapp.com"
+SERVICE_ADDRESS = "https://social-distribution-media.herokuapp.com/api"
 PREFIX = 'api'
-API_BASE = f"{SERVICE_ADDRESS}/{PREFIX}"
+API_BASE = f"{SERVICE_ADDRESS}"
 
 class Author(models.Model):
 
@@ -47,7 +47,7 @@ class Author(models.Model):
             self.id = f"{self.host}/authors/{self._id}"
         
         if not self.url:
-            self.url = f"{self.host}/api/authors/{self._id}"
+            self.url = f"{self.host}/authors/{self._id}"
         super().save(*args, **kwargs)
 
         # Create inbox on Author creation
