@@ -886,7 +886,7 @@ class InboxDetail(APIView):
                         print(serializer.errors)
                         return Response(status=status.HTTP_400_BAD_REQUEST)
                 case 'follow':
-                    serializer = FollowSerializer(data=object["object"])
+                    serializer = FollowSerializer(data=object)
                     if serializer.is_valid():
                         follow = serializer.create(serializer.data)
                         return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
