@@ -127,6 +127,10 @@ const Friends = () => {
                 });
     }
 
+    const declineFriendRequest = (friendRequest) => {
+        console.log("declining friend request");
+    }
+
     return (
         <>
             <Layout>
@@ -182,6 +186,10 @@ const Friends = () => {
                                             <Button variant="contained" endIcon={<CheckIcon />} onClick={() => {acceptFriendRequest(friendRequest)}}>
                                                 Accept
                                             </Button>
+                                            <Button variant="contained" endIcon={<CloseIcon />} onClick={() => {declineFriendRequest(friendRequest)}} style={{marginLeft: "0.5em"}}>
+                                                Decline
+                                            </Button>
+                                            
                                         </div>
 
                                     </div>
