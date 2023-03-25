@@ -49,7 +49,7 @@ const Profile = () => {
             createAPIEndpoint(`authors/${userID}/posts`)
                 .get()
                 .then(res => {
-                    setPosts(res.data)
+                    setPosts(res.data.items)
                     setLoading(false)
                 })
                 .catch(err => {
