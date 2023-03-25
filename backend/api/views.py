@@ -949,8 +949,7 @@ class FollowRequests(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class DeleteFollowRequest(APIView):
-
-
+    
     def delete(self, request, author_id, actor_id):
         """Get requests to follow author_id"""
         
@@ -962,11 +961,13 @@ class DeleteFollowRequest(APIView):
         try:
             if not Author.objects.filter(pk=author_id).exists():
                 return Response('That author id does not exist', status=status.HTTP_404_NOT_FOUND)
-            
-            follows = Follow.objects.filter(object___id=author_id)
-            serializer = FollowsSerializer({'follows': follows})
 
-            #return Response(serializer.data, status=status.HTTP_200_OK)
+            deleted = Follow.objects.filter(object_id=author_id,actor=actor_id).delete()
+            if deleted[0] > 0:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
