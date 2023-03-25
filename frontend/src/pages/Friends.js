@@ -71,8 +71,8 @@ const Friends = () => {
             createAPIEndpoint(`authors/${userID}/inbox/followers`)
                 .get()
                 .then(res => {
-                    console.log(JSON.stringify(res.data))
-                    setFriendRequests(res.data)
+                    console.log(JSON.stringify(res.data.items))
+                    setFriendRequests(res.data.items)
                     setFriendRequestsLoading(false)
                 })
                 .catch(err => {
@@ -113,6 +113,12 @@ const Friends = () => {
                 .put(data)
                 .then(res => {
                     // reload page
+                    createAPIEndpoint(`authors/${userID}/followers/inbox/${friendRequest.actor._id}`)
+                    .delete()
+                    .then(res => {
+                        console.log("Deleting friend request");
+                        console.log(res.data);
+                    })
                     window.location.reload();
                 })
                 .catch(err => {
