@@ -71,6 +71,7 @@ const Friends = () => {
             createAPIEndpoint(`authors/${userID}/inbox/followers`)
                 .get()
                 .then(res => {
+                    console.log(JSON.stringify(res.data))
                     setFriendRequests(res.data)
                     setFriendRequestsLoading(false)
                 })
