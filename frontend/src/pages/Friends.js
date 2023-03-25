@@ -71,7 +71,6 @@ const Friends = () => {
             createAPIEndpoint(`authors/${userID}/inbox/followers`)
                 .get()
                 .then(res => {
-                    console.log(JSON.stringify(res.data.items))
                     setFriendRequests(res.data.items)
                     setFriendRequestsLoading(false)
                 })
@@ -99,8 +98,6 @@ const Friends = () => {
     }
 
     const acceptFriendRequest = async (friendRequest) => {
-        console.log("actor id:",friendRequest.actor._id);
-        alert("");
         var data = {
             "type": "author",
             "id": friendRequest.actor.id,
@@ -127,10 +124,6 @@ const Friends = () => {
         createAPIEndpoint(`authors/${userID}/inbox/followers/${friendRequest.actor._id}`)
                 .delete()
                 .then(res => {
-                    console.log("Deleting friend request");
-                    console.log(JSON.stringify(res.data));
-                    console.log("friend request:",friendRequest);
-                    alert("");
                     window.location.reload();
                 })
                 .catch(err => {
@@ -141,12 +134,9 @@ const Friends = () => {
 
 
     const declineFriendRequest = (friendRequest) => {
-        console.log("declining friend request");
         createAPIEndpoint(`authors/${userID}/inbox/followers/${friendRequest.actor._id}`)
             .delete()
             .then(res => {
-                console.log(JSON.stringify(res.data));
-                alert("");
                 window.location.reload();
             })
             .catch(err => {
