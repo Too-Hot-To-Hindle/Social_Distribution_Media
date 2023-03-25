@@ -105,15 +105,7 @@ class TeamCloneConnection():
                     raise RemoteServerError("Error getting author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/. Response body was empty.")
 
                 else:
-                    return {
-                        "type": response_author.get("type"),
-                        "id": response_author.get("id"),
-                        "host": response_author.get("host"),
-                        "displayName": response_author.get("displayName"),
-                        "url": response_author.get("url"),
-                        "github": response_author.get("github"),
-                        "profileImage": response_author.get("profileImage"),
-                    }
+                    return response_author
                 
             except Exception as e:
                 raise RemoteServerError("Error getting author with id " + author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/. Exception: " + str(e))
