@@ -142,7 +142,7 @@ const Friends = () => {
 
     const declineFriendRequest = (friendRequest) => {
         console.log("declining friend request");
-        createAPIEndpoint(`authors/${userID}/followers/inbox/${friendRequest.actor._id}`)
+        createAPIEndpoint(`authors/${userID}/inbox/followers/${friendRequest.actor._id}`)
             .delete()
             .then(res => {
                 console.log(JSON.stringify(res.data));
