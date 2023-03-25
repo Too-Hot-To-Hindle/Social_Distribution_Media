@@ -71,7 +71,8 @@ const Friends = () => {
             createAPIEndpoint(`authors/${userID}/inbox/followers`)
                 .get()
                 .then(res => {
-                    setFriendRequests(res.data)
+                    console.log(JSON.stringify(res.data.items))
+                    setFriendRequests(res.data.items)
                     setFriendRequestsLoading(false)
                 })
                 .catch(err => {
@@ -97,7 +98,9 @@ const Friends = () => {
         });
     }
 
-    const acceptFriendRequest = (friendRequest) => {
+    const acceptFriendRequest = async (friendRequest) => {
+        console.log("actor id:",friendRequest.actor._id);
+        alert("");
         var data = {
             "type": "author",
             "id": friendRequest.actor.id,
@@ -112,12 +115,43 @@ const Friends = () => {
                 .put(data)
                 .then(res => {
                     // reload page
-                    window.location.reload();
+                    console.log("accepting friend request");
+                    //window.location.reload();
                 })
                 .catch(err => {
                     // TODO: Add in error handling
+                    console.log("put error")
                     console.log(err)
                 });
+
+        createAPIEndpoint(`authors/${userID}/inbox/followers/${friendRequest.actor._id}`)
+                .delete()
+                .then(res => {
+                    console.log("Deleting friend request");
+                    console.log(JSON.stringify(res.data));
+                    console.log("friend request:",friendRequest);
+                    alert("");
+                    window.location.reload();
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+    }
+
+
+
+    const declineFriendRequest = (friendRequest) => {
+        console.log("declining friend request");
+        createAPIEndpoint(`authors/${userID}/followers/inbox/${friendRequest.actor._id}`)
+            .delete()
+            .then(res => {
+                console.log(JSON.stringify(res.data));
+                alert("");
+                window.location.reload();
+            })
+            .catch(err => {
+                console.log(err);
+            })
     }
 
     return (
@@ -175,6 +209,10 @@ const Friends = () => {
                                             <Button variant="contained" endIcon={<CheckIcon />} onClick={() => {acceptFriendRequest(friendRequest)}}>
                                                 Accept
                                             </Button>
+                                            <Button variant="contained" endIcon={<CloseIcon />} onClick={() => {declineFriendRequest(friendRequest)}} style={{marginLeft: "0.5em"}}>
+                                                Decline
+                                            </Button>
+                                            
                                         </div>
 
                                     </div>

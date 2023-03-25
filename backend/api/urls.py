@@ -10,6 +10,7 @@ urlpatterns = [
     path('authors/<path:author_id>/posts/<post_id>/comments', views.Comments.as_view()),
     path('authors/<path:author_id>/posts/<post_id>/likes', views.PostLikes.as_view()),
     path('authors/<path:author_id>/posts/<post_id>', views.PostDetail.as_view()),
+    path('authors/<path:author_id>/inbox/followers/<actor_id>', views.DeleteFollowRequest.as_view()),
     path('authors/<path:author_id>/inbox/followers', views.FollowRequests.as_view()),
     path('authors/<path:author_id>/followers/<path:foreign_author_id>', views.FollowersDetail.as_view()),
     path('authors/<path:author_id>/followers', views.Followers.as_view()),

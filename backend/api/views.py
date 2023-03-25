@@ -933,7 +933,7 @@ class FollowRequests(APIView):
     def get(self, request, author_id):
         """Get requests to follow author_id"""
         
-        print("in follow requests")
+        print("get in follow requests")
         author_id = extract_uuid_if_url('author', author_id)
         if not author_id:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -944,6 +944,30 @@ class FollowRequests(APIView):
             follows = Follow.objects.filter(object___id=author_id)
             serializer = FollowsSerializer({'items': follows})
             return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            traceback.print_exc()
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class DeleteFollowRequest(APIView):
+    
+    def delete(self, request, author_id, actor_id):
+        """Get requests to follow author_id"""
+        
+        print("in delete follow requests")
+        author_id = extract_uuid_if_url('author', author_id)
+        if not author_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            if not Author.objects.filter(pk=author_id).exists():
+                return Response('That author id does not exist', status=status.HTTP_404_NOT_FOUND)
+
+            deleted = Follow.objects.filter(object_id=author_id,actor=actor_id).delete()
+            if deleted[0] > 0:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
