@@ -928,12 +928,9 @@ class InboxDetail(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class FollowRequests(APIView):
-
-
+    
     def get(self, request, author_id):
         """Get requests to follow author_id"""
-        
-        print("get in follow requests")
         author_id = extract_uuid_if_url('author', author_id)
         if not author_id:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -952,8 +949,6 @@ class DeleteFollowRequest(APIView):
     
     def delete(self, request, author_id, actor_id):
         """Get requests to follow author_id"""
-        
-        print("in delete follow requests")
         author_id = extract_uuid_if_url('author', author_id)
         if not author_id:
             return Response(status=status.HTTP_400_BAD_REQUEST)
