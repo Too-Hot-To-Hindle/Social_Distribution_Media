@@ -35,75 +35,54 @@ const Stream = () => {
     }, [])
 
     useEffect(() => {
-
         const getPosts = async () => {
             if (userID) {
-
-                setPosts([]);
-
+                var allPosts = [];
                 await createAPIEndpoint(`authors/${userID}`).get()
                     .then(res => {
-                        console.log(res.data.following)
+                        console.log(res.data.following);
                         setPostAuthorIDs(res.data.following);
-                        console.log("postAuthorIDs:",postAuthorIDs);
+                        
+
+                        if (res.data.following.length > 0) {
+                            console.log("length greater than 0")
+                            
+                            for (const postAuthor of res.data.following){
+                                createAPIEndpoint(`authors/${postAuthor}/posts`)
+                                .get()
+                                .then(res => {
+                                    console.log("DATA:",res.data.items)
+                                    console.log("for author",postAuthor,"posts:",JSON.stringify(res.data.items))
+                                    for (const index in res.data.items){
+                                        console.log("in loop, item:",res.data.items[index]);
+                                        allPosts.push(res.data.items[index]);
+                                    }
+                                })
+                                .catch(err => {
+                                    console.log("Error in getting posts: ",err)
+                                });
+                            }
+
+                        } else {
+                            //TO DO
+                            console.log("no posts");
+                        }
                     })
+                    .catch(err => {
+                        console.log("Error in getting following: ",err)
+                    });
 
-                
 
-
-
-                /*
-                // get all followers
-                var tempFollowers = [];
-                for (const followerID of followerIDs) {
-                    const res = await createAPIEndpoint(`authors/${followerID}`).get()
-                    tempFollowers.push(res.data)
-                }
-
-                // get all following
-                var tempFollowing = [];
-                for (const followingID of followingIDs) {
-                    const res = await createAPIEndpoint(`authors/${followingID}`).get()
-                    tempFollowing.push(res.data)
-                }
-
-                setupFriends(tempFollowers, tempFollowing)
-                setFriendsLoading(false)*/
-
+                    
+                console.log("all posts:",allPosts);
+                setPosts(allPosts);
+                setLoading(false);
             }
-        }
 
+        }
         getPosts();
-    }, [userID])
+    }, [userID]);
 
-    useEffect(() => {
-        let currPosts = [];
-        if (postAuthorIDs.length > 0) {
-            currPosts = posts;
-            for (let postAuthor in postAuthorIDs){
-                createAPIEndpoint(`authors/${postAuthor}/posts`)
-                .get()
-                .then(res => {
-                    console.log("DATA:",res.data)
-                    console.log("for author",postAuthor,"posts:",JSON.stringify(res.data))
-                    //currPosts.push(res.data?)
-                    //setPosts()
-                })
-            }
-            /*
-            createAPIEndpoint(`authors/${userID}/posts`)
-                .get()
-                .then(res => {
-                    setPosts(res.data.items)
-                    setLoading(false)
-                    console.log(JSON.stringify(res.data))
-                })
-                .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
-                });*/
-        }
-    }, [userID])
 
     return (
         <>
