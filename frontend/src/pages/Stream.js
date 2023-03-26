@@ -22,6 +22,8 @@ const Stream = () => {
 
     const [postAuthorIDs, setPostAuthorIDs] = useState([]);
 
+    const[authorsLoaded, setAuthorsLoaded] = useState(false);
+
     /*
     useEffect(() => {
         setTimeout(() => {
@@ -35,33 +37,14 @@ const Stream = () => {
     }, [])
 
     useEffect(() => {
-        const getPosts = async () => {
+        const getAuthors = async () => {
             if (userID) {
-                var allPosts = [];
+                
                 await createAPIEndpoint(`authors/${userID}`).get()
                     .then(res => {
-                        console.log(res.data.following);
                         setPostAuthorIDs(res.data.following);
-                        
-
                         if (res.data.following.length > 0) {
                             console.log("length greater than 0")
-                            
-                            for (const postAuthor of res.data.following){
-                                createAPIEndpoint(`authors/${postAuthor}/posts`)
-                                .get()
-                                .then(res => {
-                                    console.log("DATA:",res.data.items)
-                                    console.log("for author",postAuthor,"posts:",JSON.stringify(res.data.items))
-                                    for (const index in res.data.items){
-                                        console.log("in loop, item:",res.data.items[index]);
-                                        allPosts.push(res.data.items[index]);
-                                    }
-                                })
-                                .catch(err => {
-                                    console.log("Error in getting posts: ",err)
-                                });
-                            }
 
                         } else {
                             //TO DO
@@ -69,19 +52,40 @@ const Stream = () => {
                         }
                     })
                     .catch(err => {
-                        console.log("Error in getting following: ",err)
+                        console.log(err)
                     });
+                setAuthorsLoaded(true);
 
-
-                    
-                console.log("all posts:",allPosts);
-                setPosts(allPosts);
-                setLoading(false);
             }
 
         }
-        getPosts();
+        getAuthors();
     }, [userID]);
+
+
+    useEffect(() => {
+        let allPosts = [];
+        const getPosts = async () => {
+            if (authorsLoaded){
+                for (const postAuthor of postAuthorIDs){
+                    await createAPIEndpoint(`authors/${postAuthor}/posts`)
+                    .get()
+                    .then(res => {
+                        for (const index in res.data.items){
+                            allPosts.push(res.data.items[index]);
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err)
+                    });
+                }
+                setPosts(allPosts);
+                setLoading(false);
+                
+            }
+        }
+        getPosts();
+    },[postAuthorIDs])
 
 
     return (
