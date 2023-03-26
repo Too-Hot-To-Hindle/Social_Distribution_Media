@@ -66,7 +66,7 @@ const Post = ({
         setUsername(localStorage.getItem('username'))
         setUserID(localStorage.getItem('author_id'))
     }, [])
-
+    /*
     useEffect(() => {
         if (userID) {
             createAPIEndpoint(`authors/${userID}/posts/${id}/likes`)
@@ -84,7 +84,7 @@ const Post = ({
                     console.log(err)
                 })
         }
-    }, [userID])
+    }, [userID])*/
 
     // get currently logged in author information
     useEffect(() => {
