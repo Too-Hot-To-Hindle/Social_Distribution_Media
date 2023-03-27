@@ -73,7 +73,7 @@ const SearchResults = () => {
                 });
 
             // our own team's remote URL
-            const testRemoteTeamURL = encodeURIComponent("https://social-distribution-media-2.herokuapp.com/")
+            const testRemoteTeamURL = encodeURIComponent("https://social-distribution-media-2.herokuapp.com/api/")
             createAPIEndpoint(`remote/authors/${testRemoteTeamURL}`)
                 .get()
                 .then(res => {
@@ -86,7 +86,7 @@ const SearchResults = () => {
                 });
 
             // team 11's remote URL
-            const team11RemoteTeamURL = encodeURIComponent("https://quickcomm-dev1.herokuapp.com/")
+            const team11RemoteTeamURL = encodeURIComponent("https://quickcomm-dev1.herokuapp.com/api/")
             createAPIEndpoint(`remote/authors/${team11RemoteTeamURL}`)
                 .get()
                 .then(res => {
@@ -148,6 +148,8 @@ const SearchResults = () => {
                     </Grid>
 
                     <Grid item xs={12}>
+                        <Typography variant="h6" align="left" sx={{ marginBottom: "10px" }}>Local Authors</Typography>
+
                         <Card>
 
                             {(localAuthors === null) &&
@@ -170,10 +172,6 @@ const SearchResults = () => {
                                     <Grid container spacing={2}>
 
                                         <Grid item xs={12}>
-                                            <Typography variant="h6" align="left">Local Authors</Typography>
-                                        </Grid>
-
-                                        <Grid item xs={12}>
                                             {localAuthors.map((author, index) => {
                                                 return (
                                                     <Grid container key={index} spacing={2}>
@@ -186,7 +184,7 @@ const SearchResults = () => {
                                                                     </div>
                                                                 </div>
 
-                                                                <Button variant="contained" onClick={() => {navigate(`/profile/${author["_id"]}`)}}>View</Button>
+                                                                <Button variant="contained" onClick={() => { navigate(`/profile/${author["_id"]}`) }}>View</Button>
 
 
                                                                 {/* if userID is not in author.followers, show Send Friend Request button */}
@@ -228,6 +226,8 @@ const SearchResults = () => {
                     </Grid>
 
                     <Grid item xs={12}>
+                        <Typography variant="h6" align="left" sx={{ marginBottom: "10px" }}>Remote Clone Authors</Typography>
+
                         <Card>
 
                             {(remoteCloneAuthors === null) &&
@@ -250,10 +250,6 @@ const SearchResults = () => {
                                     <Grid container spacing={2}>
 
                                         <Grid item xs={12}>
-                                            <Typography variant="h6" align="left">Remote Clone Authors</Typography>
-                                        </Grid>
-
-                                        <Grid item xs={12}>
                                             {remoteCloneAuthors.map((author, index) => {
                                                 return (
                                                     <Grid container key={index} spacing={2}>
@@ -266,7 +262,7 @@ const SearchResults = () => {
                                                                     </div>
                                                                 </div>
 
-                                                                <Button variant="contained" onClick={() => {navigate(`/profile/${encodeURIComponent(author.id)}`)}}>View</Button>
+                                                                <Button variant="contained" onClick={() => { navigate(`/profile/${encodeURIComponent(author.id)}`) }}>View</Button>
 
                                                                 {/* Need to redo friend request logic for remote authors */}
                                                             </div>
@@ -292,6 +288,8 @@ const SearchResults = () => {
                     </Grid>
 
                     <Grid item xs={12}>
+                        <Typography variant="h6" align="left" sx={{ marginBottom: "10px" }}>Remote Team 11 Authors</Typography>
+
                         <Card>
 
                             {(team11Authors === null) &&
@@ -314,10 +312,6 @@ const SearchResults = () => {
                                     <Grid container spacing={2}>
 
                                         <Grid item xs={12}>
-                                            <Typography variant="h6" align="left">Remote Team 11 Authors</Typography>
-                                        </Grid>
-
-                                        <Grid item xs={12}>
                                             {team11Authors.map((author, index) => {
                                                 return (
                                                     <Grid container key={index} spacing={2}>
@@ -330,7 +324,7 @@ const SearchResults = () => {
                                                                     </div>
                                                                 </div>
 
-                                                                <Button variant="contained" onClick={() => {navigate(`/profile/${encodeURIComponent(author.id)}`)}}>View</Button>
+                                                                <Button variant="contained" onClick={() => { navigate(`/profile/${encodeURIComponent(author.id)}`) }}>View</Button>
 
                                                                 {/* Need to redo friend request logic for remote authors */}
                                                             </div>

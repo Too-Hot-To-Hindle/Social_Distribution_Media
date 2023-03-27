@@ -9,7 +9,7 @@ import Layout from "../components/layouts/Layout";
 import Post from "../components/Post";
 
 // Material UI elements
-import { Grid, Card, Typography, CircularProgress, Chip, Divider, Dialog, DialogContent, DialogTitle } from "@mui/material";
+import { Grid, Card, Typography, CircularProgress, Chip, Divider, Dialog, DialogContent, DialogTitle, Button } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -39,6 +39,11 @@ const GlobalProfile = () => {
 
     const [loading, setLoading] = useState(true);
 
+    const [ownUsername, setOwnUsername] = useState(null);
+    const [ownUserID, setOwnUserID] = useState(null);
+    const [ownAuthorDetails, setOwnAuthorDetails] = useState(null);
+
+
     const [showFollowers, setShowFollowers] = useState(false);
     const [followersLoading, setFollowersLoading] = useState(true);
 
@@ -50,6 +55,32 @@ const GlobalProfile = () => {
     const [authorServer, setAuthorServer] = useState(null);
     const [authorFollowerDetails, setAuthorFollowerDetails] = useState(null);
 
+    const [sentFollowRequest, setSentFollowRequest] = useState(false);
+    const [sendingFollowRequest, setSendingFollowRequest] = useState(false);
+
+    // useEffect to get own username and user ID from localStorage
+    useEffect(() => {
+        setOwnUsername(localStorage.getItem('username'))
+        setOwnUserID(localStorage.getItem('author_id'))
+    }, [])
+
+    // useEffect to get own author details once ownUserID is set
+    useEffect(() => {
+        if (ownUserID) {
+            createAPIEndpoint(`authors/${ownUserID}`)
+                .get()
+                .then(res => {
+                    setOwnAuthorDetails(res.data)
+                })
+                .catch(err => {
+                    // TODO: Add in error handling
+                    console.log(err)
+                });
+        }
+    }, [ownUserID])
+
+    // useEffect to retrieve author details and author posts for author we're viewing on current page
+    // may be redundant for own author details, can revisit later
     useEffect(() => {
 
         // first, set loading to true
@@ -184,6 +215,28 @@ const GlobalProfile = () => {
         }
     }
 
+    async function sendFollowRequest() {
+        setSendingFollowRequest(true);
+
+        const data = {
+            type: "follow",
+            summary: `${ownUsername} wants to follow ${authorDetails.displayName}.`,
+            actor: ownAuthorDetails,
+            object: authorDetails
+        }
+
+        createAPIEndpoint(`authors/${encodeURIComponent(authorDetails.id)}/inbox`)
+            .post(data)
+            .then(res => {
+                setSendingFollowRequest(false);
+                setSentFollowRequest(true);
+                console.log(res)
+            })
+            .catch(err => {
+                console.log(err)
+            })
+    }
+
     return (
         <>
             <Layout>
@@ -271,6 +324,30 @@ const GlobalProfile = () => {
                                     }
                                 </Card>
                             </Grid> */}
+
+                            {ownUsername !== null && ownUsername !== authorDetails.displayName &&
+                                <>
+                                    <Grid item xs={12}>
+                                        <Divider />
+                                    </Grid>
+
+                                    <Grid item xs={12}>
+                                        {sendingFollowRequest &&
+                                            <Button fullWidth variant="contained" disabled>
+                                                <CircularProgress size="30px"/>
+                                            </Button>
+                                        }
+
+                                        {!sendingFollowRequest && !sentFollowRequest &&
+                                            <Button fullWidth variant="contained" onClick={() => { sendFollowRequest() }}>Send Follow Request</Button>
+                                        }
+
+                                        {!sendingFollowRequest && sentFollowRequest &&
+                                            <Button fullWidth variant="contained" disabled>Follow Request Sent</Button>
+                                        }
+                                    </Grid>
+                                </>
+                            }
 
                             <Grid item xs={12}>
                                 <Divider />

@@ -23,8 +23,11 @@ const Layout = ({ children }) => {
     const navigate = useNavigate();
     const { query } = useParams()
 
+    const [username, setUsername] = useState(null);
+    const [userID, setUserID] = useState(null);
+
     const pages = ["Stream", "Explore", "Friends", "Profile", "New Post", "Post Details", "Search Results"]
-    const paths = ["/stream", "/explore", "/friends", "/profile", "/post", "/post/:id", "/searchresults/:query"]
+    const paths = ["/stream", "/explore", "/friends", `/profile/${userID}`, "/post", "/post/:id", "/searchresults/:query"]
     const icons = [<DynamicFeedRoundedIcon sx={{ fontSize: "32px" }} />, <ExploreIcon sx={{ fontSize: "32px" }} />, <PeopleAltRoundedIcon sx={{ fontSize: "32px" }} />, <PersonIcon sx={{ fontSize: "32px" }} />]
 
     const pathname = window.location.pathname
@@ -32,10 +35,9 @@ const Layout = ({ children }) => {
 
     const [searchQuery, setSearchQuery] = useState(query);
 
-    const [username, setUsername] = useState(null);
-
     useEffect(() => {
         setUsername(localStorage.getItem('username'))
+        setUserID(localStorage.getItem('author_id'))
     }, [])
 
     const theme = createTheme({
@@ -177,7 +179,7 @@ const Layout = ({ children }) => {
                                             if (page !== "New Post" && page !== "Post Details" && page !== "Search Results") {
                                                 return (
                                                     <ListItem disablePadding key={page}>
-                                                        <ListItemButton onClick={() => { navigate(paths[index]) }}>
+                                                        <ListItemButton onClick={() => { navigate(paths[index], {replace: true}) }}>
                                                             <ListItemIcon sx={{ color: "#F5F5F5" }}>
                                                                 {icons[index]}
                                                             </ListItemIcon>

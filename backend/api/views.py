@@ -42,7 +42,7 @@ class Authors(APIView):
     def get(self, request, format=None):
         """Get all authors"""
         try:
-            authors = Author.objects.order_by('displayName') # order by display name so paginator is consistent
+            authors = Author.objects.order_by('displayName').filter(remote=False) # order by display name so paginator is consistent
             paginator = self.pagination_class()
 
             # # paginate our queryset
