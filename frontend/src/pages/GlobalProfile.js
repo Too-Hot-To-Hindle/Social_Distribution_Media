@@ -240,9 +240,27 @@ const GlobalProfile = () => {
         const data = {
             type: "follow",
             summary: `${ownUsername} wants to follow ${authorDetails.displayName}.`,
-            actor: ownAuthorDetails,
-            object: authorDetails
+            actor: {
+                id: ownAuthorDetails.id,
+                type: "author",
+                host: ownAuthorDetails.host,
+                displayName: ownAuthorDetails.displayName,
+                url: ownAuthorDetails.url,
+                github: ownAuthorDetails.github,
+                profileImage: ownAuthorDetails.profileImage
+            },
+            object: {
+                id: authorDetails.id,
+                type: "author",
+                host: authorDetails.host,
+                displayName: authorDetails.displayName,
+                url: authorDetails.url,
+                github: authorDetails.github,
+                profileImage: authorDetails.profileImage
+            }
         }
+
+        console.log(data)
 
         createAPIEndpoint(`authors/${encodeURIComponent(authorDetails.id)}/inbox`)
             .post(data)

@@ -59,8 +59,12 @@ const Post = ({
     const [likes, setLikes] = useState([]);
     const [myAuthorData, setMyAuthorData] = useState(null);
 
+    const [followers, setFollowers] = useState(null)
+
     const [username, setUsername] = useState(null);
     const [userID, setUserID] = useState(null);
+
+    const [isSharing, setIsSharing] = useState(false);
 
     useEffect(() => {
         setUsername(localStorage.getItem('username'))
@@ -92,7 +96,22 @@ const Post = ({
             createAPIEndpoint(`authors/${authorID}`)
                 .get()
                 .then(res => {
+                    console.log(res.data)
                     setMyAuthorData(res.data)
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
+    }, [userID])
+
+    // get currently logged in author's followers
+    useEffect(() => {
+        if (userID) {
+            createAPIEndpoint(`authors/${userID}/followers`)
+                .get()
+                .then(res => {
+                    setFollowers(res.data.items)
                 })
                 .catch(err => {
                     console.log(err)
@@ -149,22 +168,62 @@ const Post = ({
         }
     }
 
-    //ReactMarkdown accepts custom renderers
-    const renderers = {
-        //This custom renderer changes how images are rendered
-        //we use it to constrain the max width of an image to its container
-        image: ({
-            alt,
-            src,
-            title,
-        }) => (
-            <img
-                alt={alt}
-                src={src}
-                title={title}
-                style={{ maxWidth: "100px" }} />
-        ),
-    };
+    const handleShare = async () => {
+        if (userID && myAuthorData) {
+
+            var data = {
+                "type": "post",
+                "summary": `${username} shared a post!`,
+                "author": {
+                    "type": "author",
+                    "id": myAuthorData.id,
+                    "host": myAuthorData.host,
+                    "displayName": myAuthorData.displayName,
+                    "url": myAuthorData.url,
+                    "github": myAuthorData.github,
+                    "profileImage": myAuthorData.profileImage
+                },
+                "object": {
+                    "type": "post",
+                    "author": {
+                        "type": "author",
+                        "id": myAuthorData.id,
+                        "host": myAuthorData.host,
+                        "displayName": myAuthorData.displayName,
+                        "url": myAuthorData.url,
+                        "github": myAuthorData.github,
+                        "profileImage": myAuthorData.profileImage
+                    },
+                    "id": id,
+                    "title": title,
+                    "source": source,
+                    "origin": origin,
+                    "description": description,
+                    "contentType": type,
+                    "content": content,
+                    "categories": categories,
+                    "count": 0,
+                    "comments": id + "/comments", // might not work
+                    "commentsSrc": {},
+                    "visibility": "PUBLIC",
+                    "unlisted": false,
+                }
+            }
+
+
+            console.log(followers)
+            // then, for each follower, send a post to their inbox
+            for (const follower of followers) {
+                const response = await createAPIEndpoint(`authors/${encodeURIComponent(follower.id)}/inbox`).post(data)
+            }
+
+            // then refresh the page
+            window.location.reload();
+        }
+    }
+
+
+
 
     return (
         <>
@@ -265,7 +324,8 @@ const Post = ({
 
                             {!hideShareButton &&
                                 <div style={{ display: "flex", alignItems: "center" }}>
-                                    <Button startIcon={<RepeatIcon />}>Share</Button>
+                                    {isSharing && <CircularProgress size="24px" />}
+                                    {!isSharing && <Button startIcon={<RepeatIcon />} onClick={() => { setIsSharing(true); handleShare(); }}>Share</Button>}
                                 </div>
                             }
 

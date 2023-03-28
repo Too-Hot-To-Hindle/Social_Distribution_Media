@@ -195,10 +195,10 @@ const PostDetails = () => {
 
                 ) : (
                     <>
-                        {((postData === null || authorData === null))
+                        {((postData === null || authorData === null || myProfile === null))
                             ? <Card><CircularProgress /></Card>
                             : <Post
-                                id={postData["_id"]}
+                                id={postData["id"]}
                                 title={postData.title}
                                 description={postData.description}
                                 source={postData.source}
@@ -213,7 +213,6 @@ const PostDetails = () => {
                                 // Hide details button
                                 hideDetailsButton={true}
                                 hideCommentButton={true}
-                                hideShareButton={true}
                                 hideDeleteButton={(postData.author.id !== myProfile.id)}
                             />
                         }
