@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'
 import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { v4 as uuidv4 } from 'uuid';
 
 // Material UI components
 import { CircularProgress, Card, Typography, Grid, Divider, IconButton, Button, TextField, LinearProgress } from "@mui/material";
@@ -16,6 +17,24 @@ import Layout from "../components/layouts/Layout";
 // Custom components
 import Post from "../components/Post";
 import Comment from "../components/Comment";
+
+// Helper functions
+// getPostIDFromURL
+// takes in a URL, say of example https://social-distribution-media.herokuapp.com/author/abc123/posts/def456
+// and returns the post ID, here, def456
+const getPostIDFromURL = (url) => {
+    // make sure "posts" is in url
+    // if last character in string is a '/', remove it first
+    if (url[url.length - 1] === "/") {
+        url = url.slice(0, -1)
+    }
+
+    if (url.includes("posts")) {
+        const urlSplit = url.split("/")
+        console.log(urlSplit[urlSplit.length - 1])
+        return urlSplit[urlSplit.length - 1]
+    }
+}
 
 const PostDetails = () => {
 
@@ -152,9 +171,9 @@ const PostDetails = () => {
     const handleCommentUpload = () => {
         setCommentUploading(true);
         var data = {
-            "comment": commentBody,
-            "contentType": "text/plain",
-            "author": {
+            "type": "comment",
+            "summary": `${myProfile.displayName} commented on your post!`,
+            "actor": {
                 "type": "author",
                 "id": myProfile.id,
                 "host": myProfile.host,
@@ -162,10 +181,29 @@ const PostDetails = () => {
                 "url": myProfile.url,
                 "github": myProfile.github,
                 "profileImage": myProfile.profileImage
+            },
+            "object": {
+                "type": "comment",
+                "summary": `${myProfile.displayName} commented on your post!`,
+                "author": {
+                    "type": "author",
+                    "id": myProfile.id,
+                    "host": myProfile.host,
+                    "displayName": myProfile.displayName,
+                    "url": myProfile.url,
+                    "github": myProfile.github,
+                    "profileImage": myProfile.profileImage
+                },
+                "id": postData.id + "/comments/" + uuidv4(),
+                "comment": commentBody,
+                "contentType": "text/plain",
+                "object": postData.id
             }
         }
 
-        createAPIEndpoint(`authors/${authorID}/posts/${postID}/comments`)
+        console.log(data)
+
+        createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/inbox`)
             .post(data)
             .then(res => {
                 // refresh page

@@ -70,30 +70,12 @@ const Post = ({
         setUsername(localStorage.getItem('username'))
         setUserID(localStorage.getItem('author_id'))
     }, [])
-    /*
-    useEffect(() => {
-        if (userID) {
-            createAPIEndpoint(`authors/${userID}/posts/${id}/likes`)
-                .get()
-                .then(res => {
-                    setLikes(res.data)
-                    for (const like of res.data) {
-                        if (like.author._id === userID) {
-                            setLiked(true)
-                        }
-                    }
-
-                })
-                .catch(err => {
-                    console.log(err)
-                })
-        }
-    }, [userID])*/
+    
 
     // get currently logged in author information
     useEffect(() => {
         if (userID) {
-            createAPIEndpoint(`authors/${authorID}`)
+            createAPIEndpoint(`authors/${userID}`)
                 .get()
                 .then(res => {
                     console.log(res.data)
@@ -141,7 +123,7 @@ const Post = ({
 
                 var data = {
                     "type": "like",
-                    "summary": `${username} likes your post!`,
+                    "summary": `${myAuthorData.displayName} likes your post!`,
                     "author": {
                         "type": "author",
                         "id": myAuthorData.id,
@@ -151,15 +133,27 @@ const Post = ({
                         "github": myAuthorData.github,
                         "profileImage": myAuthorData.profileImage
                     },
-                    "object": `https://social-distribution-media.herokuapp.com/api/authors/${authorID}/posts/${id}`
+                    "object": {
+                        "type": "like",
+                        "summary": `${myAuthorData.displayName} likes your post!`,
+                        "author": {
+                            "type": "author",
+                            "id": myAuthorData.id,
+                            "host": myAuthorData.host,
+                            "displayName": myAuthorData.displayName,
+                            "url": myAuthorData.url,
+                            "github": myAuthorData.github,
+                            "profileImage": myAuthorData.profileImage
+                        },
+                        "object": id
+                    }
+                    
                 }
 
-
-                createAPIEndpoint(`authors/${authorID}/inbox`)
+                createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/inbox`)
                     .post(data)
                     .then(res => {
-                        // refresh page
-                        window.location.reload();
+                        // do nothing
                     })
                     .catch(err => {
                         console.log(err)
@@ -211,7 +205,6 @@ const Post = ({
             }
 
 
-            console.log(followers)
             // then, for each follower, send a post to their inbox
             for (const follower of followers) {
                 const response = await createAPIEndpoint(`authors/${encodeURIComponent(follower.id)}/inbox`).post(data)

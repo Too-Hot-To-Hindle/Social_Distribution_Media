@@ -8,7 +8,7 @@ import Post from "../components/Post";
 import SharedPost from "../components/SharedPost";
 
 // Material UI components
-import { Card, Typography, CircularProgress, Grid } from '@mui/material';
+import { Card, Typography, CircularProgress, Grid, Alert } from '@mui/material';
 
 // Material UI icons
 import PagesIcon from '@mui/icons-material/Pages';
@@ -129,6 +129,10 @@ const Stream = () => {
     return (
         <>
             <Layout>
+                <Alert severity="info" sx={{marginBottom: "20px"}}>
+                    <Typography align="left">At this time, your Stream displays only inbox Post items. To view Likes and Comments on your posts, please head to your Profile page, or to view pending friend requests, head to the friends page.</Typography>
+                </Alert>
+
                 {loading && (
                     <Card>
                         <CircularProgress sx={{ margin: "auto" }} />

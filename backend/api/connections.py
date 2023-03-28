@@ -1687,6 +1687,7 @@ class Team11Connection():
     def send_like(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox/"
 
+        # Team 11's like POST body is a little different, less redundant w/ the object field
         cleaned_body = {
             "@context": body.get("@context") if body.get("@context") != "" else None,
             "summary": body.get("summary") if body.get("summary") != "" else None,
@@ -1700,20 +1701,7 @@ class Team11Connection():
                 "github": body.get("author", {}).get("github") if body.get("author", {}).get("github") != "" else None,
                 "profileImage": body.get("author", {}).get("profileImage") if body.get("author", {}).get("profileImage") != "" else None,
             },
-            "object": {
-                "type": body.get("object", {}).get("type") if body.get("object", {}).get("type") != "" else None,
-                "summary": body.get("object", {}).get("summary") if body.get("object", {}).get("summary") != "" else None,
-                "author": {
-                    "type": body.get("object", {}).get("author", {}).get("type") if body.get("object", {}).get("author", {}).get("type") != "" else None,
-                    "id": body.get("object", {}).get("author", {}).get("id") if body.get("object", {}).get("author", {}).get("id") != "" else None,
-                    "host": body.get("object", {}).get("author", {}).get("host") if body.get("object", {}).get("author", {}).get("host") != "" else None,
-                    "displayName": body.get("object", {}).get("author", {}).get("displayName") if body.get("object", {}).get("author", {}).get("displayName") != "" else None,
-                    "url": body.get("object", {}).get("author", {}).get("url") if body.get("object", {}).get("author", {}).get("url") != "" else None,
-                    "github": body.get("object", {}).get("author", {}).get("github") if body.get("object", {}).get("author", {}).get("github") != "" else None,
-                    "profileImage": body.get("object", {}).get("author", {}).get("profileImage") if body.get("object", {}).get("author", {}).get("profileImage") != "" else None,
-                },
-                "object": body.get("object", {}).get("object") if body.get("object", {}).get("object") != "" else None
-            }
+            "object": body.get("object", {}).get("object") if body.get("object", {}).get("object") != "" else None
         }
 
         response = self.session.post(url=url, json=cleaned_body)
@@ -1738,11 +1726,12 @@ class Team11Connection():
     def send_comment(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox/"
 
+        # Team 11's comment POST body is a little different, less redundant w/ the object field, uses a comment object
         cleaned_body = {
             "@context": body.get("@context") if body.get("@context") != "" else None,
             "summary": body.get("summary") if body.get("summary") != "" else None,
             "type": body.get("type") if body.get("type") != "" else None,
-            "actor": {
+            "author": {
                 "type": body.get("actor", {}).get("type") if body.get("actor", {}).get("type") != "" else None,
                 "id": body.get("actor", {}).get("id") if body.get("actor", {}).get("id") != "" else None,
                 "host": body.get("actor", {}).get("host") if body.get("actor", {}).get("host") != "" else None,
@@ -1751,9 +1740,8 @@ class Team11Connection():
                 "github": body.get("actor", {}).get("github") if body.get("actor", {}).get("github") != "" else None,
                 "profileImage": body.get("actor", {}).get("profileImage") if body.get("actor", {}).get("profileImage") != "" else None,
             },
-            "object": {
+            "comment": {
                 "type": body.get("object", {}).get("type") if body.get("object", {}).get("type") != "" else None,
-                "summary": body.get("object", {}).get("summary") if body.get("object", {}).get("summary") != "" else None,
                 "author": {
                     "type": body.get("object", {}).get("author", {}).get("type") if body.get("object", {}).get("author", {}).get("type") != "" else None,
                     "id": body.get("object", {}).get("author", {}).get("id") if body.get("object", {}).get("author", {}).get("id") != "" else None,
@@ -1766,9 +1754,13 @@ class Team11Connection():
                 "id": body.get("object", {}).get("id") if body.get("object", {}).get("id") != "" else None,
                 "comment": body.get("object", {}).get("comment") if body.get("object", {}).get("comment") != "" else None,
                 "contentType": body.get("object", {}).get("contentType") if body.get("object", {}).get("contentType") != "" else None,
-                "object": body.get("object", {}).get("object") if body.get("object", {}).get("object") != "" else None,
-            }
+                "published": "2023-03-27T22:15:11.085446-06:00" # this is ignored, needs to be a proper formatted timestamp I guess?
+            },
+            "object": body.get("object", {}).get("object") if body.get("object", {}).get("object") != "" else None,
+
         }
+
+        print(cleaned_body)
 
         response = self.session.post(url=url, json=cleaned_body)
 
