@@ -182,7 +182,7 @@ const Post = ({
                             </div>
 
                             {!hideDetailsButton &&
-                                <IconButton onClick={() => { navigate(`/${authorID}/post/${id}`) }}>
+                                <IconButton onClick={() => { navigate(`/${encodeURIComponent(authorID)}/post/${encodeURIComponent(id)}`) }}>
                                     <ReadMoreIcon />
                                 </IconButton>
                             }
@@ -253,7 +253,7 @@ const Post = ({
 
                             {!hideLikeButton &&
                                 <div style={{ display: "flex", alignItems: "center" }}>
-                                    <Button startIcon={liked ? <FavoriteIcon /> : <FavoriteBorderIcon />} onClick={() => { handleLike() }}>Like</Button>
+                                    <Button startIcon={liked ? <FavoriteIcon /> : <FavoriteBorderIcon />} onClick={() => { handleLike() }}>{liked ? "Like Sent" : "Send Like"}</Button>
                                 </div>
                             }
 
@@ -298,7 +298,7 @@ const Post = ({
                             </Grid>
 
                             <Grid item xs={12}>
-                                <TextField fullWidth label="Shareable Link" value={`https://social-distribution-media.herokuapp.com/${authorID}/post/${id}`}></TextField>
+                                <TextField fullWidth label="Shareable Link" value={`https://social-distribution-media.herokuapp.com/${encodeURIComponent(authorID)}/post/${encodeURIComponent(id)}`}></TextField>
                             </Grid>
                         </>
                     }

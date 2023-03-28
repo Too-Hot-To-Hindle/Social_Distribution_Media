@@ -81,9 +81,8 @@ class TeamCloneConnection():
                     "Error getting authors from remote server: https://social-distribution-media-2.herokuapp.com/. Response body was empty.")
 
             items = response_authors.get("items", [])
-            if len(items) > 0:
-                authors.extend(items)
-                page += 1
+            authors.extend(items)
+            page += 1
 
         return {
             "type": "authors",
@@ -291,9 +290,8 @@ class TeamCloneConnection():
                                         " from remote server: https://social-distribution-media-2.herokuapp.com/. Response body was empty.")
 
             items = response_posts.get("items", [])
-            if len(items) > 0:
-                posts.extend(items)
-                page += 1
+            posts.extend(items)
+            page += 1
 
         cleaned_posts = []
         for post in posts:
@@ -399,9 +397,8 @@ class TeamCloneConnection():
                                         " from remote server: https://social-distribution-media-2.herokuapp.com/; no JSON was received in response.")
 
             items = response_comments.get("items")
-            if len(items) > 0:
-                comments.extend(items)
-                page += 1
+            comments.extend(items)
+            page += 1
 
         return {
             "type": "comments",
@@ -430,8 +427,7 @@ class TeamCloneConnection():
                                     " from remote server: https://social-distribution-media-2.herokuapp.com/; no JSON was received in response.")
 
         items = response_likes.get("items")
-        if len(items) > 0:
-            likes.extend(items)
+        likes.extend(items)
 
         return {
             "type": "likes",
@@ -461,8 +457,7 @@ class TeamCloneConnection():
                                     author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; no JSON was received in response.")
 
         items = response_likes.get("items")
-        if len(items) > 0:
-            likes.extend(items)
+        likes.extend(items)
 
         return {
             "type": "likes",
@@ -491,8 +486,7 @@ class TeamCloneConnection():
                                     " from remote server: https://social-distribution-media-2.herokuapp.com/; no JSON was received in response.")
 
         items = response_likes.get("items")
-        if len(items) > 0:
-            likes.extend(items)
+        likes.extend(items)
 
         return {
             "type": "likes",
@@ -603,8 +597,7 @@ class Team6Connection():
                 "Error getting authors from remote server: https://cmput404-group6-instatonne.herokuapp.com/. Response body was empty.")
 
         items = response_authors.get("items", [])
-        if len(items) > 0:
-            authors.extend(items)
+        authors.extend(items)
 
         return {
             "type": "authors",
@@ -1094,9 +1087,8 @@ class Team11Connection():
                     "Error getting authors from remote server: https://quickcomm-dev1.herokuapp.com/. Response body was empty.")
 
             items = response_authors.get("items", [])
-            if len(items) > 0:
-                authors.extend(items)
-                page += 1
+            authors.extend(items)
+            page += 1
 
         # their server can sometimes return null values, so convert them to empty strings
         cleaned_authors = []
@@ -1187,9 +1179,8 @@ class Team11Connection():
                                         " from remote server: https://quickcomm-dev1.herokuapp.com/. Response body was empty.")
 
             items = response_followers.get("items", [])
-            if len(items) > 0:
-                followers.extend(items)
-                page += 1
+            followers.extend(items)
+            page += 1
 
         # their server can sometimes return null values, so convert them to empty strings
         cleaned_followers = []
@@ -1267,7 +1258,7 @@ class Team11Connection():
                                 "type": comment.get("author", {}).get("type").lower() if comment.get("author", {}).get("type") != None else "",
                                 "id": comment.get("author", {}).get("id") if comment.get("author", {}).get("id") != None else "",
                                 "host": comment.get("author", {}).get("host") if comment.get("author", {}).get("host") != None else "",
-                                "displayName": comment.get("author", {}).get("host") if comment.get("author", {}).get("host") != None else "",
+                                "displayName": comment.get("author", {}).get("displayName") if comment.get("author", {}).get("displayName") != None else "",
                                 "url": comment.get("author", {}).get("url") if comment.get("author", {}).get("url") != None else "",
                                 "github": comment.get("author", {}).get("github") if comment.get("author", {}).get("github") != None else "",
                                 "profileImage": comment.get("author", {}).get("profileImage") if comment.get("author", {}).get("profileImage") != None else "",
@@ -1341,9 +1332,8 @@ class Team11Connection():
                                         " from remote server: https://quickcomm-dev1.herokuapp.com/. Response body was empty.")
 
             items = response_posts.get("items", [])
-            if len(items) > 0:
-                posts.extend(items)
-                page += 1
+            posts.extend(items)
+            page += 1
 
         cleaned_posts = []
         for post in posts:
@@ -1355,7 +1345,7 @@ class Team11Connection():
                         "type": comment.get("author", {}).get("type").lower() if comment.get("author", {}).get("type") != None else "",
                         "id": comment.get("author", {}).get("id") if comment.get("author", {}).get("id") != None else "",
                         "host": comment.get("author", {}).get("host") if comment.get("author", {}).get("host") != None else "",
-                        "displayName": comment.get("author", {}).get("host") if comment.get("author", {}).get("host") != None else "",
+                        "displayName": comment.get("author", {}).get("displayName") if comment.get("author", {}).get("displayName") != None else "",
                         "url": comment.get("author", {}).get("url") if comment.get("author", {}).get("url") != None else "",
                         "github": comment.get("author", {}).get("github") if comment.get("author", {}).get("github") != None else "",
                         "profileImage": comment.get("author", {}).get("profileImage") if comment.get("author", {}).get("profileImage") != None else "",
@@ -1449,9 +1439,8 @@ class Team11Connection():
                                         " from remote server: https://quickcomm-dev1.herokuapp.com/; no JSON was received in response.")
 
             items = response_comments.get("comments")
-            if len(items) > 0:
-                comments.extend(items)
-                page += 1
+            comments.extend(items)
+            page += 1
 
         cleaned_comments = []
         for comment in comments:
@@ -1461,7 +1450,7 @@ class Team11Connection():
                     "type": comment.get("author", {}).get("type") if comment.get("author", {}).get("type") != None else "",
                     "id": comment.get("author", {}).get("id") if comment.get("author", {}).get("id") != None else "",
                     "host": comment.get("author", {}).get("host") if comment.get("author", {}).get("host") != None else "",
-                    "displayName": comment.get("author", {}).get("host") if comment.get("author", {}).get("host") != None else "",
+                    "displayName": comment.get("author", {}).get("displayName") if comment.get("author", {}).get("displayName") != None else "",
                     "url": comment.get("author", {}).get("url") if comment.get("author", {}).get("url") != None else "",
                     "github": comment.get("author", {}).get("github") if comment.get("author", {}).get("github") != None else "",
                     "profileImage": comment.get("author", {}).get("profileImage") if comment.get("author", {}).get("profileImage") != None else "",
@@ -1502,9 +1491,8 @@ class Team11Connection():
                                         " from remote server: https://quickcomm-dev1.herokuapp.com/; no JSON was received in response.")
 
             items = response_likes.get("items")
-            if len(items) > 0:
-                likes.extend(items)
-                page += 1
+            likes.extend(items)
+            page += 1
 
         cleaned_likes = []
         for like in likes:
@@ -1516,7 +1504,7 @@ class Team11Connection():
                     "type": like.get("author", {}).get("type") if like.get("author", {}).get("type") != None else "",
                     "id": like.get("author", {}).get("id") if like.get("author", {}).get("id") != None else "",
                     "host": like.get("author", {}).get("host") if like.get("author", {}).get("host") != None else "",
-                    "displayName": like.get("author", {}).get("host") if like.get("author", {}).get("host") != None else "",
+                    "displayName": like.get("author", {}).get("displayName") if like.get("author", {}).get("displayName") != None else "",
                     "url": like.get("author", {}).get("url") if like.get("author", {}).get("url") != None else "",
                     "github": like.get("author", {}).get("github") if like.get("author", {}).get("github") != None else "",
                     "profileImage": like.get("author", {}).get("profileImage") if like.get("author", {}).get("profileImage") != None else "",
@@ -1555,9 +1543,8 @@ class Team11Connection():
                                         author_id + " from remote server: https://quickcomm-dev1.herokuapp.com/; no JSON was received in response.")
 
             items = response_likes.get("items")
-            if len(items) > 0:
-                likes.extend(items)
-                page += 1
+            likes.extend(items)
+            page += 1
 
         cleaned_likes = []
         for like in likes:
@@ -1569,7 +1556,7 @@ class Team11Connection():
                     "type": like.get("author", {}).get("type") if like.get("author", {}).get("type") != None else "",
                     "id": like.get("author", {}).get("id") if like.get("author", {}).get("id") != None else "",
                     "host": like.get("author", {}).get("host") if like.get("author", {}).get("host") != None else "",
-                    "displayName": like.get("author", {}).get("host") if like.get("author", {}).get("host") != None else "",
+                    "displayName": like.get("author", {}).get("displayName") if like.get("author", {}).get("displayName") != None else "",
                     "url": like.get("author", {}).get("url") if like.get("author", {}).get("url") != None else "",
                     "github": like.get("author", {}).get("github") if like.get("author", {}).get("github") != None else "",
                     "profileImage": like.get("author", {}).get("profileImage") if like.get("author", {}).get("profileImage") != None else "",
@@ -1607,9 +1594,8 @@ class Team11Connection():
                                         " from remote server: https://quickcomm-dev1.herokuapp.com/; no JSON was received in response.")
 
             items = response_likes.get("items")
-            if len(items) > 0:
-                likes.extend(items)
-                page += 1
+            likes.extend(items)
+            page += 1
 
         cleaned_likes = []
         for like in likes:
@@ -1621,7 +1607,7 @@ class Team11Connection():
                     "type": like.get("author", {}).get("type") if like.get("author", {}).get("type") != None else "",
                     "id": like.get("author", {}).get("id") if like.get("author", {}).get("id") != None else "",
                     "host": like.get("author", {}).get("host") if like.get("author", {}).get("host") != None else "",
-                    "displayName": like.get("author", {}).get("host") if like.get("author", {}).get("host") != None else "",
+                    "displayName": like.get("author", {}).get("displayName") if like.get("author", {}).get("displayName") != None else "",
                     "url": like.get("author", {}).get("url") if like.get("author", {}).get("url") != None else "",
                     "github": like.get("author", {}).get("github") if like.get("author", {}).get("github") != None else "",
                     "profileImage": like.get("author", {}).get("profileImage") if like.get("author", {}).get("profileImage") != None else "",

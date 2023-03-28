@@ -79,7 +79,6 @@ const EditPost = () => {
                     createAPIEndpoint(`authors/${authorID}/posts/${postID}`)
                         .get()
                         .then(res => {
-                            console.log(res.data)
                             setPostData(res.data)
                             setBelongsToUser(authorRes.data["_id"] === userID)
                             setPostType(res.data.contentType)

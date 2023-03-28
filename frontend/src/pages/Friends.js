@@ -112,12 +112,10 @@ const Friends = () => {
                 .put(data)
                 .then(res => {
                     // reload page
-                    console.log("accepting friend request");
-                    //window.location.reload();
+                    window.location.reload();
                 })
                 .catch(err => {
                     // TODO: Add in error handling
-                    console.log("put error")
                     console.log(err)
                 });
 

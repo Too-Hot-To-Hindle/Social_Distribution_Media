@@ -41,6 +41,9 @@ def is_remote_url(id_str: str):
         if id_str.startswith('http://127.0.0.1:8000'):
             return False
         
+        if id_str.startswith('https://social-distribution-media.herokuapp.com/api/'):
+            return False
+        
         # otherwise, it's a remote URL, so return True
         else:
             return True

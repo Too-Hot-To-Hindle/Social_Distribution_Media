@@ -164,7 +164,7 @@ const Layout = ({ children }) => {
                                         if (pathname === paths[index]) {
                                             if (page !== "New Post" && page !== "Post Details" && page !== "Search Results") {
                                                 return (
-                                                    <ListItem disablePadding key={page}>
+                                                    <ListItem disablePadding key={index}>
                                                         <ListItemButton>
                                                             <ListItemIcon sx={{ color: "#499BE9" }}>
                                                                 {icons[index]}
@@ -178,7 +178,7 @@ const Layout = ({ children }) => {
                                         else {
                                             if (page !== "New Post" && page !== "Post Details" && page !== "Search Results") {
                                                 return (
-                                                    <ListItem disablePadding key={page}>
+                                                    <ListItem disablePadding key={index}>
                                                         <ListItemButton onClick={() => { navigate(paths[index], {replace: true}) }}>
                                                             <ListItemIcon sx={{ color: "#F5F5F5" }}>
                                                                 {icons[index]}
@@ -193,8 +193,8 @@ const Layout = ({ children }) => {
 
 
                                         return (
-                                            <>
-                                            </>
+                                            <div key={index}>
+                                            </div>
                                         )
                                     })}
                                 </List>

@@ -20,7 +20,6 @@ export default function SignUp() {
         createAPIEndpoint(ENDPOINTS.authRegister)
             .post(data)
             .then(res => {
-                console.log(res)
                 navigate("/stream")
             })
             .catch(err => {

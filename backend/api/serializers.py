@@ -178,8 +178,10 @@ class FollowSerializer(serializers.ModelSerializer):
         object_data = validated_data.pop('object')
         # Create actor object if they don't exist (remote follow case)
         if Author.objects.filter(id=actor_data['id']).exists():
+            print("actor exists")
             actor = Author.objects.get(id=actor_data['id'])
         else:
+            print("actor doesn't exist")
             actor = Author.objects.create(**actor_data, remote=True)  # If creating here it is a remote user
         object = Author.objects.get(id=object_data['id'])
         return Follow.objects.create(actor=actor, object=object, **validated_data)

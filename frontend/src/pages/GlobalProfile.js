@@ -9,7 +9,7 @@ import Layout from "../components/layouts/Layout";
 import Post from "../components/Post";
 
 // Material UI elements
-import { Grid, Card, Typography, CircularProgress, Chip, Divider, Dialog, DialogContent, DialogTitle, Button } from "@mui/material";
+import { Grid, Card, Typography, CircularProgress, Chip, Divider, Dialog, DialogContent, DialogTitle, DialogActions, Button } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -23,9 +23,32 @@ import ErrorIcon from '@mui/icons-material/Error';
 // and returns the post ID, here, def456
 const getPostIDFromURL = (url) => {
     // make sure "posts" is in url
+    // if last character in string is a '/', remove it first
+    if (url[url.length - 1] === "/") {
+        url = url.slice(0, -1)
+    }
+
     if (url.includes("posts")) {
         const urlSplit = url.split("/")
+        console.log(urlSplit[urlSplit.length - 1])
         return urlSplit[urlSplit.length - 1]
+    }
+}
+
+// checkIfFollower
+// looks at authorFollowerDetails to see if object with authorID === ownUserID exists
+// if authorFollowerDetails is null, returns true -- so that we don't render the follow button
+const checkIfFollower = (authorFollowerDetails, ownUserID) => {
+    if (authorFollowerDetails) {
+        for (let i = 0; i < authorFollowerDetails.length; i++) {
+            if (authorFollowerDetails[i].id.includes(ownUserID)) {
+                return true
+            }
+        }
+        return false
+    }
+    else {
+        return true
     }
 }
 
@@ -158,13 +181,13 @@ const GlobalProfile = () => {
 
         // otherwise, if authorURLDecoded does not start with https://social-distribution-media.herokuapp.com, make request some other way
         else if (!authorURLDecoded.startsWith("https://social-distribution-media.herokuapp.com")) {
-            createAPIEndpoint(`authors/${authorURLDecoded}`)
+            createAPIEndpoint(`authors/${encodeURIComponent(authorURL)}`)
                 .get()
                 .then(res => {
                     setAuthorDetails(res.data)
-                    setAuthorServer("Remote Clone")
+                    setAuthorServer("Remote")
 
-                    createAPIEndpoint(`authors/${authorURLDecoded}/posts`)
+                    createAPIEndpoint(`authors/${encodeURIComponent(authorURL)}/posts`)
                         .get()
                         .then(res => {
                             setAuthorPosts(res.data.items)
@@ -195,25 +218,21 @@ const GlobalProfile = () => {
         }
     }, [])
 
-    async function loadFollowers() {
-        setShowFollowers(true)
-
-        if (authorURLDecoded.startsWith("https://social-distribution-media.herokuapp.com")) {
-            // TODO: get local author followers
-            var allLocalFollowers = []
-            for (let follower of authorDetails.followers) {
-                const response = await createAPIEndpoint(`authors/${follower}`).get()
-                allLocalFollowers.push(response.data.items)
-            }
-
-            setAuthorFollowerDetails(allLocalFollowers)
-            setFollowersLoading(false)
+    // useEffect to retreive followers for author we're viewing on current page
+    useEffect(() => {
+        if (authorDetails) {
+            createAPIEndpoint(`authors/${encodeURIComponent(authorDetails.id)}/followers`)
+                .get()
+                .then(res => {
+                    setAuthorFollowerDetails(res.data.items)
+                })
+                .catch(err => {
+                    console.log(err)
+                })
         }
+    }, [authorDetails])
 
-        else if (!authorURLDecoded.startsWith("https://social-distribution-media.herokuapp.com")) {
-            // TODO: get remote author followers
-        }
-    }
+
 
     async function sendFollowRequest() {
         setSendingFollowRequest(true);
@@ -240,33 +259,41 @@ const GlobalProfile = () => {
     return (
         <>
             <Layout>
-                {/* <Dialog open={showFollowers} style={{ padding: "20px" }}>
+                <Dialog open={showFollowers} style={{ padding: "20px" }} maxWidth="xl">
                     <DialogTitle>Followers</DialogTitle>
 
-                    <DialogContent>
-                        <Grid container spacing={2}>
-                            {followersLoading &&
-                                <Grid item xs={12}>
-                                    <CircularProgress sx={{ margin: "20px" }} />
-                                </Grid>
-                            }
-
-                            {!followersLoading &&
-                                <>
-                                    {authorFollowerDetails.map((follower, index) => (
+                    {authorFollowerDetails !== null &&
+                        <DialogContent>
+                            {authorFollowerDetails.map((follower, index) => {
+                                return (
+                                    <Grid container key={index} spacing={2}>
                                         <Grid item xs={12}>
-                                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                                <Typography sx={{marginRight: "100px"}}>{follower.displayName}</Typography>
+                                            <div style={{ display: "flex", justifyContent: "space-between", width: "400px" }}>
+                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+                                                    <div>
+                                                        <Typography variant="h6" align="left">@{follower.displayName}</Typography>
+                                                    </div>
+                                                </div>
 
-                                                <Chip label="View" clickable onClick={() => {navigate(`/profile/${encodeURIComponent(follower.url)}`, {replace: true}); window.location.reload();}}/>
+                                                <Button variant="contained" onClick={() => { window.location.href = `/profile/${encodeURIComponent(follower.id)}` }}>View</Button>
+
                                             </div>
                                         </Grid>
-                                    ))}
-                                </>
-                            }
-                        </Grid>
-                    </DialogContent>
-                </Dialog> */}
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+                                    </Grid>
+                                )
+                            })}
+                        </DialogContent>
+                    }
+
+                    <DialogActions>
+                        <Button variant="contained"  sx={{margin: "5px"}} fullWidth onClick={() => { setShowFollowers(false) }}>Close</Button>
+                    </DialogActions>
+                </Dialog>
 
                 <Grid container spacing={2}>
                     {loading &&
@@ -301,31 +328,39 @@ const GlobalProfile = () => {
                                 </Card>
                             </Grid>
 
-                            {/* <Grid item xs={12}>
+                            <Grid item xs={12}>
                                 <Divider />
                             </Grid>
 
                             <Grid item xs={12}>
                                 <Typography variant="h6" align="left">Followers</Typography>
-                            </Grid> */}
+                            </Grid>
 
-                            {/* <Grid item xs={12}>
-                                <Card>
-                                    {authorDetails.followers.length === 0 &&
-                                        <Typography variant="body1" align="left">No followers.</Typography>
-                                    }
+                            <Grid item xs={12}>
+                                {authorFollowerDetails === null &&
+                                    <Card>
+                                        <CircularProgress />
+                                    </Card>
+                                }
 
-                                    {authorDetails.followers.length > 0 &&
-                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                            <Typography variant="h6" align="left">{authorDetails.followers.length}</Typography>
+                                {authorFollowerDetails !== null &&
+                                    <Card>
+                                        {authorFollowerDetails.length === 0 &&
+                                            <Typography variant="body1" align="left">No followers.</Typography>
+                                        }
 
-                                            <Chip label="View All" clickable onClick={() => { loadFollowers() }} />
-                                        </div>
-                                    }
-                                </Card>
-                            </Grid> */}
+                                        {authorFollowerDetails.length > 0 &&
+                                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                                <Typography variant="h6" align="left">{authorFollowerDetails.length}</Typography>
 
-                            {ownUsername !== null && ownUsername !== authorDetails.displayName &&
+                                                <Chip label="View All" clickable onClick={() => { setShowFollowers(true) }} />
+                                            </div>
+                                        }
+                                    </Card>
+                                }
+                            </Grid>
+
+                            {ownUsername !== null && ownUsername !== authorDetails.displayName && (checkIfFollower(authorFollowerDetails, ownUserID) === false) &&
                                 <>
                                     <Grid item xs={12}>
                                         <Divider />
@@ -334,7 +369,7 @@ const GlobalProfile = () => {
                                     <Grid item xs={12}>
                                         {sendingFollowRequest &&
                                             <Button fullWidth variant="contained" disabled>
-                                                <CircularProgress size="30px"/>
+                                                <CircularProgress size="30px" />
                                             </Button>
                                         }
 

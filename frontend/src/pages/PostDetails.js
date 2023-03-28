@@ -4,10 +4,11 @@ import { useParams } from 'react-router-dom'
 import { createAPIEndpoint, ENDPOINTS } from '../api';
 
 // Material UI components
-import { CircularProgress, Card, Typography, Grid, Divider, IconButton, Button, TextField } from "@mui/material";
+import { CircularProgress, Card, Typography, Grid, Divider, IconButton, Button, TextField, LinearProgress } from "@mui/material";
 
 // Material UI icons
 import QuizIcon from '@mui/icons-material/Quiz';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 // Layout component
 import Layout from "../components/layouts/Layout";
@@ -22,6 +23,13 @@ const PostDetails = () => {
 
     const [commentsLoading, setCommentsLoading] = useState(true);
     const [comments, setComments] = useState([]);
+
+    const [likesLoading, setLikesLoading] = useState(true);
+    const [likes, setLikes] = useState([]);
+
+    const [commentLikesLoading, setCommentLikesLoading] = useState(true);
+    const [commentLikes, setCommentLikes] = useState(null); // array of objects that contain arrays of the likes for each comment
+
     const [myProfile, setMyProfile] = useState(null);
     const [notFound, setNotFound] = useState(null)
     const [authorData, setAuthorData] = useState(null);
@@ -33,17 +41,18 @@ const PostDetails = () => {
     const [username, setUsername] = useState(null);
     const [userID, setUserID] = useState(null);
 
+    // useEffect to get username and user ID for user currently logged in
     useEffect(() => {
         setUsername(localStorage.getItem('username'))
         setUserID(localStorage.getItem('author_id'))
     }, [])
 
+    // useEffect to get user profile for user currently logged in
     useEffect(() => {
         if (userID) {
-            createAPIEndpoint(`authors/${userID}`)
+            createAPIEndpoint(`authors/${encodeURIComponent(userID)}`)
                 .get()
                 .then(res => {
-                    //console.log(res.data)
                     setMyProfile(res.data)
                 })
                 .catch(err => {
@@ -53,10 +62,11 @@ const PostDetails = () => {
         }
     }, [userID])
 
+    // useEffect to get post and author data for post details we're currently viewing
     useEffect(() => {
         if (userID) {
             // get post author information
-            createAPIEndpoint(`authors/${authorID}`)
+            createAPIEndpoint(`authors/${encodeURIComponent(authorID)}`)
                 .get()
                 .then(res => {
                     setAuthorData(res.data)
@@ -70,11 +80,10 @@ const PostDetails = () => {
                 });
 
             // get post information
-            createAPIEndpoint(`authors/${authorID}/posts/${postID}`)
+            createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/posts/${encodeURIComponent(postID)}`)
                 .get()
                 .then(res => {
                     setPostData(res.data)
-                    console.log(res.data)
                 })
                 .catch(err => {
                     // TODO: Add in error handling
@@ -86,14 +95,30 @@ const PostDetails = () => {
         }
     }, [userID]);
 
-    // get comments for post
+    // useEffect to get comments for post we're currently viewing
     useEffect(() => {
-        createAPIEndpoint(`authors/${authorID}/posts/${postID}/comments`)
+        const getAllCommentLikes = async (comments) => {
+            var allCommentLikes = []
+            // then, for each comment, get the likes
+            for (let comment of comments) {
+                const response = await createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/posts/${encodeURIComponent(postID)}/comments/${encodeURIComponent(comment.id)}/likes`).get()
+                const commentWithLikes = {
+                    id: comment.id,
+                    likes: response.data.items
+                }
+
+                allCommentLikes.push(commentWithLikes)
+            }
+            setCommentLikes(allCommentLikes)
+            setCommentLikesLoading(false)
+        }
+
+        createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/posts/${encodeURIComponent(postID)}/comments`)
             .get()
             .then(res => {
-                console.log(res.data)
                 setCommentsLoading(false)
-                setComments(res.data)
+                setComments(res.data.items)
+                getAllCommentLikes(res.data.items)
             })
             .catch(err => {
                 // TODO: Add in error handling
@@ -104,6 +129,25 @@ const PostDetails = () => {
                 console.log(err)
             });
     }, [])
+
+    // useEffect to get likes for post we're currently viewing
+    useEffect(() => {
+        createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/posts/${encodeURIComponent(postID)}/likes`)
+            .get()
+            .then(res => {
+                setLikesLoading(false)
+                setLikes(res.data.items)
+            })
+            .catch(err => {
+                // TODO: Add in error handling
+                if (err.response.status === 404) {
+                    setLikesLoading(false)
+                    setLikes([])
+                }
+                console.log(err)
+            });
+    }, [])
+
 
     const handleCommentUpload = () => {
         setCommentUploading(true);
@@ -170,10 +214,53 @@ const PostDetails = () => {
                                 hideDetailsButton={true}
                                 hideCommentButton={true}
                                 hideShareButton={true}
+                                hideDeleteButton={(postData.author.id !== myProfile.id)}
                             />
                         }
 
                         <Card>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12}>
+                                    <Typography variant="h6" align="left">Likes</Typography>
+                                </Grid>
+
+                                <Grid item xs={12}>
+                                    <Divider />
+                                </Grid>
+
+                                {likesLoading &&
+                                    <Grid item xs={12}>
+                                        <CircularProgress />
+                                    </Grid>
+                                }
+
+                                {!likesLoading && likes.length === 0 &&
+                                    <Grid item xs={12}>
+                                        <Typography variant="body1" align="center">No likes yet.</Typography>
+                                    </Grid>
+                                }
+
+                                {!likesLoading && likes.length > 0 &&
+                                    likes.map((like, index) => (
+                                        <Grid item xs={12} key={index}>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+
+                                                    <div>
+                                                        <Typography variant="h6" align="left">@{like.author.displayName}</Typography>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </Grid>
+                                    ))
+                                }
+                            </Grid>
+                        </Card>
+
+                        <Card>
+
                             <Grid container spacing={2}>
                                 <Grid item xs={12}>
                                     <Typography variant="h6" align="left">Comments</Typography>
@@ -182,6 +269,7 @@ const PostDetails = () => {
                                 <Grid item xs={12}>
                                     <Divider />
                                 </Grid>
+
 
                                 <Grid item xs={12}>
                                     <TextField placeholder="Write a comment..." multiline maxRows={Infinity} fullWidth onChange={(event) => { setCommentBody(event.target.value) }} />
@@ -197,7 +285,7 @@ const PostDetails = () => {
                                     <Divider />
                                 </Grid>
 
-                                {commentsLoading &&
+                                {(commentsLoading || commentLikes === null) &&
                                     <Grid item xs={12}>
                                         <CircularProgress />
                                     </Grid>
@@ -209,10 +297,10 @@ const PostDetails = () => {
                                     </Grid>
                                 }
 
-                                {!commentsLoading && comments.length > 0 &&
+                                {!commentsLoading && comments.length > 0 && commentLikes !== null &&
                                     comments.map((comment) => (
                                         <Grid item xs={12}>
-                                            <Comment username={comment.author.displayName} content={comment.comment} />
+                                            <Comment username={comment.author.displayName} content={comment.comment} likes={commentLikes} id={comment.id} />
                                         </Grid>
                                     ))
                                 }
