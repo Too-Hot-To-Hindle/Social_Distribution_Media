@@ -1625,7 +1625,7 @@ class Team11Connection():
         url = self.base_url + "authors/" + author_id + "/inbox/"
 
         cleaned_body = {
-            "@context": body.get("@context") if body.get("@context") != "" else None,
+            "@context": body.get("@context") if body.get("@context") != "" else "https://google.com",
             "summary": body.get("summary") if body.get("summary") != "" else None,
             "type": body.get("type").lower() if body.get("type") != "" else None,
             "author": {
@@ -1634,8 +1634,8 @@ class Team11Connection():
                 "host": body.get("author", {}).get("host") if body.get("author", {}).get("host") != "" else None,
                 "displayName": body.get("author", {}).get("displayName") if body.get("author", {}).get("displayName") != "" else None,
                 "url": body.get("author", {}).get("url") if body.get("author", {}).get("url") != "" else None,
-                "github": body.get("author", {}).get("github") if body.get("author", {}).get("github") != "" else None,
-                "profileImage": body.get("author", {}).get("profileImage") if body.get("author", {}).get("profileImage") != "" else None,
+                "github": body.get("author", {}).get("github") if body.get("author", {}).get("github") != "" else "https://google.com",
+                "profileImage": body.get("author", {}).get("profileImage") if body.get("author", {}).get("profileImage") != "" else "https://google.com",
             },
             "object": {
                 "type": body.get("object", {}).get("type") if body.get("object", {}).get("type") != "" else None,
@@ -1652,18 +1652,20 @@ class Team11Connection():
                     "host": body.get("object", {}).get("author", {}).get("host") if body.get("object", {}).get("author", {}).get("host") != "" else None,
                     "displayName": body.get("object", {}).get("author", {}).get("displayName") if body.get("object", {}).get("author", {}).get("displayName") != "" else None,
                     "url": body.get("object", {}).get("author", {}).get("url") if body.get("object", {}).get("author", {}).get("url") != "" else None,
-                    "github": body.get("object", {}).get("author", {}).get("github") if body.get("object", {}).get("author", {}).get("github") != "" else None,
-                    "profileImage": body.get("object", {}).get("author", {}).get("profileImage") if body.get("object", {}).get("author", {}).get("profileImage") != "" else None,
+                    "github": body.get("object", {}).get("author", {}).get("github") if body.get("object", {}).get("author", {}).get("github") != "" else "https://google.com",
+                    "profileImage": body.get("object", {}).get("author", {}).get("profileImage") if body.get("object", {}).get("author", {}).get("profileImage") != "" else "https://google.com",
                 },
                 "categories": body.get("object", {}).get("categories") if body.get("object", {}).get("categories") != "" else None,
                 "count": body.get("object", {}).get("count") if body.get("object", {}).get("count") != "" else None,
                 "comments": body.get("object", {}).get("comments") if body.get("object", {}).get("comments") != "" else None,
                 "commentsSrc": body.get("object", {}).get("commentsSrc") if body.get("object", {}).get("commentsSrc") != "" else None,
-                "published": body.get("object", {}).get("published") if body.get("object", {}).get("published") != "" else None,
+                "published": "2023-03-27T22:15:11.085446-06:00", # ignored
                 "visibility": body.get("object", {}).get("visibility") if body.get("object", {}).get("visibility") != "" else None,
                 "unlisted": body.get("object", {}).get("unlisted") if body.get("object", {}).get("unlisted") != "" else None,
             }
         }
+
+        print(cleaned_body)
 
         response = self.session.post(url=url, json=cleaned_body)
 
