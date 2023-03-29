@@ -330,7 +330,7 @@ COMMENT_2 = {
 }
 
 POST_LIKE_1 = {
-    "type": "Like",
+    "type": "like",
     "summary": "Test user likes your post!",
     "author": {
         "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
@@ -350,7 +350,7 @@ POST_LIKE_1 = {
 }
 
 POST_LIKE_2 = {
-    "type": "Like",
+    "type": "like",
     "summary": "Test user likes your post!",
     "author": {
         "_id": "d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
@@ -370,7 +370,7 @@ POST_LIKE_2 = {
 }
 
 COMMENT_LIKE_1 = {
-    "type": "Like",
+    "type": "like",
     "summary": "Test user likes your comment!",
     "author": {
         "_id": "1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
