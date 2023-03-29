@@ -53,7 +53,7 @@ class TeamCloneConnection():
         self.password = password
         self.base_url = base_url
         self.session = CachedSession(
-            "teamTEST_cache", backend="sqlite", expire_after=300)
+            "teamTEST_cache", backend="sqlite", expire_after=1)
         self.session.auth = (self.username, self.password)
 
     # URL: ://service/authors/
@@ -570,7 +570,7 @@ class Team6Connection():
         self.password = password
         self.base_url = base_url
         self.session = CachedSession(
-            "team6_cache", backend="sqlite", expire_after=300)
+            "team6_cache", backend="sqlite", expire_after=1)
         self.session.auth = (self.username, self.password)
 
     # URL: ://service/authors/
@@ -1059,7 +1059,7 @@ class Team11Connection():
         self.password = password
         self.base_url = base_url
         self.session = CachedSession(
-            "team11_cache", backend="sqlite", expire_after=300)
+            "team11_cache", backend="sqlite", expire_after=1)
         self.session.auth = (self.username, self.password)
 
     # URL: ://service/authors/
