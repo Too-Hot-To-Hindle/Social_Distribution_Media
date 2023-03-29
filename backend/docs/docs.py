@@ -43,6 +43,29 @@ AUTHOR_3 = {
     "following": []
 }
 
+FOLLOW_1 = {
+            "type": "follow",
+            "summary": "johndoe wants to follow testeric.",
+            "actor": {
+                "type": "author",
+                "id": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+                "host": "https://social-distribution-media.herokuapp.com/api",
+                "displayName": "johndoe",
+                "url": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+                "github": "",
+                "profileImage": "",
+            },
+            "object": {
+                "type": "author",
+                "id": "https://social-distribution-media.herokuapp.com/api/authors/91d2e507-12d1-4f75-b510-8e9de3497762",
+                "host": "https://social-distribution-media.herokuapp.com/api",
+                "displayName": "testeric",
+                "url": "https://social-distribution-media.herokuapp.com/api/authors/91d2e507-12d1-4f75-b510-8e9de3497762",
+                "github": "",
+                "profileImage": "",
+            }
+        }
+
 POST_1 = {
     "_id": "9df262a7-a75e-481f-8998-bd57f822bd07",
     "type": "post",
@@ -374,6 +397,23 @@ EXTEND_SCHEMA_RESP_LIST_FOLLOWERS = OpenApiResponse(
                 {
                     "type": "follower",
                     "items": [AUTHOR_1, AUTHOR_2]
+                }
+            ),
+        ),
+    ],
+    response=OpenApiTypes.OBJECT,
+)
+
+EXTEND_SCHEMA_RESP_LIST_FOLLOWS = OpenApiResponse(
+    description="A list of follow requests.",
+    examples=[
+        OpenApiExample(
+            "Example Follow Requests",
+            summary="List of example follow requests",
+            value=(
+                {
+                    "type": "follows",
+                    "items": [FOLLOW_1]
                 }
             ),
         ),

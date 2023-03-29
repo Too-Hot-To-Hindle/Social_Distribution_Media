@@ -1037,7 +1037,10 @@ class FollowRequests(APIView):
         parameters=[
             docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
         ],
-        tags=['Followers']
+        tags=['Followers'],
+        responses={
+            200: docs.EXTEND_SCHEMA_RESP_LIST_FOLLOWS
+        },
     )
     def get(self, request, author_id):
         """Get requests to follow {author_id}."""
