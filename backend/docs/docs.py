@@ -388,7 +388,7 @@ COMMENT_LIKE_1 = {
 }
 
 COMMENT_LIKE_2 = {
-    "type": "Like",
+    "type": "like",
     "summary": "Test user likes your comment again! (This was just generated for documentation purposes)",
     "author": {
         "_id": "1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
@@ -600,8 +600,8 @@ EXTEND_SCHEMA_RESP_LIST_POSTS = OpenApiResponse(
             "Example Response",
             summary="An example response",
             value=(
-                POST_1,
-                POST_2,
+                {"type": "posts",
+                 "items": [POST_1, POST_2]}
             )
         )
     ],
@@ -705,5 +705,3 @@ EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_COMMENT = OpenApiExample(
     summary="Send a comment to author_id's inbox",
     value=SEND_COMMENT
 )
-
-

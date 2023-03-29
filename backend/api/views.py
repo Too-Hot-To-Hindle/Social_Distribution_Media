@@ -403,7 +403,16 @@ class Posts(APIView):
 
     @extend_schema(
         parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
-        tags=['Posts']
+        tags=['Posts'],
+        request=InboxPostSerializer,
+        examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST],
+        responses={
+            200: OpenApiResponse(
+                description="The post that was posted",
+                examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST],
+                response=OpenApiTypes.OBJECT,
+            )
+        },
     )
     def post(self, request, author_id):
         """Create a post (post object in body) for {author_id}, but generate the ID (compared to PUT endpoint, where you need to know the ID ahead of time)."""
@@ -482,7 +491,16 @@ class PostDetail(APIView):
             docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
             docs.EXTEND_SCHEMA_PARAM_POST_ID
         ],
-        tags=['Posts']
+        tags=['Posts'],
+        request=InboxPostSerializer,
+        examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST],
+        responses={
+            200: OpenApiResponse(
+                description="The post that was posted",
+                examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST],
+                response=OpenApiTypes.OBJECT,
+            )
+        },
     )
     def post(self, request, author_id, post_id):
         """Update post_id posted by {author_id} (post object in body)."""
@@ -541,7 +559,16 @@ class PostDetail(APIView):
             docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
             docs.EXTEND_SCHEMA_PARAM_POST_ID
         ],
-        tags=['Posts']
+        tags=['Posts'],
+        request=InboxPostSerializer,
+        examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST],
+        responses={
+            200: OpenApiResponse(
+                description="The post that was posted",
+                examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST],
+                response=OpenApiTypes.OBJECT,
+            )
+        },
     )
     def put(self, request, author_id, post_id):
         """Create a post (post object in body) for {author_id} with id {post_id}."""
@@ -574,7 +601,15 @@ class PostDetail(APIView):
 class ImagePosts(APIView):
 
     @extend_schema(
-        tags=['Posts', 'Remote API']
+        tags=['Posts', 'Remote API'],
+        responses={
+            200: OpenApiResponse(
+                description="The image post in binary",
+            ),
+            404: OpenApiResponse(
+                description="The post is not an image or does not exist",
+            ),
+        },
     )
     def get(self, request, author_id, post_id):
         """Get post_id posted by {author_id}, converted to an image. Supports remote authors; to make proxied requests to an external server, provide the full ID of the external author URL encoded in place of {author_id}, whereas {post_id} needs to remain the UUID/identifier only (non-url)."""
