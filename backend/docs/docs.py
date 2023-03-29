@@ -515,6 +515,18 @@ EXTEND_SCHEMA_PARAM_COMMENT_ID = OpenApiParameter(
     ]
 )
 
+EXTEND_SCHEMA_RESP_AUTHOR = OpenApiResponse(
+    description="Author details.",
+    examples=[
+        OpenApiExample(
+            "Author details",
+            summary="Author details",
+            value=(AUTHOR_1),
+        ),
+    ],
+    response=OpenApiTypes.OBJECT,
+)
+
 EXTEND_SCHEMA_RESP_LIST_AUTHORS = OpenApiResponse(
     description="A list of authors.",
     examples=[

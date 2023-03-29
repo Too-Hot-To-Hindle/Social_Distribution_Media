@@ -71,6 +71,12 @@ class AuthorDetail(APIView):
     @extend_schema(
         parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
         tags=['Authors', 'Remote API'],
+        responses={
+        200: docs.EXTEND_SCHEMA_RESP_AUTHOR,
+        404: OpenApiResponse(
+                description="The author does not exist",
+            ),
+        }
     )
     def get(self, request, author_id):
         """Get details for an author from our database. Supports remote authors; to make proxied requests to an external server, provide the full ID of the external author URL encoded in place of {author_id}."""
@@ -126,7 +132,10 @@ class AuthorDetail(APIView):
         responses={
             204: OpenApiResponse(
                 description="No Response Body.",
-            )
+            ),
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
         }
     )
     def post(self, request, author_id):
@@ -159,7 +168,10 @@ class Followers(APIView):
     @extend_schema(
         parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
         responses={
-            200: docs.EXTEND_SCHEMA_RESP_LIST_FOLLOWERS
+            200: docs.EXTEND_SCHEMA_RESP_LIST_FOLLOWERS,
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
         },
         tags=['Followers', 'Remote API']
     )
@@ -207,7 +219,10 @@ class FollowersDetail(APIView):
             docs.EXTEND_SCHEMA_PARAM_FOREIGN_AUTHOR_ID
         ],
         responses={
-            200: docs.EXTEND_SCHEMA_RESP_IS_FOLLOWER
+            200: docs.EXTEND_SCHEMA_RESP_IS_FOLLOWER,
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
         },
         tags=['Followers', 'Remote API']
     )
@@ -298,6 +313,12 @@ class FollowersDetail(APIView):
 
     @extend_schema(
         tags=['Followers'],
+        responses={
+            200: None,
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
+        }
     )
     def delete(self, request, author_id, foreign_author_id):
         """Remove {foreign_author_id} as a follower of {author_id}."""
@@ -322,6 +343,12 @@ class FollowersDetail(APIView):
 
     @extend_schema(
         tags=['Followers'],
+        responses={
+            200: None,
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
+        }
     )
     def put(self, request, author_id, foreign_author_id):
         """Add {foreign_author_id} as a follower of {author_id}."""
@@ -357,7 +384,10 @@ class Posts(APIView):
         parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
                     docs.EXTEND_SCHEMA_PARAM_PAGE, docs.EXTEND_SCHEMA_PARAM_SIZE],
         responses={
-            200: docs.EXTEND_SCHEMA_RESP_LIST_POSTS
+            200: docs.EXTEND_SCHEMA_RESP_LIST_POSTS,
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
         },
         tags=['Posts', 'Remote API']
     )
@@ -411,7 +441,10 @@ class Posts(APIView):
                 description="The post that was posted",
                 examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST],
                 response=OpenApiTypes.OBJECT,
-            )
+            ),
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
         },
     )
     def post(self, request, author_id):
@@ -447,7 +480,10 @@ class PostDetail(APIView):
             docs.EXTEND_SCHEMA_PARAM_POST_ID
         ],
         responses={
-            200: docs.EXTEND_SCHEMA_RESP_POST
+            200: docs.EXTEND_SCHEMA_RESP_POST,
+            404: OpenApiResponse(
+                description="The author or post does not exist",
+            ),
         },
         tags=['Posts', 'Remote API']
     )
@@ -499,7 +535,10 @@ class PostDetail(APIView):
                 description="The post that was posted",
                 examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST],
                 response=OpenApiTypes.OBJECT,
-            )
+            ),
+            404: OpenApiResponse(
+                description="The author or post does not exist",
+            ),
         },
     )
     def post(self, request, author_id, post_id):
@@ -532,7 +571,13 @@ class PostDetail(APIView):
             docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
             docs.EXTEND_SCHEMA_PARAM_POST_ID
         ],
-        tags=['Posts']
+        tags=['Posts'],
+        responses={
+            200: None,
+            404: OpenApiResponse(
+                description="The author or post does not exist",
+            ),
+        },
     )
     def delete(self, request, author_id, post_id):
         """Delete {post_id} posted by {author_id}."""
@@ -567,7 +612,10 @@ class PostDetail(APIView):
                 description="The post that was posted",
                 examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST],
                 response=OpenApiTypes.OBJECT,
-            )
+            ),
+            404: OpenApiResponse(
+                description="The author or post does not exist",
+            ),
         },
     )
     def put(self, request, author_id, post_id):
@@ -664,7 +712,10 @@ class Comments(APIView):
             docs.EXTEND_SCHEMA_PARAM_SIZE
         ],
         responses={
-            200: docs.EXTEND_SCHEMA_RESP_LIST_COMMENTS
+            200: docs.EXTEND_SCHEMA_RESP_LIST_COMMENTS,
+            404: OpenApiResponse(
+                description="The author or post does not exist",
+            ),
         },
         tags=["Comments", "Remote API"],
     )
@@ -721,7 +772,10 @@ class Comments(APIView):
                 description="The comment that was posted",
                 examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_COMMENT],
                 response=OpenApiTypes.OBJECT,
-            )
+            ),
+            404: OpenApiResponse(
+                description="The author or post does not exist",
+            ),
         },
     )
     def post(self, request, author_id, post_id):
@@ -750,7 +804,10 @@ class PostLikes(APIView):
             docs.EXTEND_SCHEMA_PARAM_POST_ID
         ],
         responses={
-            200: docs.EXTEND_SCHEMA_RESP_LIST_POST_LIKES
+            200: docs.EXTEND_SCHEMA_RESP_LIST_POST_LIKES,
+            404: OpenApiResponse(
+                description="The author or post does not exist",
+            ),
         },
         tags=['Likes', 'Remote API'],
     )
@@ -798,7 +855,10 @@ class CommentLikes(APIView):
             docs.EXTEND_SCHEMA_PARAM_COMMENT_ID
         ],
         responses={
-            200: docs.EXTEND_SCHEMA_RESP_LIST_COMMENT_LIKES
+            200: docs.EXTEND_SCHEMA_RESP_LIST_COMMENT_LIKES,
+            404: OpenApiResponse(
+                description="The author, post, or comment does not exist",
+            ),
         },
         tags=['Likes', 'Remote API'],
     )
@@ -848,7 +908,10 @@ class LikedPosts(APIView):
     @extend_schema(
         parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
         responses={
-            200: docs.EXTEND_SCHEMA_RESP_LIKED_POSTS
+            200: docs.EXTEND_SCHEMA_RESP_LIKED_POSTS,
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
         },
         tags=['Posts', 'Remote API'],
     )
@@ -889,11 +952,15 @@ class InboxDetail(APIView):
     pagination_class = StandardResultsSetPagination
 
     @extend_schema(
-        parameters=[docs.EXTEND_SCHEMA_PARAM_PAGE,
+        parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
+                    docs.EXTEND_SCHEMA_PARAM_PAGE,
                     docs.EXTEND_SCHEMA_PARAM_SIZE],
         tags=['Inbox'],
         responses={
-            200: docs.EXTEND_SCHEMA_RESP_INBOX
+            200: docs.EXTEND_SCHEMA_RESP_INBOX,
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
         },
     )
     def get(self, request, author_id):
@@ -937,7 +1004,10 @@ class InboxDetail(APIView):
                 examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST, docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_FOLLOW,
                           docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_LIKE, docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_COMMENT],
                 response=OpenApiTypes.OBJECT,
-            )
+            ),
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
         },
         tags=['Inbox', 'Remote API'],
     )
@@ -1027,6 +1097,12 @@ class InboxDetail(APIView):
 
     @extend_schema(
         tags=['Inbox'],
+        responses={
+            200: None,
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
+        },
     )
     def delete(self, request, author_id):
         """Clear {author_id}'s inbox"""
@@ -1053,7 +1129,10 @@ class FollowRequests(APIView):
         ],
         tags=['Followers'],
         responses={
-            200: docs.EXTEND_SCHEMA_RESP_LIST_FOLLOWS
+            200: docs.EXTEND_SCHEMA_RESP_LIST_FOLLOWS,
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
         },
     )
     def get(self, request, author_id):
@@ -1079,7 +1158,13 @@ class DeleteFollowRequest(APIView):
         parameters=[
             docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
         ],
-        tags=['Followers']
+        tags=['Followers'],
+        responses={
+            200: None,
+            404: OpenApiResponse(
+                description="The author does not exist",
+            ),
+        },
     )
     def delete(self, request, author_id, actor_id):
         """Delete requests to follow {author_id} from {actor_id}."""
@@ -1134,6 +1219,9 @@ class Auth(APIView):
             }
         },
         tags=['Auth'],
+        responses={
+            200: None
+        },
     )
     def post(self, request):
         """Login a user with a username and password."""
@@ -1179,6 +1267,9 @@ class AuthRegister(APIView):
             }
         },
         tags=['Auth'],
+        responses={
+            200: None
+        },
     )
     def post(self, request):
         """Register a new user, with a username and a password."""
