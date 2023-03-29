@@ -44,7 +44,7 @@ AUTHOR_3 = {
 }
 
 FOLLOW_1 = {
-            "type": "follow",
+    "type": "follow",
             "summary": "johndoe wants to follow testeric.",
             "actor": {
                 "type": "author",
@@ -55,7 +55,7 @@ FOLLOW_1 = {
                 "github": "",
                 "profileImage": "",
             },
-            "object": {
+    "object": {
                 "type": "author",
                 "id": "https://social-distribution-media.herokuapp.com/api/authors/91d2e507-12d1-4f75-b510-8e9de3497762",
                 "host": "https://social-distribution-media.herokuapp.com/api",
@@ -64,7 +64,7 @@ FOLLOW_1 = {
                 "github": "",
                 "profileImage": "",
             }
-        }
+}
 
 POST_1 = {
     "_id": "9df262a7-a75e-481f-8998-bd57f822bd07",
@@ -134,6 +134,151 @@ POST_2 = {
     "published": "2023-03-16T20:40:01.796602Z",
     "visibility": "FRIENDS",
     "unlisted": False
+}
+
+INBOX_1 = {
+    "type": "inbox",
+    "author": {
+        "type": "author",
+        "id": "https://social-distribution-media.herokuapp.com/api/authors/91d2e507-12d1-4f75-b510-8e9de3497762",
+        "url": "https://social-distribution-media.herokuapp.com/api/authors/91d2e507-12d1-4f75-b510-8e9de3497762",
+        "host": "https://social-distribution-media.herokuapp.com/api",
+        "displayName": "testeric",
+        "github": "",
+        "profileImage": "",
+    },
+    "items": [
+        POST_1,
+        POST_2
+    ]
+}
+
+SEND_POST = {
+    "@context": "https://www.w3.org/ns/activitystreams",
+    "summary": "Lorem ipsum dolor...",
+    "type": "post",
+    "author": {
+        "type": "author",
+        "id": "https://social-distribution-media.herokuapp.com/api/authors/2d5432df-070b-4500-a40f-ee848a0e877f",
+        "url": "https://social-distribution-media.herokuapp.com/api/authors/2d5432df-070b-4500-a40f-ee848a0e877f",
+        "host": "https://social-distribution-media.herokuapp.com/api",
+        "displayName": "janedoe",
+        "github": "",
+        "profileImage": ""
+    },
+    "object": {
+        "type": "post",
+        "author": {
+            "type": "author",
+            "id": "https://social-distribution-media.herokuapp.com/api/authors/2d5432df-070b-4500-a40f-ee848a0e877f",
+            "url": "https://social-distribution-media.herokuapp.com/api/authors/2d5432df-070b-4500-a40f-ee848a0e877f",
+            "host": "https://social-distribution-media.herokuapp.com/api",
+            "displayName": "janedoe",
+            "github": "",
+            "profileImage": ""
+        },
+        "id": "https://social-distribution-media.herokuapp.com/api/authors/2d5432df-070b-4500-a40f-ee848a0e877f/posts/866e5128-7b6a-46f3-a2fd-b0ff7585772f",
+        "title": "Sample Post",
+        "source": "https://social-distribution-media.herokuapp.com/api/authors/2d5432df-070b-4500-a40f-ee848a0e877f/posts/866e5128-7b6a-46f3-a2fd-b0ff7585772f",
+        "origin": "https://social-distribution-media.herokuapp.com/api/authors/2d5432df-070b-4500-a40f-ee848a0e877f/posts/866e5128-7b6a-46f3-a2fd-b0ff7585772f",
+        "description": "Sample description.",
+        "contentType": "text/markdown",
+        "content": "# Hello world!",
+        "categories": [
+            "category1"
+        ],
+        "count": 0,
+        "comments": "https://social-distribution-media.herokuapp.com/api/authors/2d5432df-070b-4500-a40f-ee848a0e877f/posts/866e5128-7b6a-46f3-a2fd-b0ff7585772f/comments",
+        "commentsSrc": {},
+        "published": "2023-03-21T05:14:16.245395Z",
+        "visibility": "PUBLIC",
+        "unlisted": False
+    }
+}
+
+SEND_LIKE = {
+    "@context": "https://www.w3.org/ns/activitystreams",
+    "summary": "johndoe likes your post!",
+    "type": "like",
+    "author": {
+        "type": "author",
+        "id": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+        "host": "https://social-distribution-media.herokuapp.com/api",
+        "displayName": "johndoe",
+        "url": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+        "github": "",
+        "profileImage": ""
+    },
+    "object": {
+        "type": "like",
+        "summary": "johndoe likes your post!",
+        "author": {
+            "type": "author",
+            "id": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+            "host": "https://social-distribution-media.herokuapp.com/api",
+            "displayName": "johndoe",
+            "url": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+            "github": "",
+            "profileImage": ""
+        },
+        "object": "https://social-distribution-media-2.herokuapp.com/api/authors/81cb28ce-2d2a-4bb0-9098-fd9738b05672/posts/b35d0c95-13a8-4fb3-9985-cb7ce1281ca5"
+    }
+}
+
+SEND_COMMENT = {
+    "@context": "https://www.w3.org/ns/activitystreams",
+    "summary": "johndoe commented on your post!",
+    "type": "comment",
+    "actor": {
+        "type": "author",
+        "id": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+        "host": "https://social-distribution-media.herokuapp.com/api",
+        "displayName": "johndoe",
+        "url": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+        "github": "",
+        "profileImage": ""
+    },
+    "object": {
+        "type": "comment",
+        "summary": "johndoe commented on your post!",
+        "author": {
+            "type": "author",
+            "id": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+            "host": "https://social-distribution-media.herokuapp.com/api",
+            "displayName": "johndoe",
+            "url": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+            "github": "",
+            "profileImage": ""
+        },
+        "id": "https://social-distribution-media-2.herokuapp.com/api/authors/81cb28ce-2d2a-4bb0-9098-fd9738b05672/posts/b35d0c95-13a8-4fb3-9985-cb7ce1281ca5/comments/{{$randomUUID}}",
+        "comment": "Hello world!",
+        "contentType": "text/plain",
+        "object": "https://social-distribution-media-2.herokuapp.com/api/authors/81cb28ce-2d2a-4bb0-9098-fd9738b05672/posts/b35d0c95-13a8-4fb3-9985-cb7ce1281ca5"
+    }
+}
+
+SEND_FOLLOW = {
+    "@context": "https://www.w3.org/ns/activitystreams",
+    "type": "follow",
+    "summary": "johndoe wants to follow joshdoe",
+    "actor": {
+        "type": "author",
+        "id": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+        "host": "https://social-distribution-media.herokuapp.com/api",
+        "displayName": "johndoe",
+        "url": "https://social-distribution-media.herokuapp.com/api/authors/d58ab754-ffb4-4bd6-945f-b32b4a2974b9",
+        "github": "",
+        "profileImage": ""
+    },
+    "object": {
+        "type": "author",
+        "id": "https://social-distribution-media-2.herokuapp.com/api/authors/81cb28ce-2d2a-4bb0-9098-fd9738b05672",
+        "host": "https://social-distribution-media-2.herokuapp.com/api",
+        "displayName": "joshdoe",
+        "url": "https://social-distribution-media-2.herokuapp.com/api/authors/81cb28ce-2d2a-4bb0-9098-fd9738b05672",
+        "github": "",
+        "profileImage": ""
+    }
 }
 
 COMMENT_1 = {
@@ -246,16 +391,16 @@ COMMENT_LIKE_2 = {
     "type": "Like",
     "summary": "Test user likes your comment again! (This was just generated for documentation purposes)",
     "author": {
-    "_id": "1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
-    "type": "author",
-    "id": "https://testremotehost.com/api/authors/1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
-    "host": "https://testremotehost.com",
-    "displayName": "Test Remote Author",
-    "url": "https://testremotehost.com/authors/1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
-    "github": "",
-    "profileImage": "",
-    "followers": [],
-    "following": []
+        "_id": "1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
+        "type": "author",
+        "id": "https://testremotehost.com/api/authors/1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
+        "host": "https://testremotehost.com",
+        "displayName": "Test Remote Author",
+        "url": "https://testremotehost.com/authors/1ea5c53a-b0e0-466b-a2be-058fbb6e8b96",
+        "github": "",
+        "profileImage": "",
+        "followers": [],
+        "following": []
     },
     "object": "https://social-distribution-media.herokuapp.com/api/authors/d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc/posts/67331d96-321b-4e15-b438-c568c24aed66/comments/3aae7c80-f1ed-4aa3-bc92-4fa8a84fa44f"
 }
@@ -318,8 +463,8 @@ EXTEND_SCHEMA_PARAM_AUTHOR_ID = OpenApiParameter(
     location=OpenApiParameter.PATH,
     examples=[
         OpenApiExample(
-            "Example 1", 
-            value="d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc", 
+            "Example 1",
+            value="d5a7f5b6-e68c-4e9e-9612-74ddb6664cfc",
             summary="Example author_id"
         )
     ],
@@ -333,8 +478,8 @@ EXTEND_SCHEMA_PARAM_FOREIGN_AUTHOR_ID = OpenApiParameter(
     location=OpenApiParameter.PATH,
     examples=[
         OpenApiExample(
-            "Example 1", 
-            value="deff525c-23ce-4d3b-b975-d6e484d21fb8", 
+            "Example 1",
+            value="deff525c-23ce-4d3b-b975-d6e484d21fb8",
             summary="Example foreign_author_id"
         )
     ],
@@ -420,6 +565,19 @@ EXTEND_SCHEMA_RESP_LIST_FOLLOWS = OpenApiResponse(
     ],
     response=OpenApiTypes.OBJECT,
 )
+
+EXTEND_SCHEMA_RESP_INBOX = OpenApiResponse(
+    description="A list of posts in the inbox.",
+    examples=[
+        OpenApiExample(
+            "Example Inbox",
+            summary="List of example posts in the inbox",
+            value=INBOX_1,
+        ),
+    ],
+    response=OpenApiTypes.OBJECT,
+)
+
 
 EXTEND_SCHEMA_RESP_IS_FOLLOWER = OpenApiResponse(
     description="Response body contains a boolean indicating if foreign_author_id is a follower of author_id",
@@ -522,8 +680,28 @@ EXTEND_SCHEMA_RESP_LIKED_POSTS = OpenApiResponse(
     response=OpenApiTypes.OBJECT,
 )
 
-EXTEND_SCHEMA_EXAMPLE_INBOX_POST_BODY = OpenApiExample(
-    "Example Request for sending a type POST to author_id",
+EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST = OpenApiExample(
+    "Example request for sending a type POST to author_id",
     summary="Send a post to author_id's inbox",
-    value=EXAMPLE_POST_BODY
+    value=SEND_POST
 )
+
+EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_FOLLOW = OpenApiExample(
+    "Example request for sending a type FOLLOW to author_id",
+    summary="Send a follow request to author_id's inbox",
+    value=SEND_FOLLOW
+)
+
+EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_LIKE = OpenApiExample(
+    "Example request for sending a type LIKE to author_id",
+    summary="Send a like to author_id's inbox",
+    value=SEND_LIKE
+)
+
+EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_COMMENT = OpenApiExample(
+    "Example request for sending a type COMMENT to author_id",
+    summary="Send a comment to author_id's inbox",
+    value=SEND_COMMENT
+)
+
+

@@ -848,6 +848,9 @@ class InboxDetail(APIView):
         parameters=[docs.EXTEND_SCHEMA_PARAM_PAGE,
                     docs.EXTEND_SCHEMA_PARAM_SIZE],
         tags=['Inbox'],
+        responses={
+            200: docs.EXTEND_SCHEMA_RESP_INBOX
+        },
     )
     def get(self, request, author_id):
         """Get list of posts sent to {author_id}."""
@@ -882,46 +885,13 @@ class InboxDetail(APIView):
     @extend_schema(
         parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID],
         request=InboxPostSerializer,
-        examples=[
-            OpenApiExample(
-                "Example Request for sending a type POST to author_id",
-                summary="Send a post to author_id's inbox",
-                value={
-                    "_id": "67331d96-321b-4e15-b438-c568c24aed66",
-                    "type": "post",
-                    "id": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3/posts/67331d96-321b-4e15-b438-c568c24aed66",
-                    "title": "TestPostFromPUTRequest",
-                    "source": "",
-                    "origin": "",
-                    "description": "",
-                    "contentType": "text/plain",
-                    "content": "",
-                    "author": {
-                        "_id": "2b36204c-e37c-4aeb-bbdc-b63b886218f3",
-                        "id": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3",
-                        "url": "https://social-distribution-media.herokuapp.com/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3",
-                        "host": "https://social-distribution-media.herokuapp.com",
-                        "displayName": "testuser1",
-                        "github": "",
-                        "profileImage": "",
-                        "user": 7,
-                        "followers": [],
-                        "following": []
-                    },
-                    "categories": [],
-                    "count": 0,
-                    "comments": "https://social-distribution-media.herokuapp.com/api/authors/2b36204c-e37c-4aeb-bbdc-b63b886218f3/posts/67331d96-321b-4e15-b438-c568c24aed66/comments",
-                    "commentsSrc": {},
-                    "published": "2023-03-03T07:15:44.374719Z",
-                    "visibility": "FRIENDS",
-                    "unlisted": False
-                },
-            ),
-        ],
+        examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST, docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_FOLLOW,
+                  docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_LIKE, docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_COMMENT],
         responses={
             200: OpenApiResponse(
-                description="The post that was sent to author_id's inbox",
-                examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_POST_BODY],
+                description="The item that was sent to author_id's inbox",
+                examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_POST, docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_FOLLOW,
+                          docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_LIKE, docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_COMMENT],
                 response=OpenApiTypes.OBJECT,
             )
         },
