@@ -84,7 +84,7 @@ const NewPost = () => {
                 createAPIEndpoint(`authors/${userID}/posts`)
                     .post(data)
                     .then(res => {
-                        navigate("/profile")
+                        navigate(`/profile/${userID}`)
                         setUpload(false)
                     })
                     .catch(err => {
@@ -111,7 +111,7 @@ const NewPost = () => {
                 createAPIEndpoint(`authors/${userID}/posts`)
                     .post(data)
                     .then(res => {
-                        navigate("/profile")
+                        navigate(`/profile/${userID}`)
                         setUpload(false)
                     })
                     .catch(err => {
@@ -155,7 +155,7 @@ const NewPost = () => {
             createAPIEndpoint(`authors/${userID}/posts`)
                 .post(data)
                 .then(res => {
-                    navigate("/profile")
+                    navigate(`/profile/${userID}`)
                     setUpload(false)
                 })
                 .catch(err => {
