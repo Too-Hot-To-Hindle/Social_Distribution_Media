@@ -69,6 +69,7 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'CMPUT 404 Group 2 Project',
+    'DESCRIPTION': 'API Documentation for our CMPUT 404 Project Node. This is a social media platform for sharing and viewing images, between authors across distributed nodes following similar protocols. Please see list of available endpoints below. In addition, some of these endpoints may be used internally to enable the backend\'s proxy functionality, to faciliate communication between nodes. These endpoints have been specifically denoted in their descriptions (and are doubly listed under the Remote API category), and more information on the design and utliization of these endpoints can be found in our project\'s documentation on GitHub.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }

@@ -191,8 +191,6 @@ class FollowsSerializer(serializers.Serializer):
     type = serializers.SerializerMethodField()
     items = FollowSerializer(many=True)
 
-    print("in follows_serializer")
-
     def get_type(self, obj):
         return 'follows'
 

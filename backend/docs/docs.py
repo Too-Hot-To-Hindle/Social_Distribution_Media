@@ -257,6 +257,36 @@ EXAMPLE_POST_BODY = {
     "unlisted": False
 }
 
+EXTEND_SCHEMA_PARAM_PAGE = OpenApiParameter(
+    name="page",
+    description="The page number of the paginated results",
+    required=False,
+    type=int,
+    location=OpenApiParameter.QUERY,
+    examples=[
+        OpenApiExample(
+            "Example 1",
+            value=1,
+            summary="Example page number"
+        )
+    ],
+)
+
+EXTEND_SCHEMA_PARAM_SIZE = OpenApiParameter(
+    name="size",
+    description="The number of results per page",
+    required=False,
+    type=int,
+    location=OpenApiParameter.QUERY,
+    examples=[
+        OpenApiExample(
+            "Example 1",
+            value=10,
+            summary="Example page size"
+        )
+    ],
+)
+
 EXTEND_SCHEMA_PARAM_AUTHOR_ID = OpenApiParameter(
     name="author_id",
     description="The ID of the author",
@@ -318,14 +348,33 @@ EXTEND_SCHEMA_PARAM_COMMENT_ID = OpenApiParameter(
 )
 
 EXTEND_SCHEMA_RESP_LIST_AUTHORS = OpenApiResponse(
-    description="A list of authors and their data that are all following the user given by author_id",
+    description="A list of authors.",
     examples=[
         OpenApiExample(
             "Example Authors",
             summary="List of example authors",
             value=(
-                AUTHOR_1,
-                AUTHOR_2
+                {
+                    "type": "author",
+                    "items": [AUTHOR_1, AUTHOR_2]
+                }
+            ),
+        ),
+    ],
+    response=OpenApiTypes.OBJECT,
+)
+
+EXTEND_SCHEMA_RESP_LIST_FOLLOWERS = OpenApiResponse(
+    description="A list of followers.",
+    examples=[
+        OpenApiExample(
+            "Example Authors",
+            summary="List of example authors",
+            value=(
+                {
+                    "type": "follower",
+                    "items": [AUTHOR_1, AUTHOR_2]
+                }
             ),
         ),
     ],
