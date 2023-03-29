@@ -627,8 +627,10 @@ EXTEND_SCHEMA_RESP_LIST_COMMENTS = OpenApiResponse(
             "Example Response",
             summary="List of comments on post_id posted by author_id",
             value=(
-                COMMENT_1,
-                COMMENT_2
+                {
+                    "type": "comments",
+                    "items": [COMMENT_1, COMMENT_2]
+                }
             ),
         ),
     ],

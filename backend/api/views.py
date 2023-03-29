@@ -678,7 +678,16 @@ class Comments(APIView):
             docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
             docs.EXTEND_SCHEMA_PARAM_POST_ID
         ],
+        request=InboxPostSerializer,
         tags=["Comments"],
+        examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_COMMENT],
+        responses={
+            200: OpenApiResponse(
+                description="The comment that was posted",
+                examples=[docs.EXTEND_SCHEMA_EXAMPLE_INBOX_SEND_COMMENT],
+                response=OpenApiTypes.OBJECT,
+            )
+        },
     )
     def post(self, request, author_id, post_id):
         """Add a comment (comment object in body) to {post_id} posted by {author_id}."""
