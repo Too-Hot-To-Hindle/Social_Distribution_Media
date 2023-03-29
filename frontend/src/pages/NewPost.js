@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { createAPIEndpoint } from '../api';
+import { toast } from 'sonner';
 
 // Layout component
 import Layout from "../components/layouts/Layout";
@@ -17,7 +18,7 @@ import NoPhotographyIcon from '@mui/icons-material/NoPhotography';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 
 function isMarkdown(text) {
-    return /^(#+\s|\*\*|\_\_|\- \S)/m.test(text);
+    return /^(#+\s|\*\*|__|- \S)/m.test(text);
 }
 
 const NewPost = () => {
@@ -31,29 +32,22 @@ const NewPost = () => {
     const [postContent, setPostContent] = useState('');
     const [postCategories, setPostCategories] = useState('');
     const [selectedPrivacy, setSelectedPrivacy] = useState('Public');
-    const [specificAuthors, setSpecificAuthors] = useState("");
     const [unlisted, setUnlisted] = useState(false);
 
     // image specific state hooks
     const [imageType, setImageType] = useState("upload");
     const [imageFile, setImageFile] = useState(null);
     const [imageBase64, setImageBase64] = useState(null);
-    const [uploadedImagePreview, setUploadedImagePreview] = useState(null)
     const [imageURL, setImageURL] = useState("");
 
-    const [username, setUsername] = useState(null);
     const [userID, setUserID] = useState(null);
 
     useEffect(() => {
-        setUsername(localStorage.getItem('username'))
         setUserID(localStorage.getItem('author_id'))
     }, [])
 
     const handleFileSelect = (event) => {
         setImageFile(event.target.files[0]);
-
-        const imageObjectURL = URL.createObjectURL(event.target.files[0]);
-        setUploadedImagePreview(imageObjectURL);
 
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -71,9 +65,10 @@ const NewPost = () => {
     const uploadTextPost = async () => {
         setUpload(true);
         if (userID) {
+            var data;
             // if post is markdown, make a markdown type post in backend
             if (isMarkdown(postContent)) {
-                var data = {
+                data = {
                     title: postTitle,
                     description: postDescription,
                     //source: "https://google.com",
@@ -93,19 +88,18 @@ const NewPost = () => {
                         setUpload(false)
                     })
                     .catch(err => {
-                        // TODO: Add in error handling
-                        console.log(err)
+                        toast.error('An error has occurred.', {
+                            description: 'Your post could not be created at this time. Please try again later.',
+                        });
                     });
             }
 
             // otherwise, create a plaintext post in backend
             else {
 
-                var data = {
+                data = {
                     title: postTitle,
                     description: postDescription,
-                    //source: "https://google.com",
-                    //origin: "https://google.com",
                     contentType: "text/plain",
                     content: postContent,
                     categories: postCategories.replace(/\s/g, '').split(','),
@@ -121,8 +115,9 @@ const NewPost = () => {
                         setUpload(false)
                     })
                     .catch(err => {
-                        // TODO: Add in error handling
-                        console.log(err)
+                        toast.error('An error has occurred.', {
+                            description: 'Your post could not be created at this time. Please try again later.',
+                        });
                     });
             }
         }
@@ -150,15 +145,13 @@ const NewPost = () => {
             data = {
                 title: postTitle,
                 description: postDescription,
-                source: "https://google.com",
-                origin: "https://google.com",
                 contentType: contentTypeToBe,
                 content: contentToBe,
                 categories: postCategories.replace(/\s/g, '').split(','),
                 visibility: selectedPrivacy,
                 unlisted: unlisted
             }
-                
+
             createAPIEndpoint(`authors/${userID}/posts`)
                 .post(data)
                 .then(res => {
@@ -166,8 +159,9 @@ const NewPost = () => {
                     setUpload(false)
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
+                    toast.error('An error has occurred.', {
+                        description: 'Your post could not be created at this time. Please try again later.',
+                    });
                 });
         }
     }
@@ -274,7 +268,7 @@ const NewPost = () => {
                                             </Box>
                                         ) : (
                                             <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                <img src={imageBase64} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                <img src={imageBase64} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
                                             </Box>
                                         )}
                                     </Grid>
@@ -313,7 +307,7 @@ const NewPost = () => {
                                             </Box>
                                         ) : (
                                             <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                <img src={imageURL} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                <img src={imageURL} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
                                             </Box>
                                         )}
                                     </Grid>
@@ -441,7 +435,7 @@ const NewPost = () => {
 
                             <Grid item xs={12}>
                                 <Alert severity="info">
-                                    You can use CommonMark to format your post. <a href="https://commonmark.org/help/" target="_blank" style={{ color: "#499BE9" }}>Click here</a> to learn more.
+                                    You can use CommonMark to format your post. <a href="https://commonmark.org/help/" target="_blank" rel="noreferrer" style={{ color: "#499BE9" }}>Click here</a> to learn more.
                                 </Alert>
                             </Grid>
 

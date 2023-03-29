@@ -1,11 +1,12 @@
 // React helpers
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'
-import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { createAPIEndpoint } from '../api';
 import { v4 as uuidv4 } from 'uuid';
+import { toast } from 'sonner';
 
 // Material UI components
-import { CircularProgress, Card, Typography, Grid, Divider, IconButton, Button, TextField, LinearProgress } from "@mui/material";
+import { CircularProgress, Card, Typography, Grid, Divider, Button, TextField } from "@mui/material";
 
 // Material UI icons
 import QuizIcon from '@mui/icons-material/Quiz';
@@ -18,24 +19,6 @@ import Layout from "../components/layouts/Layout";
 import Post from "../components/Post";
 import Comment from "../components/Comment";
 
-// Helper functions
-// getPostIDFromURL
-// takes in a URL, say of example https://social-distribution-media.herokuapp.com/author/abc123/posts/def456
-// and returns the post ID, here, def456
-const getPostIDFromURL = (url) => {
-    // make sure "posts" is in url
-    // if last character in string is a '/', remove it first
-    if (url[url.length - 1] === "/") {
-        url = url.slice(0, -1)
-    }
-
-    if (url.includes("posts")) {
-        const urlSplit = url.split("/")
-        console.log(urlSplit[urlSplit.length - 1])
-        return urlSplit[urlSplit.length - 1]
-    }
-}
-
 const PostDetails = () => {
 
     const { authorID, postID } = useParams()
@@ -46,7 +29,6 @@ const PostDetails = () => {
     const [likesLoading, setLikesLoading] = useState(true);
     const [likes, setLikes] = useState([]);
 
-    const [commentLikesLoading, setCommentLikesLoading] = useState(true);
     const [commentLikes, setCommentLikes] = useState(null); // array of objects that contain arrays of the likes for each comment
 
     const [myProfile, setMyProfile] = useState(null);
@@ -57,12 +39,10 @@ const PostDetails = () => {
     const [commentBody, setCommentBody] = useState("");
     const [commentUploading, setCommentUploading] = useState(false);
 
-    const [username, setUsername] = useState(null);
     const [userID, setUserID] = useState(null);
 
-    // useEffect to get username and user ID for user currently logged in
+    // useEffect to get user ID for user currently logged in
     useEffect(() => {
-        setUsername(localStorage.getItem('username'))
         setUserID(localStorage.getItem('author_id'))
     }, [])
 
@@ -75,8 +55,9 @@ const PostDetails = () => {
                     setMyProfile(res.data)
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
+                    toast.error('An error has occurred.', {
+                        description: 'Could not load author details at this time. Please try again later.',
+                    });
                 });
         }
     }, [userID])
@@ -91,11 +72,15 @@ const PostDetails = () => {
                     setAuthorData(res.data)
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
                     if (err.response.status === 404) {
                         setNotFound(true)
                     }
-                    console.log(err)
+
+                    else {
+                        toast.error('An error has occurred.', {
+                            description: 'Could not load author details at this time. Please try again later.',
+                        });
+                    }
                 });
 
             // get post information
@@ -105,14 +90,16 @@ const PostDetails = () => {
                     setPostData(res.data)
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
                     if (err.response.status === 404) {
                         setNotFound(true)
+                    } else {
+                        toast.error('An error has occurred.', {
+                            description: 'Could not load post details at this time. Please try again later.',
+                        });
                     }
-                    console.log(err)
                 });
         }
-    }, [userID]);
+    }, [userID, authorID, postID]);
 
     // useEffect to get comments for post we're currently viewing
     useEffect(() => {
@@ -120,7 +107,15 @@ const PostDetails = () => {
             var allCommentLikes = []
             // then, for each comment, get the likes
             for (let comment of comments) {
-                const response = await createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/posts/${encodeURIComponent(postID)}/comments/${encodeURIComponent(comment.id)}/likes`).get()
+                var response;
+                try {
+                    response = await createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/posts/${encodeURIComponent(postID)}/comments/${encodeURIComponent(comment.id)}/likes`).get()
+                }
+                catch (err) {
+                    toast.error('An error has occurred.', {
+                        description: 'Could not load comment likes at this time. Please try again later.',
+                    });
+                }
                 const commentWithLikes = {
                     id: comment.id,
                     likes: response.data.items
@@ -129,7 +124,6 @@ const PostDetails = () => {
                 allCommentLikes.push(commentWithLikes)
             }
             setCommentLikes(allCommentLikes)
-            setCommentLikesLoading(false)
         }
 
         createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/posts/${encodeURIComponent(postID)}/comments`)
@@ -140,14 +134,17 @@ const PostDetails = () => {
                 getAllCommentLikes(res.data.items)
             })
             .catch(err => {
-                // TODO: Add in error handling
                 if (err.response.status === 404) {
                     setCommentsLoading(false)
                     setComments([])
                 }
-                console.log(err)
+                else {
+                    toast.error('An error has occurred.', {
+                        description: 'Could not load post comments at this time. Please try again later.',
+                    });
+                }
             });
-    }, [])
+    }, [authorID, postID])
 
     // useEffect to get likes for post we're currently viewing
     useEffect(() => {
@@ -163,9 +160,13 @@ const PostDetails = () => {
                     setLikesLoading(false)
                     setLikes([])
                 }
-                console.log(err)
+                else {
+                    toast.error('An error has occurred.', {
+                        description: 'Could not load post likes at this time. Please try again later.',
+                    });
+                }
             });
-    }, [])
+    }, [authorID, postID])
 
 
     const handleCommentUpload = () => {
@@ -210,7 +211,9 @@ const PostDetails = () => {
                 window.location.reload();
             })
             .catch(err => {
-                console.log(err)
+                toast.error('An error has occurred.', {
+                    description: 'Could not post comment at this time. Please try again later.',
+                });
             })
 
 

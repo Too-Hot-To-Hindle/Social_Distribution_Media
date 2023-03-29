@@ -1,11 +1,5 @@
-// React helpers
-import { useState, useEffect } from "react";
-import { createAPIEndpoint, ENDPOINTS } from '../api';
-
 // Custom components
 import Layout from "../components/layouts/Layout";
-import Post from "../components/Post";
-import SharedPost from "../components/SharedPost";
 
 // Material UI components
 import { Card, Typography, Grid } from '@mui/material';

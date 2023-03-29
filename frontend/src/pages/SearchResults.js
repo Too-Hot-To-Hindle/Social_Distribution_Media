@@ -1,18 +1,17 @@
 // React helpers
 import { useState, useEffect } from "react";
-import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { createAPIEndpoint } from '../api';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 // Layout component
 import Layout from "../components/layouts/Layout";
-import Post from "../components/Post";
 
 // Material UI components
-import { Card, Typography, Grid, IconButton, Chip, Divider, Button, CircularProgress } from "@mui/material";
+import { Card, Typography, Grid, Divider, Button, CircularProgress } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import CloseIcon from '@mui/icons-material/Close';
 import PagesIcon from '@mui/icons-material/Pages';
 
 const SearchResults = () => {
@@ -21,13 +20,11 @@ const SearchResults = () => {
 
     const navigate = useNavigate();
 
-
     const [localAuthors, setLocalAuthors] = useState(null);
     const [remoteCloneAuthors, setRemoteCloneAuthors] = useState(null);
     const [team11Authors, setTeam11Authors] = useState(null);
 
     const [myProfile, setMyProfile] = useState(null);
-    const [following, setFollowing] = useState([]);
     const [sentFriendRequests, setSentFriendRequests] = useState([]);
 
     const [username, setUsername] = useState(null);
@@ -46,8 +43,9 @@ const SearchResults = () => {
                     setMyProfile(res.data)
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
+                    toast.error('An error has occurred.', {
+                        description: 'Could not load author information at this time. Please try again later.',
+                    });
                 });
         }
     }, [userID])
@@ -68,8 +66,9 @@ const SearchResults = () => {
                         .filter(author => author["displayName"].toLowerCase().includes(query.toLowerCase())))
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
+                    toast.error('An error has occurred.', {
+                        description: 'Could not search local authors at this time. Please try again later.',
+                    });
                 });
 
             // our own team's remote URL
@@ -81,8 +80,9 @@ const SearchResults = () => {
                         .filter(author => author["displayName"].toLowerCase().includes(query.toLowerCase())))
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
+                    toast.error('An error has occurred.', {
+                        description: 'Could not search remote clone authors at this time. Please try again later.',
+                    });
                 });
 
             // team 11's remote URL
@@ -94,7 +94,9 @@ const SearchResults = () => {
                         .filter(author => author["displayName"].toLowerCase().includes(query.toLowerCase())))
                 })
                 .catch(err => {
-                    console.log(err)
+                    toast.error('An error has occurred.', {
+                        description: 'Could not load team 11 authors at this time. Please try again later.',
+                    });
                 });
 
         }
@@ -135,7 +137,9 @@ const SearchResults = () => {
                 console.log(res)
             })
             .catch(err => {
-                console.log(err)
+                toast.error('An error has occurred.', {
+                    description: 'Could not send friend request at this time. Please try again later.',
+                });
             })
     }
 

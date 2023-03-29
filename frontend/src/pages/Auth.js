@@ -3,6 +3,7 @@ import { useState } from "react";
 import { createAPIEndpoint, ENDPOINTS, BASIC_AUTH_COOKIE_NAME } from '../api';
 import { useNavigate } from 'react-router';
 import Cookies from 'js-cookie';
+import { toast } from 'sonner';
 
 // Material UI elements
 import { Card, Typography, Grid, Button, Divider, TextField, InputAdornment, CircularProgress, IconButton } from "@mui/material";
@@ -43,14 +44,14 @@ const Auth = () => {
 
                 let authData = window.btoa(username + ':' + password);
                 Cookies.set(BASIC_AUTH_COOKIE_NAME, authData);
-                console.log(res)
 
                 navigate("/stream")
             })
             .catch(err => {
-                // TODO: Add in error handling
                 setLoading(false);
-                console.log(err)
+                toast.error('An error has occurred.', {
+                    description: 'Invalid sign-in credentials. Please try again.',
+                });
             });
     }
 
@@ -72,9 +73,10 @@ const Auth = () => {
                 setLoading(false);
             })
             .catch(err => {
-                // TODO: Add in error handling
                 setLoading(false);
-                console.log(err)
+                toast.error('An error has occurred.', {
+                    description: 'Sign-up could not be completed at this time. Please try again later.',
+                });
             });
     }
 

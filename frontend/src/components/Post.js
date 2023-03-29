@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { createAPIEndpoint } from '../api';
 
 // Material UI components
 import { Card, Typography, Grid, Divider, IconButton, Button, TextField, Box, CircularProgress } from "@mui/material";
@@ -56,7 +56,6 @@ const Post = ({
     const [liked, setLiked] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
-    const [likes, setLikes] = useState([]);
     const [myAuthorData, setMyAuthorData] = useState(null);
 
     const [followers, setFollowers] = useState(null)
@@ -207,7 +206,7 @@ const Post = ({
 
             // then, for each follower, send a post to their inbox
             for (const follower of followers) {
-                const response = await createAPIEndpoint(`authors/${encodeURIComponent(follower.id)}/inbox`).post(data)
+                await createAPIEndpoint(`authors/${encodeURIComponent(follower.id)}/inbox`).post(data)
             }
 
             // then refresh the page
@@ -270,7 +269,7 @@ const Post = ({
                             {(isMarkdownImage(content)) ? (
                                 <Grid item xs={12}>
                                     <Box sx={{ backgroundColor: "#343540", minHeight: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <img src={extractMarkdownImageURL(content)} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
+                                        <img src={extractMarkdownImageURL(content)} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
                                     </Box>
                                 </Grid>
                             ) :
@@ -290,7 +289,7 @@ const Post = ({
                     {(type === "image/png;base64" || type === "image/jpeg;base64") &&
                         <Grid item xs={12}>
                             <Box sx={{ backgroundColor: "#343540", minHeight: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <img src={content} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
+                                <img src={content} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
                             </Box>
                         </Grid>
                     }

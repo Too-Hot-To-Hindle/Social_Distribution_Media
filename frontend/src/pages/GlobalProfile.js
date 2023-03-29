@@ -1,19 +1,18 @@
 // React helpers
 import { useParams } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { createAPIEndpoint } from '../api';
+import { toast } from 'sonner';
 
 // Layout components
 import Layout from "../components/layouts/Layout";
 import Post from "../components/Post";
 
 // Material UI elements
-import { Grid, Card, Typography, CircularProgress, Chip, Divider, Dialog, DialogContent, DialogTitle, DialogActions, Button } from "@mui/material";
+import { Grid, Card, Typography, CircularProgress, Chip, Divider, Dialog, DialogContent, DialogTitle, DialogActions, Button, TextField } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import FaceIcon from '@mui/icons-material/Face';
 import PagesIcon from '@mui/icons-material/Pages';
 import ErrorIcon from '@mui/icons-material/Error';
 
@@ -54,9 +53,8 @@ const checkIfFollower = (authorFollowerDetails, ownUserID) => {
 
 const GlobalProfile = () => {
 
-    const navigate = useNavigate();
-
     const { authorURL } = useParams()
+
     // decode authorURL from URL encoded
     const authorURLDecoded = decodeURIComponent(authorURL)
 
@@ -68,7 +66,9 @@ const GlobalProfile = () => {
 
 
     const [showFollowers, setShowFollowers] = useState(false);
-    const [followersLoading, setFollowersLoading] = useState(true);
+
+    const [showLikedContent, setShowLikedContent] = useState(false);
+    const [likedContent, setLikedContent] = useState(null);
 
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
@@ -96,8 +96,12 @@ const GlobalProfile = () => {
                     setOwnAuthorDetails(res.data)
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
+                    setError(true)
+                    setErrorMessage("An unexpected error occurred loading profile content.")
+                    setLoading(false)
+                    toast.error('An error has occurred.', {
+                        description: 'There was an error retrieving author details. Please try again later.',
+                    });
                 });
         }
     }, [ownUserID])
@@ -131,19 +135,21 @@ const GlobalProfile = () => {
                             setLoading(false)
                         })
                         .catch(err => {
-                            // TODO: Add in error handling
-                            console.log(err)
                             setError(true)
                             setErrorMessage("An unexpected error occurred loading profile content.")
                             setLoading(false)
+                            toast.error('An error has occurred.', {
+                                description: 'There was an error retrieving author details. Please try again later.',
+                            });
                         });
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
                     setError(true)
                     setErrorMessage("An unexpected error occurred loading profile content.")
                     setLoading(false)
+                    toast.error('An error has occurred.', {
+                        description: 'There was an error retrieving author details. Please try again later.',
+                    });
                 });
         }
 
@@ -162,19 +168,21 @@ const GlobalProfile = () => {
                             setLoading(false)
                         })
                         .catch(err => {
-                            // TODO: Add in error handling
-                            console.log(err)
                             setError(true)
                             setErrorMessage("An unexpected error occurred loading profile content.")
                             setLoading(false)
+                            toast.error('An error has occurred.', {
+                                description: 'There was an error retrieving author details. Please try again later.',
+                            });
                         });
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
                     setError(true)
                     setErrorMessage("An unexpected error occurred loading profile content.")
                     setLoading(false)
+                    toast.error('An error has occurred.', {
+                        description: 'There was an error retrieving author details. Please try again later.',
+                    });
                 });
 
         }
@@ -194,19 +202,21 @@ const GlobalProfile = () => {
                             setLoading(false)
                         })
                         .catch(err => {
-                            // TODO: Add in error handling
-                            console.log(err)
                             setError(true)
                             setErrorMessage("An unexpected error occurred loading profile content.")
                             setLoading(false)
+                            toast.error('An error has occurred.', {
+                                description: 'There was an error retrieving author details. Please try again later.',
+                            });
                         });
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
                     setError(true)
                     setErrorMessage("An unexpected error occurred loading profile content.")
                     setLoading(false)
+                    toast.error('An error has occurred.', {
+                        description: 'There was an error retrieving author details. Please try again later.',
+                    });
                 });
         }
 
@@ -216,7 +226,7 @@ const GlobalProfile = () => {
             setErrorMessage("User not found.")
             setLoading(false)
         }
-    }, [])
+    }, [authorURL, authorURLDecoded])
 
     // useEffect to retreive followers for author we're viewing on current page
     useEffect(() => {
@@ -227,12 +237,28 @@ const GlobalProfile = () => {
                     setAuthorFollowerDetails(res.data.items)
                 })
                 .catch(err => {
-                    console.log(err)
+                    toast.error('An error has occurred.', {
+                        description: 'Followers could not be retrieved for this author. Please try again later.',
+                    });
                 })
         }
     }, [authorDetails])
 
-
+    // useEffect to retrieve liked content for author we're viewing on current page
+    useEffect(() => {
+        if (authorDetails) {
+            createAPIEndpoint(`authors/${encodeURIComponent(authorDetails.id)}/liked`)
+                .get()
+                .then(res => {
+                    setLikedContent(res.data.items)
+                })
+                .catch(err => {
+                    toast.error('An error has occurred.', {
+                        description: 'Liked content could not be retrieved for this author. Please try again later.',
+                    });
+                })
+        }
+    }, [authorDetails])
 
     async function sendFollowRequest() {
         setSendingFollowRequest(true);
@@ -260,17 +286,16 @@ const GlobalProfile = () => {
             }
         }
 
-        console.log(data)
-
         createAPIEndpoint(`authors/${encodeURIComponent(authorDetails.id)}/inbox`)
             .post(data)
             .then(res => {
                 setSendingFollowRequest(false);
                 setSentFollowRequest(true);
-                console.log(res)
             })
             .catch(err => {
-                console.log(err)
+                toast.error('An error has occurred.', {
+                    description: 'Your follow request could not be sent at this time. Please try again later.',
+                });
             })
     }
 
@@ -309,7 +334,41 @@ const GlobalProfile = () => {
                     }
 
                     <DialogActions>
-                        <Button variant="contained"  sx={{margin: "5px"}} fullWidth onClick={() => { setShowFollowers(false) }}>Close</Button>
+                        <Button variant="contained" sx={{ margin: "5px" }} fullWidth onClick={() => { setShowFollowers(false) }}>Close</Button>
+                    </DialogActions>
+                </Dialog>
+
+                <Dialog open={showLikedContent} style={{ padding: "20px" }} maxWidth="xl">
+                    <DialogTitle>Liked Content</DialogTitle>
+
+                    {likedContent !== null &&
+                        <DialogContent>
+                            {likedContent.map((item, index) => {
+                                return (
+                                    <Grid container key={index} spacing={2}>
+                                        <Grid item xs={12}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", width: "400px" }}>
+                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                    <PagesIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+                                                    <div>
+                                                        <TextField value={item.object} fullWidth sx={{ width: "350px" }}></TextField>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Grid>
+
+                                        <Grid item xs={12}>
+                                            <Divider />
+                                        </Grid>
+                                    </Grid>
+                                )
+                            })}
+                        </DialogContent>
+
+                    }
+
+                    <DialogActions>
+                        <Button variant="contained" sx={{ margin: "5px" }} fullWidth onClick={() => { setShowLikedContent(false) }}>Close</Button>
                     </DialogActions>
                 </Dialog>
 
@@ -401,6 +460,18 @@ const GlobalProfile = () => {
                                     </Grid>
                                 </>
                             }
+
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Typography variant="h6" align="left">Liked Content</Typography>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Button variant="contained" fullWidth onClick={() => { setShowLikedContent(true) }}>View</Button>
+                            </Grid>
 
                             <Grid item xs={12}>
                                 <Divider />

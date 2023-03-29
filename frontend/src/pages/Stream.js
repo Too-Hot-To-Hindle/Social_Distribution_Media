@@ -1,11 +1,11 @@
 // React helpers
 import { useState, useEffect } from "react";
-import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { createAPIEndpoint } from '../api';
+import { toast } from 'sonner';
 
 // Custom components
 import Layout from "../components/layouts/Layout";
 import Post from "../components/Post";
-import SharedPost from "../components/SharedPost";
 
 // Material UI components
 import { Card, Typography, CircularProgress, Grid, Alert } from '@mui/material';
@@ -33,9 +33,7 @@ const getPostIDFromURL = (url) => {
 
 const Stream = () => {
     const [loading, setLoading] = useState(true)
-    const [posts, setPosts] = useState([]);
 
-    const [username, setUsername] = useState(null);
     const [userID, setUserID] = useState(null);
 
     // const [postAuthorIDs, setPostAuthorIDs] = useState([]);
@@ -55,7 +53,6 @@ const Stream = () => {
 
     // useEffect to get the username and user ID from local storage
     useEffect(() => {
-        setUsername(localStorage.getItem('username'))
         setUserID(localStorage.getItem('author_id'))
     }, [])
 
@@ -63,8 +60,15 @@ const Stream = () => {
     useEffect(() => {
         const getInboxItems = async () => {
             if (userID) {
-                const response = await createAPIEndpoint(`authors/${userID}/inbox`).get()
-                console.log(response.data.items)
+                var response;
+                try {
+                    response = await createAPIEndpoint(`authors/${userID}/inbox`).get()
+                }
+                catch (err) {
+                    toast.error('An error has occurred.', {
+                        description: 'Could not retrieve inbox at this time. Please try again later.',
+                    });
+                }
                 setInboxItems(response.data.items);
                 setLoading(false);
             }
@@ -129,7 +133,7 @@ const Stream = () => {
     return (
         <>
             <Layout>
-                <Alert severity="info" sx={{marginBottom: "20px"}}>
+                <Alert severity="info" sx={{ marginBottom: "20px" }}>
                     <Typography align="left">At this time, your Stream displays only inbox Post items. To view Likes and Comments on your posts, please head to your Profile page, or to view pending friend requests, head to the friends page.</Typography>
                 </Alert>
 

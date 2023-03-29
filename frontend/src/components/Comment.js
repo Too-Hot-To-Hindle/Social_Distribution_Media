@@ -1,5 +1,5 @@
 // Material UI components
-import { Card, Typography, Grid, Divider, IconButton, Button } from "@mui/material";
+import { Typography, Grid, Divider } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -19,6 +19,11 @@ const formatLikesString = (likes, id) => {
 
     else if (myComments.likes.length === 0) {
         likesString += "No one."
+        return likesString;
+    }
+
+    else if (myComments.likes.length === 1) {
+        likesString += `@${myComments.likes[0].author.displayName}`;
         return likesString;
     }
 

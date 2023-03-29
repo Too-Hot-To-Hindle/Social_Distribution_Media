@@ -1,6 +1,5 @@
 import React from 'react';
 import Cookies from 'js-cookie';
-import { createAPIEndpoint, ENDPOINTS } from '.';
 
 /**
  * https://docs.djangoproject.com/en/3.1/ref/csrf/#ajax

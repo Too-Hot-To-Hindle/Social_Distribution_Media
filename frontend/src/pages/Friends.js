@@ -1,12 +1,13 @@
 // React helpers
 import { useState, useEffect } from "react";
-import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { createAPIEndpoint } from '../api';
+import { toast } from 'sonner';
 
 // Layout component
 import Layout from "../components/layouts/Layout";
 
 // Material UI components
-import { Card, Typography, Grid, Button, Alert, IconButton, Divider, Chip, CircularProgress } from "@mui/material";
+import { Card, Typography, Grid, Button, Alert, Divider, Chip, CircularProgress } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -15,7 +16,6 @@ import CheckIcon from '@mui/icons-material/Check';
 
 const Friends = () => {
 
-    const [username, setUsername] = useState(null);
     const [userID, setUserID] = useState(null);
 
     const [friendRequestsLoading, setFriendRequestsLoading] = useState(true)
@@ -26,11 +26,19 @@ const Friends = () => {
     const [friendRequests, setFriendRequests] = useState([]);
 
     useEffect(() => {
-        setUsername(localStorage.getItem('username'))
         setUserID(localStorage.getItem('author_id'))
     }, [])
 
     useEffect(() => {
+        const setupFriends = (followers, following) => {
+            const followersOnly = followers.filter(x => !isIn(following, x._id));
+            const followingOnly = following.filter(x => !isIn(followers, x._id));
+            const friends = followersOnly.concat(followingOnly);
+            const trueFriends = followers.filter(x => isIn(following, x._id));
+    
+            setFriends(friends);
+            setTrueFriends(trueFriends);
+        }
 
         const getFriends = async () => {
             if (userID) {
@@ -39,21 +47,46 @@ const Friends = () => {
                 setTrueFriends([]);
                 setFriends([]);
 
-                const authorDetails = await createAPIEndpoint(`authors/${userID}`).get()
+                var authorDetails;
+                try {
+                    authorDetails = await createAPIEndpoint(`authors/${userID}`).get()
+                }
+                catch (err) {
+                    toast.error('An error has occurred.', {
+                        description: 'Could not retrieve your follower details. Please try again later.',
+                    });
+                }
+
                 const followerIDs = authorDetails.data.followers;
                 const followingIDs = authorDetails.data.following;
+
+                var res;
 
                 // get all followers
                 var tempFollowers = [];
                 for (const followerID of followerIDs) {
-                    const res = await createAPIEndpoint(`authors/${followerID}`).get()
+                    try {
+                        res = await createAPIEndpoint(`authors/${followerID}`).get()
+                    }
+                    catch (err) {
+                        toast.error('An error has occurred.', {
+                            description: 'Could not retrieve your follower details. Please try again later.',
+                        });
+                    }
                     tempFollowers.push(res.data)
                 }
 
                 // get all following
                 var tempFollowing = [];
                 for (const followingID of followingIDs) {
-                    const res = await createAPIEndpoint(`authors/${followingID}`).get()
+                    try {
+                        res = await createAPIEndpoint(`authors/${followingID}`).get()
+                    }
+                    catch (err) {
+                        toast.error('An error has occurred.', {
+                            description: 'Could not retrieve your follower details. Please try again later.',
+                        });
+                    }
                     tempFollowing.push(res.data)
                 }
 
@@ -75,21 +108,14 @@ const Friends = () => {
                     setFriendRequestsLoading(false)
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
+                    toast.error('An error has occurred.', {
+                        description: 'Could not retrieve your friend requests. Please try again later.',
+                    });
                 });
         }
     }, [userID])
 
-    const setupFriends = (followers, following) => {
-        const followersOnly = followers.filter(x => !isIn(following, x._id));
-        const followingOnly = following.filter(x => !isIn(followers, x._id));
-        const friends = followersOnly.concat(followingOnly);
-        const trueFriends = followers.filter(x => isIn(following, x._id));
-
-        setFriends(friends);
-        setTrueFriends(trueFriends);
-    }
+    
 
     function isIn(array, id) {
         return array.some(function (el) {
@@ -109,24 +135,27 @@ const Friends = () => {
         }
 
         createAPIEndpoint(`authors/${userID}/followers/${friendRequest.actor._id}`)
-                .put(data)
-                .then(res => {
-                    // reload page
-                    window.location.reload();
-                })
-                .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
+            .put(data)
+            .then(res => {
+                // reload page
+                window.location.reload();
+            })
+            .catch(err => {
+                toast.error('An error has occurred.', {
+                    description: 'Could not accept the friend request. Please try again later.',
                 });
+            });
 
         createAPIEndpoint(`authors/${userID}/inbox/followers/${friendRequest.actor._id}`)
-                .delete()
-                .then(res => {
-                    window.location.reload();
-                })
-                .catch(err => {
-                    console.log(err)
-                })
+            .delete()
+            .then(res => {
+                window.location.reload();
+            })
+            .catch(err => {
+                toast.error('An error has occurred.', {
+                    description: 'Could not accept the friend request. Please try again later.',
+                });
+            })
     }
 
 
@@ -138,7 +167,9 @@ const Friends = () => {
                 window.location.reload();
             })
             .catch(err => {
-                console.log(err);
+                toast.error('An error has occurred.', {
+                    description: 'Could not decline the friend request. Please try again later.',
+                });
             })
     }
 
@@ -194,13 +225,13 @@ const Friends = () => {
                                             {/* <Button variant="outlined" startIcon={<CloseIcon />} sx={{ marginRight: "5px" }}>
                                                 Reject
                                             </Button> */}
-                                            <Button variant="contained" endIcon={<CheckIcon />} onClick={() => {acceptFriendRequest(friendRequest)}}>
+                                            <Button variant="contained" endIcon={<CheckIcon />} onClick={() => { acceptFriendRequest(friendRequest) }}>
                                                 Accept
                                             </Button>
-                                            <Button variant="contained" endIcon={<CloseIcon />} onClick={() => {declineFriendRequest(friendRequest)}} style={{marginLeft: "0.5em"}}>
+                                            <Button variant="contained" endIcon={<CloseIcon />} onClick={() => { declineFriendRequest(friendRequest) }} style={{ marginLeft: "0.5em" }}>
                                                 Decline
                                             </Button>
-                                            
+
                                         </div>
 
                                     </div>

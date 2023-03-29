@@ -1,6 +1,6 @@
 // React helpers
 import { useState, useEffect } from "react";
-import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { createAPIEndpoint } from '../api';
 
 // Layout components
 import Layout from "../components/layouts/Layout";

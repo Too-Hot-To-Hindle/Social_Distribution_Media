@@ -1,8 +1,9 @@
 // React helpers
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import { createAPIEndpoint, ENDPOINTS } from '../api';
+import { createAPIEndpoint } from '../api';
 import ReactMarkdown from 'react-markdown';
+import { toast } from 'sonner';
 
 // Layout component
 import Layout from "../components/layouts/Layout";
@@ -14,13 +15,11 @@ import { Alert, Box, CircularProgress, Card, Typography, Grid, TextField, Button
 import QuizIcon from '@mui/icons-material/Quiz';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
-import TextFieldsIcon from '@mui/icons-material/TextFields';
-import ImageIcon from '@mui/icons-material/Image';
 import NoPhotographyIcon from '@mui/icons-material/NoPhotography';
 
 // Helper functions
 function isMarkdown(text) {
-    return /^(#+\s|\*\*|\_\_|\- \S)/m.test(text);
+    return /^(#+\s|\*\*|__|- \S)/m.test(text);
 }
 
 // isMarkdownImage checks if a string is a markdown image
@@ -54,16 +53,13 @@ const EditPost = () => {
     const [imageType, setImageType] = useState("upload");
     const [imageFile, setImageFile] = useState(null);
     const [imageBase64, setImageBase64] = useState(null);
-    const [uploadedImagePreview, setUploadedImagePreview] = useState(null)
     const [imageURL, setImageURL] = useState("");
 
     const [uploading, setUpload] = useState(false);
 
-    const [username, setUsername] = useState(null);
     const [userID, setUserID] = useState(null);
 
     useEffect(() => {
-        setUsername(localStorage.getItem('username'))
         setUserID(localStorage.getItem('author_id'))
     }, [])
 
@@ -116,7 +112,9 @@ const EditPost = () => {
                                 setPostData({})
                                 setBelongsToUser(false)
                             }
-                            console.log(err)
+                            toast.error('An error has occurred.', {
+                                description: 'There was an error retrieving this post. Please try again later.',
+                            });
                         });
                 })
                 .catch(err => {
@@ -125,16 +123,17 @@ const EditPost = () => {
                         setPostData({})
                         setBelongsToUser(false)
                     }
-                    console.log(err)
+                    else {
+                        toast.error('An error has occurred.', {
+                            description: 'There was an error retrieving author information for this post. Please try again later.',
+                        });
+                    }
                 });
         }
-    }, [userID]);
+    }, [userID, authorID, postID]);
 
     const handleFileSelect = (event) => {
         setImageFile(event.target.files[0]);
-
-        const imageObjectURL = URL.createObjectURL(event.target.files[0]);
-        setUploadedImagePreview(imageObjectURL);
 
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -153,9 +152,10 @@ const EditPost = () => {
         setUpload(true);
         if (userID) {
             // if post is markdown, make a markdown type post in backend
+            var data;
             if (isMarkdown(postContent)) {
 
-                var data = {
+                data = {
                     title: postTitle,
                     description: postDescription,
                     source: "https://google.com",
@@ -167,8 +167,6 @@ const EditPost = () => {
                     unlisted: unlisted
                 }
 
-                console.log(data)
-
                 createAPIEndpoint(`authors/${userID}/posts/${postID}`)
                     .post(data)
                     .then(res => {
@@ -176,15 +174,16 @@ const EditPost = () => {
                         setUpload(false)
                     })
                     .catch(err => {
-                        // TODO: Add in error handling
-                        console.log(err)
+                        toast.error('An error has occurred.', {
+                            description: 'The post could not be edited at this time. Please try again later.',
+                        });
                     });
             }
 
             // otherwise, create a plaintext post in backend
             else {
 
-                var data = {
+                data = {
                     title: postTitle,
                     description: postDescription,
                     source: "https://google.com",
@@ -196,8 +195,6 @@ const EditPost = () => {
                     unlisted: unlisted
                 }
 
-                console.log(data)
-
                 createAPIEndpoint(`authors/${userID}/posts/${postID}`)
                     .post(data)
                     .then(res => {
@@ -205,8 +202,9 @@ const EditPost = () => {
                         setUpload(false)
                     })
                     .catch(err => {
-                        // TODO: Add in error handling
-                        console.log(err)
+                        toast.error('An error has occurred.', {
+                            description: 'The post could not be edited at this time. Please try again later.',
+                        });
                     });
             }
         }
@@ -250,8 +248,9 @@ const EditPost = () => {
                     setUpload(false)
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
+                    toast.error('An error has occurred.', {
+                        description: 'The post could not be edited at this time. Please try again later.',
+                    });
                 });
         }
     }
@@ -367,7 +366,7 @@ const EditPost = () => {
                                                         </Box>
                                                     ) : (
                                                         <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                            <img src={imageBase64} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                            <img src={imageBase64} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
                                                         </Box>
                                                     )}
                                                 </Grid>
@@ -406,7 +405,7 @@ const EditPost = () => {
                                                         </Box>
                                                     ) : (
                                                         <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                            <img src={imageURL} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                            <img src={imageURL} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
                                                         </Box>
                                                     )}
                                                 </Grid>
@@ -535,7 +534,7 @@ const EditPost = () => {
                                                         </Box>
                                                     ) : (
                                                         <Box sx={{ backgroundColor: "#343540", height: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                            <img src={imageURL} alt="Image Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
+                                                            <img src={imageURL} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px" }} />
                                                         </Box>
                                                     )}
                                                 </Grid>
@@ -681,7 +680,7 @@ const EditPost = () => {
 
                                         <Grid item xs={12}>
                                             <Alert severity="info">
-                                                You can use CommonMark to format your post. <a href="https://commonmark.org/help/" target="_blank" style={{ color: "#499BE9" }}>Click here</a> to learn more.
+                                                You can use CommonMark to format your post. <a href="https://commonmark.org/help/" target="_blank" rel="noreferrer" style={{ color: "#499BE9" }}>Click here</a> to learn more.
                                             </Alert>
                                         </Grid>
 
