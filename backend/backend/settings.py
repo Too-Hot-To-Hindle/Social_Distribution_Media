@@ -206,3 +206,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Comment this out before running tests
 django_on_heroku.settings(locals(), databases=False)
+
+CORS_ALLOW_HEADER = [
+    "X-CSRFToken",
+    "Cookie",
+    "Content-Type",
+    "Authorization"
+]
+
+CORS_ALLOW_CREDENTIALS=True
