@@ -4,6 +4,9 @@ from .models import Author, Post, Comment, Like, Follow, Inbox
 
 from pprint import pprint
 
+
+
+
 # Updated: Posts, comments, likes, follows
 
 class UserSerializer(serializers.ModelSerializer):
@@ -82,7 +85,6 @@ class CommentSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         print(validated_data)
         author_data = validated_data.pop('author')
-        print('in create')
         # Below means that comments by authors that do not exist will fail
         if Author.objects.filter(id=author_data['id']).exists():
             print('exists')
@@ -117,11 +119,16 @@ class LikeRequestSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         author_data = validated_data.pop('author')
+
+        # if not (is_valid_uuid(author_data['id'])):
+        #     author_data['id'] = str(uuid.uuid5(UUIDV5_SECRET, author_data['id']))
+
         # Retrieve or create the author of this like
         if Author.objects.filter(id=author_data['id']).exists():
             author = Author.objects.get(id=author_data['id'])
         else:
             author = Author.objects.create(**author_data, remote=True)  # If creating here it is a remote user
+        
         return Like.objects.create(author=author, **validated_data)
 
 class LikeResponseSerializer(serializers.ModelSerializer):

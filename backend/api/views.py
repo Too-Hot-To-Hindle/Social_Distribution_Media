@@ -1047,7 +1047,7 @@ class InboxDetail(APIView):
 
         else:
             author_id = extract_uuid_if_url('author', author_id)
-            if not author_id:
+            if not author_id or author_id == '':
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
             object = request.data

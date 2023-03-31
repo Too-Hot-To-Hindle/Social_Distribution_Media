@@ -5,6 +5,38 @@ from django.contrib.auth.models import User
 import uuid
 import re
 
+import uuid
+from uuid import UUID
+
+UUIDV5_SECRET = uuid.UUID("49a5e3fc-1753-4934-806c-114a7956fbe9")
+
+def is_valid_uuid(uuid_to_test, version=4):
+    """
+    Check if uuid_to_test is a valid UUID.
+    
+     Parameters
+    ----------
+    uuid_to_test : str
+    version : {1, 2, 3, 4}
+    
+     Returns
+    -------
+    `True` if uuid_to_test is a valid UUID, otherwise `False`.
+    
+     Examples
+    --------
+    >>> is_valid_uuid('c9bf9e57-1685-4c89-bafb-ff5af830be8a')
+    True
+    >>> is_valid_uuid('c9bf9e58')
+    False
+    """
+    
+    try:
+        uuid_obj = UUID(uuid_to_test, version=version)
+    except ValueError:
+        return False
+    return str(uuid_obj) == uuid_to_test
+
 from .utils import extract_uuid
 
 SERVICE_ADDRESS = "https://social-distribution-media.herokuapp.com/api"
@@ -42,7 +74,12 @@ class Author(models.Model):
         # If an author is created with an id, make sure _id matches
         if self.id and first_save:
             _id = extract_uuid('authors', self.id)
+
+            if not _id:
+                _id = str(uuid.uuid5(UUIDV5_SECRET, self.id))
+
             self._id = _id
+
         elif first_save:
             self.id = f"{self.host}/authors/{self._id}"
         
