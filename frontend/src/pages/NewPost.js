@@ -85,6 +85,7 @@ const NewPost = () => {
             var data;
             // if post is markdown, make a markdown type post in backend
             if (isMarkdown(postContent)) {
+                console.log("IS MARKDOWN");
                 data = {
                     title: postTitle,
                     description: postDescription,
@@ -101,6 +102,81 @@ const NewPost = () => {
                 createAPIEndpoint(`authors/${userID}/posts`)
                     .post(data)
                     .then(res => {
+
+                        let id = res.data.id;
+                        let origin = res.data.id;
+                        let source = res.data.source;
+                        let displayName = res.data.author.displayName;
+                        if (share) {
+                            var myAuthorData;
+                                try {
+                                    createAPIEndpoint(`authors/${userID}`)
+                                    .get()
+                                    .then(res => {
+                                        myAuthorData = res.data;
+                                        data = {
+                                            "type": "post",
+                                            "summary": displayName+" shared a post!",
+                                            "author": {
+                                                "type": "author",
+                                                "id": myAuthorData.id,
+                                                "host": myAuthorData.host,
+                                                "displayName": myAuthorData.displayName,
+                                                "url": myAuthorData.url,
+                                                "github": myAuthorData.github,
+                                                "profileImage": myAuthorData.profileImage
+                                            },
+                                            "object": {
+                                                "type": "post",
+                                                "author": {
+                                                    "type": "author",
+                                                    "id": myAuthorData.id,
+                                                    "host": myAuthorData.host,
+                                                    "displayName": myAuthorData.displayName,
+                                                    "url": myAuthorData.url,
+                                                    "github": myAuthorData.github,
+                                                    "profileImage": myAuthorData.profileImage
+                                                },
+                                                "id": id,
+                                                "title": postTitle,
+                                                "source": source,
+                                                "origin": origin,
+                                                "description": postDescription,
+                                                "contentType": "text/markdown",
+                                                "content": postContent,
+                                                "categories": postCategories.replace(/\s/g, '').split(','),
+                                                "count": 0,
+                                                "comments": id + "/comments",
+                                                "commentsSrc": {},
+                                                "visibility": selectedPrivacy,
+                                                "unlisted": unlisted,
+                                            }
+                                        }
+
+                                        for (let ID of res.data.followers){
+                                            try {
+                                                createAPIEndpoint(`authors/${ID}/inbox`)
+                                                .post(data)
+                                                .then(res => {
+                                                    //console.log("RESPONSE:",res.data);
+                                                })
+                                            }
+                                            catch (err) {
+                                                toast.error('An error has occurred.', {
+                                                    description: "Could not post to your followers' inboxes. Please try again later.",
+                                                });
+                                            }
+                                            
+                                        }
+                                        
+                                    })
+                                }
+                            catch (err) {
+                                toast.error('An error has occurred.', {
+                                    description: 'Could not retrieve your follower details. Please try again later.',
+                                });
+                            }
+                        }
                         navigate(`/profile/${userID}`)
                         setUpload(false)
                     })
@@ -128,6 +204,87 @@ const NewPost = () => {
                 createAPIEndpoint(`authors/${userID}/posts`)
                     .post(data)
                     .then(res => {
+
+                    let id = res.data.id;
+                    let origin = res.data.id;
+                    let source = res.data.source;
+                    let displayName = res.data.author.displayName;
+                    if (share) {
+                        var myAuthorData;
+                            try {
+                                createAPIEndpoint(`authors/${userID}`)
+                                .get()
+                                .then(res => {
+                                    myAuthorData = res.data;
+                                    data = {
+                                        "type": "post",
+                                        "summary": displayName+" shared a post!",
+                                        "author": {
+                                            "type": "author",
+                                            "id": myAuthorData.id,
+                                            "host": myAuthorData.host,
+                                            "displayName": myAuthorData.displayName,
+                                            "url": myAuthorData.url,
+                                            "github": myAuthorData.github,
+                                            "profileImage": myAuthorData.profileImage
+                                        },
+                                        "object": {
+                                            "type": "post",
+                                            "author": {
+                                                "type": "author",
+                                                "id": myAuthorData.id,
+                                                "host": myAuthorData.host,
+                                                "displayName": myAuthorData.displayName,
+                                                "url": myAuthorData.url,
+                                                "github": myAuthorData.github,
+                                                "profileImage": myAuthorData.profileImage
+                                            },
+                                            "id": id,
+                                            "title": postTitle,
+                                            "source": source,
+                                            "origin": origin,
+                                            "description": postDescription,
+                                            "contentType": "text/plain",
+                                            "content": postContent,
+                                            "categories": postCategories.replace(/\s/g, '').split(','),
+                                            "count": 0,
+                                            "comments": id + "/comments",
+                                            "commentsSrc": {},
+                                            "visibility": selectedPrivacy,
+                                            "unlisted": unlisted,
+                                        }
+                                    }
+
+                                    for (let ID of res.data.followers){
+                                        try {
+                                            createAPIEndpoint(`authors/${ID}/inbox`)
+                                            .post(data)
+                                            .then(res => {
+                                                //console.log("RESPONSE:",res.data);
+                                            })
+                                        }
+                                        catch (err) {
+                                            toast.error('An error has occurred.', {
+                                                description: "Could not post to your followers' inboxes. Please try again later.",
+                                            });
+                                        }
+                                        
+                                    }
+                                    
+                                })
+                            }
+                        catch (err) {
+                            toast.error('An error has occurred.', {
+                                description: 'Could not retrieve your follower details. Please try again later.',
+                            });
+                        }
+                    }
+
+
+
+
+
+
                         navigate(`/profile/${userID}`)
                         setUpload(false)
                     })
@@ -177,8 +334,6 @@ const NewPost = () => {
                     let origin = res.data.id;
                     let source = res.data.source;
                     let displayName = res.data.author.displayName;
-                    alert("");
-                    setUpload(false);
                     if (share) {
                         var myAuthorData;
                             try {
@@ -224,19 +379,13 @@ const NewPost = () => {
                                             "unlisted": unlisted,
                                         }
                                     }
-                                    console.log("DATA:",data);
-
+                                    
                                     for (let ID of res.data.followers){
-                                        if (ID == myAuthorData.id) {
-                                            console.log("ME");
-                                            continue;
-                                        }
-                                        console.log("REQUEST:",`authors/${ID}/inbox`);
                                         try {
                                             createAPIEndpoint(`authors/${ID}/inbox`)
                                             .post(data)
                                             .then(res => {
-                                                console.log("RESPONSE:",res.data);
+                                                //console.log("RESPONSE:",res.data);
                                             })
                                         }
                                         catch (err) {
@@ -246,20 +395,16 @@ const NewPost = () => {
                                         }
                                         
                                     }
+                                    
                                 })
                             }
                         catch (err) {
                             toast.error('An error has occurred.', {
                                 description: 'Could not retrieve your follower details. Please try again later.',
                             });
-                        
-            
-            
                         }
-
                     }
-                
-                    alert("")
+                    setUpload(false);
                     navigate(`/profile`);
                 }
                 )
