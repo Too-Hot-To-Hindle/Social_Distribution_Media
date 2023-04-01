@@ -9,33 +9,38 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 // takes in array of objects
 // returns string of usernames in each object in format "@username1, @username2, @username3"
 const formatLikesString = (likes, id) => {
-    const myComments = likes.find(like => like.id === id);
+    if (likes.length === 0) {
+        return "No one."
+    } else {
 
-    let likesString = "";
-    if (myComments.likes === null || myComments.likes === undefined) {
-        likesString += "No one."
-        return likesString;
-    }
+        const myComments = likes.find(like => like.id === id);
 
-    else if (myComments.likes.length === 0) {
-        likesString += "No one."
-        return likesString;
-    }
+        let likesString = "";
+        if (myComments.likes === null || myComments.likes === undefined) {
+            likesString += "No one."
+            return likesString;
+        }
 
-    else if (myComments.likes.length === 1) {
-        likesString += `@${myComments.likes[0].author.displayName}`;
-        return likesString;
-    }
+        else if (myComments.likes.length === 0) {
+            likesString += "No one."
+            return likesString;
+        }
 
-    else {
-        myComments.likes.forEach((like, index) => {
-            if (index === likes.length - 1) {
-                likesString += `@${like.author.displayName}`;
-            } else {
-                likesString += `@${like.author.displayName}, `;
-            }
-        });
-        return likesString;
+        else if (myComments.likes.length === 1) {
+            likesString += `@${myComments.likes[0].author.displayName}`;
+            return likesString;
+        }
+
+        else {
+            myComments.likes.forEach((like, index) => {
+                if (index === likes.length - 1) {
+                    likesString += `@${like.author.displayName}`;
+                } else {
+                    likesString += `@${like.author.displayName}, `;
+                }
+            });
+            return likesString;
+        }
     }
 }
 

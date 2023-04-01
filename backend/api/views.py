@@ -778,7 +778,17 @@ class ImagePosts(APIView):
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
+
             try:
                 response = remote.connection.get_image_post(author_id, post_id)
 
@@ -803,8 +813,7 @@ class ImagePosts(APIView):
                 serializer = PostSerializer(post)
 
                 if (serializer.data["contentType"] == "image/png;base64" or serializer.data["contentType"] == "image/jpeg;base64"):
-                    image_data = serializer.data["content"].partition('base64,')[
-                        2]
+                    image_data = serializer.data["content"].partition('base64,')[2]
                     binary = base64.b64decode(image_data)
                     return HttpResponse(binary, content_type=serializer.data["contentType"])
 
@@ -843,7 +852,16 @@ class Comments(APIView):
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
 
             try:
                 response = remote.connection.get_comments(author_id, post_id)
@@ -933,7 +951,16 @@ class PostLikes(APIView):
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
 
             try:
                 response = remote.connection.get_post_likes(author_id, post_id)
@@ -984,7 +1011,16 @@ class CommentLikes(APIView):
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
 
             try:
                 response = remote.connection.get_comment_likes(
@@ -1037,7 +1073,16 @@ class LikedPosts(APIView):
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
 
             try:
                 response = remote.connection.get_author_liked(author_id)
@@ -1135,9 +1180,12 @@ class InboxDetail(APIView):
             remote = RemoteConnection(remote_url)
             
             # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
             # So we need to extract those specially
             if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
                 author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
             else:
                 author_id = extract_uuid_if_url('author', author_id)
 

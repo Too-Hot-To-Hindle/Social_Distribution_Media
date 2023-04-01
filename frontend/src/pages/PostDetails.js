@@ -29,7 +29,7 @@ const PostDetails = () => {
     const [likesLoading, setLikesLoading] = useState(true);
     const [likes, setLikes] = useState([]);
 
-    const [commentLikes, setCommentLikes] = useState(null); // array of objects that contain arrays of the likes for each comment
+    const [commentLikes, setCommentLikes] = useState([]); // array of objects that contain arrays of the likes for each comment
 
     const [myProfile, setMyProfile] = useState(null);
     const [notFound, setNotFound] = useState(null)
@@ -325,7 +325,7 @@ const PostDetails = () => {
                                     <Divider />
                                 </Grid>
 
-                                {(commentsLoading || commentLikes === null) &&
+                                {(commentsLoading) &&
                                     <Grid item xs={12}>
                                         <CircularProgress />
                                     </Grid>
@@ -337,7 +337,7 @@ const PostDetails = () => {
                                     </Grid>
                                 }
 
-                                {!commentsLoading && comments.length > 0 && commentLikes !== null &&
+                                {!commentsLoading && comments.length > 0 &&
                                     comments.map((comment) => (
                                         <Grid item xs={12}>
                                             <Comment username={comment.author.displayName} content={comment.comment} likes={commentLikes} id={comment.id} />
