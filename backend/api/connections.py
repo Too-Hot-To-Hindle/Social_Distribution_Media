@@ -1470,9 +1470,28 @@ class Team10Connection():
                 comments.extend(items)
                 page += 1
 
+        cleaned_comments = []
+        for comment in comments:
+            cleaned_comments.append({
+                "type": comment.get("type", ""),
+                "author": {
+                    "type": comment.get("author", {}).get("type", ""),
+                    "id": comment.get("author", {}).get("id", ""),
+                    "host": comment.get("author", {}).get("host", ""),
+                    "displayName": comment.get("author", {}).get("displayName", ""),
+                    "url": comment.get("author", {}).get("url", ""),
+                    "github": comment.get("author", {}).get("github", ""),
+                    "profileImage": comment.get("author", {}).get("profileImage", ""),
+                },
+                "comment": comment.get("content", ""),
+                "contentType": comment.get("contentType", ""),
+                "published": comment.get("published", ""),
+                "id": comment.get("id", ""),
+            })
+
         return {
             "type": "comments",
-            "items": comments
+            "items": cleaned_comments
         }
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
