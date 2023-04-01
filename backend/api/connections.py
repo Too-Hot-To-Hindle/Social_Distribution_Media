@@ -123,7 +123,7 @@ class TeamCloneConnection():
 
                 else:
                     return response_author
-                
+
             except Exception as e:
                 raise RemoteServerError("Error getting author with id " + author_id +
                                         " from remote server: https://social-distribution-media-2.herokuapp.com/. Exception: " + str(e))
@@ -1667,7 +1667,7 @@ class Team11Connection():
                 "count": body.get("object", {}).get("count") if body.get("object", {}).get("count") != "" else None,
                 "comments": body.get("object", {}).get("comments") if body.get("object", {}).get("comments") != "" else None,
                 "commentsSrc": body.get("object", {}).get("commentsSrc") if body.get("object", {}).get("commentsSrc") != "" else None,
-                "published": "2023-03-27T22:15:11.085446-06:00", # ignored
+                "published": "2023-03-27T22:15:11.085446-06:00",  # ignored
                 "visibility": body.get("object", {}).get("visibility") if body.get("object", {}).get("visibility") != "" else None,
                 "unlisted": body.get("object", {}).get("unlisted") if body.get("object", {}).get("unlisted") != "" else None,
             }
@@ -1764,7 +1764,8 @@ class Team11Connection():
                 "id": body.get("object", {}).get("id") if body.get("object", {}).get("id") != "" else None,
                 "comment": body.get("object", {}).get("comment") if body.get("object", {}).get("comment") != "" else None,
                 "contentType": body.get("object", {}).get("contentType") if body.get("object", {}).get("contentType") != "" else None,
-                "published": "2023-03-27T22:15:11.085446-06:00" # this is ignored, needs to be a proper formatted timestamp I guess?
+                # this is ignored, needs to be a proper formatted timestamp I guess?
+                "published": "2023-03-27T22:15:11.085446-06:00"
             },
             "object": body.get("object", {}).get("object") if body.get("object", {}).get("object") != "" else None,
 
@@ -1845,7 +1846,7 @@ class Team13Connection():
         self.base_url = base_url
         self.session = CachedSession(
             "team13_cache", backend="sqlite", expire_after=1)
-        
+
         # AUTH COMMENTED OUT
         # THEY CURRENTLY HAVE IT DISABLED, SUBJECT TO CHANGE
         # self.session.auth = (self.username, self.password)
@@ -1915,7 +1916,7 @@ class Team13Connection():
 
                 else:
                     return response_author
-                
+
             except Exception as e:
                 raise RemoteServerError("Error getting author with id " + author_id +
                                         " from remote server: https://group-13-epic-app.herokuapp.com/api/. Exception: " + str(e))
@@ -2161,12 +2162,12 @@ class Team13Connection():
         # if the post doesn't exist, or isn't an image, throw a 404 exception
         if response.status_code == 404:
             raise Remote404("Post with id " + post_id + " from author with id " + author_id +
-                            " from remote server: https://social-distribution-media-2.herokuapp.com/ does not exist, or is not an image.")
+                            " from remote server: https://group-13-epic-app.herokuapp.com/api/ does not exist, or is not an image.")
 
         # if the server returns an error, throw an exception
         elif response.status_code != 200:
             raise RemoteServerError("Error getting image post with id " + post_id + " from author with id " + author_id +
-                                    " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         # otherwise, return the raw image data and the content type
         else:
@@ -2189,16 +2190,20 @@ class Team13Connection():
 
             elif response.status_code != 200:
                 raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id +
-                                        " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+                                        " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
             response_comments = response.json()
             if response_comments is None:
                 raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id +
-                                        " from remote server: https://social-distribution-media-2.herokuapp.com/; no JSON was received in response.")
+                                        " from remote server: https://group-13-epic-app.herokuapp.com/api/; no JSON was received in response.")
 
-            items = response_comments.get("items")
-            comments.extend(items)
-            page += 1
+            items = response_comments.get("items", [])
+            if len(items) == 0:
+                break
+
+            else:
+                comments.extend(items)
+                page += 1
 
         return {
             "type": "comments",
@@ -2219,19 +2224,37 @@ class Team13Connection():
 
         elif response.status_code != 200:
             raise RemoteServerError("Error getting likes for post with id " + post_id + " from author with id " + author_id +
-                                    " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         response_likes = response.json()
         if response_likes is None:
             raise RemoteServerError("Error getting likes for post with id " + post_id + " from author with id " + author_id +
-                                    " from remote server: https://social-distribution-media-2.herokuapp.com/; no JSON was received in response.")
+                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; no JSON was received in response.")
 
-        items = response_likes.get("items")
+        items = response_likes.get("items", [])
         likes.extend(items)
+
+        cleaned_likes = []
+        for like in likes:
+            cleaned_likes.append({
+                "@context": like.get("@context") if like.get("@context") != None else "",
+                "summary": like.get("summary") if like.get("summary") != None else "",
+                "type": like.get("type").lower() if like.get("type") != None else "",
+                "author": {
+                    "type": like.get("author", {}).get("type") if like.get("author", {}).get("type") != None else "",
+                    "id": like.get("author", {}).get("id") if like.get("author", {}).get("id") != None else "",
+                    "host": like.get("author", {}).get("host") if like.get("author", {}).get("host") != None else "",
+                    "displayName": like.get("author", {}).get("displayName") if like.get("author", {}).get("displayName") != None else "",
+                    "url": like.get("author", {}).get("url") if like.get("author", {}).get("url") != None else "",
+                    "github": like.get("author", {}).get("github") if like.get("author", {}).get("github") != None else "",
+                    "profileImage": like.get("author", {}).get("profileImage") if like.get("author", {}).get("profileImage") != None else "",
+                },
+                "object": like.get("object") if like.get("object") != None else "",
+            })
 
         return {
             "type": "likes",
-            "items": likes
+            "items": cleaned_likes
         }
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
@@ -2249,19 +2272,37 @@ class Team13Connection():
 
         elif response.status_code != 200:
             raise RemoteServerError("Error getting likes for comment with id " + comment_id + " from post with id " + post_id + " from author with id " + author_id +
-                                    " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         response_likes = response.json()
         if response_likes is None:
             raise RemoteServerError("Error getting likes for comment with id " + comment_id + " from post with id " + post_id + " from author with id " +
-                                    author_id + " from remote server: https://social-distribution-media-2.herokuapp.com/; no JSON was received in response.")
+                                    author_id + " from remote server: https://group-13-epic-app.herokuapp.com/api/; no JSON was received in response.")
 
         items = response_likes.get("items")
         likes.extend(items)
 
+        cleaned_likes = []
+        for like in likes:
+            cleaned_likes.append({
+                "@context": like.get("@context") if like.get("@context") != None else "",
+                "summary": like.get("summary") if like.get("summary") != None else "",
+                "type": like.get("type").lower() if like.get("type") != None else "",
+                "author": {
+                    "type": like.get("author", {}).get("type") if like.get("author", {}).get("type") != None else "",
+                    "id": like.get("author", {}).get("id") if like.get("author", {}).get("id") != None else "",
+                    "host": like.get("author", {}).get("host") if like.get("author", {}).get("host") != None else "",
+                    "displayName": like.get("author", {}).get("displayName") if like.get("author", {}).get("displayName") != None else "",
+                    "url": like.get("author", {}).get("url") if like.get("author", {}).get("url") != None else "",
+                    "github": like.get("author", {}).get("github") if like.get("author", {}).get("github") != None else "",
+                    "profileImage": like.get("author", {}).get("profileImage") if like.get("author", {}).get("profileImage") != None else "",
+                },
+                "object": like.get("object") if like.get("object") != None else "",
+            })
+
         return {
             "type": "likes",
-            "items": likes
+            "items": cleaned_likes
         }
 
     # URL: ://service/authors/{AUTHOR_ID}/liked
@@ -2278,29 +2319,77 @@ class Team13Connection():
 
         elif response.status_code != 200:
             raise RemoteServerError("Error getting likes for author with id " + author_id +
-                                    " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         response_likes = response.json()
         if response_likes is None:
             raise RemoteServerError("Error getting likes for author with id " + author_id +
-                                    " from remote server: https://social-distribution-media-2.herokuapp.com/; no JSON was received in response.")
+                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; no JSON was received in response.")
 
         items = response_likes.get("items")
         likes.extend(items)
 
+        cleaned_likes = []
+        for like in likes:
+            cleaned_likes.append({
+                "@context": like.get("@context") if like.get("@context") != None else "",
+                "summary": like.get("summary") if like.get("summary") != None else "",
+                "type": like.get("type").lower() if like.get("type") != None else "",
+                "author": {
+                    "type": like.get("author", {}).get("type") if like.get("author", {}).get("type") != None else "",
+                    "id": like.get("author", {}).get("id") if like.get("author", {}).get("id") != None else "",
+                    "host": like.get("author", {}).get("host") if like.get("author", {}).get("host") != None else "",
+                    "displayName": like.get("author", {}).get("displayName") if like.get("author", {}).get("displayName") != None else "",
+                    "url": like.get("author", {}).get("url") if like.get("author", {}).get("url") != None else "",
+                    "github": like.get("author", {}).get("github") if like.get("author", {}).get("github") != None else "",
+                    "profileImage": like.get("author", {}).get("profileImage") if like.get("author", {}).get("profileImage") != None else "",
+                },
+                "object": like.get("object") if like.get("object") != None else "",
+            })
+
         return {
             "type": "likes",
-            "items": likes
+            "items": cleaned_likes
         }
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox
     def send_post(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox"
-        response = self.session.post(url=url, json=body)
+
+        cleaned_body = {
+            "type": body.get("object", {}).get("type", "").lower(),
+            "id": body.get("object", {}).get("id", ""),
+            "title": body.get("object", {}).get("title", ""),
+            "source": body.get("object", {}).get("source", ""),
+            "origin": body.get("object", {}).get("origin", ""),
+            "description": body.get("object", {}).get("description", ""),
+            "contentType": body.get("object", {}).get("contentType", ""),
+            "content": body.get("object", {}).get("content", ""),
+            "author": {
+                "type": body.get("object", {}).get("author", {}).get("type", "").lower(),
+                "id": body.get("object", {}).get("author", {}).get("id", ""),
+                "host": body.get("object", {}).get("author", {}).get("host", ""),
+                "displayName": body.get("object", {}).get("author", {}).get("displayName", ""),
+                "url": body.get("object", {}).get("author", {}).get("url", ""),
+                "github": body.get("object", {}).get("author", {}).get("github", ""),
+                "profileImage": body.get("object", {}).get("author", {}).get("profileImage", ""),
+            },
+            "categories": body.get("object", {}).get("categories", []),
+            "count": body.get("object", {}).get("count", 0),
+            "comments": body.get("object", {}).get("comments", []),
+            "commentsSrc": body.get("object", {}).get("commentsSrc", {}),
+            "published": body.get("object", {}).get("published", ""),
+            "visibility": body.get("object", {}).get("visibility", ""),
+            "unlisted": body.get("object", {}).get("unlisted", False),
+        }
+
+        print(cleaned_body)
+
+        response = self.session.post(url=url, json=cleaned_body)
 
         if response.status_code != 200 and response.status_code != 201:
             raise RemoteServerError("Error sending post to author with id " + author_id +
-                                    " from remote server: https://social-distribution-media-2.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         else:
             try:
@@ -2310,54 +2399,85 @@ class Team13Connection():
             # if there was an issue parsing the JSON response but we still got a 200/201, it's likely that we sent
             # the post successfully, and don't need to parse the response
             except Exception as e:
-                print("Error parsing response from remote server: https://social-distribution-media-2.herokuapp.com/; status code " +
-                      str(response.status_code) + " was received in response.")
-                return None
+                if response.status_code == 200 or response.status_code == 201:
+                    return {"success": True}
+
+                else:
+                    print("Error parsing response from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " +
+                          str(response.status_code) + " was received in response.")
+                    return None
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_like(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox"
         response = self.session.post(url=url, json=body)
 
-        if response.status_code != 201:
-            # TODO: handle error
-            # look in cache?
-            print("error occurred")
-            pass
+        if response.status_code != 200 and response.status_code != 201:
+            raise RemoteServerError("Error sending post to author with id " + author_id +
+                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            # might wanna return something, parse the response...
-            print("sent remotely!")
-            return response.json()
+            try:
+                response_json = response.json()
+                return response_json
+
+            # if there was an issue parsing the JSON response but we still got a 200/201, it's likely that we sent
+            # the post successfully, and don't need to parse the response
+            except Exception as e:
+                if response.status_code == 200 or response.status_code == 201:
+                    return None
+
+                else:
+                    print("Error parsing response from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " +
+                          str(response.status_code) + " was received in response.")
+                    return None
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_comment(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox"
         response = self.session.post(url=url, json=body)
 
-        if response.status_code != 201:
-            # TODO: handle error
-            # look in cache?
-            print("error occurred")
-            pass
+        if response.status_code != 200 and response.status_code != 201:
+            raise RemoteServerError("Error sending post to author with id " + author_id +
+                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            # might wanna return something, parse the response...
-            print("sent remotely!")
-            return response.json()
+            try:
+                response_json = response.json()
+                return response_json
+
+            # if there was an issue parsing the JSON response but we still got a 200/201, it's likely that we sent
+            # the post successfully, and don't need to parse the response
+            except Exception as e:
+                if response.status_code == 200 or response.status_code == 201:
+                    return None
+
+                else:
+                    print("Error parsing response from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " +
+                          str(response.status_code) + " was received in response.")
+                    return None
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_follow(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox"
         response = self.session.post(url=url, json=body)
 
-        if response.status_code != 201:
-            # TODO: handle error
-            # look in cache?
-            print("error occurred")
-            pass
+        if response.status_code != 200 and response.status_code != 201:
+            raise RemoteServerError("Error sending post to author with id " + author_id +
+                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            # might wanna return something, parse the response...
-            print("sent remotely!")
-            return response.json()
+            try:
+                response_json = response.json()
+                return response_json
+
+            # if there was an issue parsing the JSON response but we still got a 200/201, it's likely that we sent
+            # the post successfully, and don't need to parse the response
+            except Exception as e:
+                if response.status_code == 200 or response.status_code == 201:
+                    return {"success": True}
+
+                else:
+                    print("Error parsing response from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " +
+                          str(response.status_code) + " was received in response.")
+                    return None

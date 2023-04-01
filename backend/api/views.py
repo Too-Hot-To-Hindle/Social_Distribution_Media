@@ -667,11 +667,15 @@ class ImagePosts(APIView):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
             author_id = extract_uuid_if_url('author', author_id)
-            response = remote.connection.get_image_post(author_id, post_id)
+            try:
+                response = remote.connection.get_image_post(author_id, post_id)
 
-            binary = response[0]
-            content_type = response[1]
-            return HttpResponse(binary, content_type=content_type)
+                binary = response[0]
+                content_type = response[1]
+                return HttpResponse(binary, content_type=content_type)
+            
+            except Remote404:
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
         else:
             # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
