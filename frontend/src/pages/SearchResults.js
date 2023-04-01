@@ -23,6 +23,7 @@ const SearchResults = () => {
     const [localAuthors, setLocalAuthors] = useState(null);
     const [remoteCloneAuthors, setRemoteCloneAuthors] = useState(null);
     const [team11Authors, setTeam11Authors] = useState(null);
+    const [team13Authors, setTeam13Authors] = useState(null);
 
     const [myProfile, setMyProfile] = useState(null);
     const [sentFriendRequests, setSentFriendRequests] = useState([]);
@@ -98,6 +99,21 @@ const SearchResults = () => {
                         description: 'Could not load team 11 authors at this time. Please try again later.',
                     });
                 });
+
+            // team 13's remote URL
+            const team13RemoteTeamURL = encodeURIComponent("https://group-13-epic-app.herokuapp.com/api/")
+            createAPIEndpoint(`remote/authors/${team13RemoteTeamURL}`)
+                .get()
+                .then(res => {
+                    setTeam13Authors(res.data.items
+                        .filter(author => author["displayName"].toLowerCase().includes(query.toLowerCase())))
+                })
+                .catch(err => {
+                    toast.error('An error has occurred.', {
+                        description: 'Could not load team 13 authors at this time. Please try again later.',
+                    });
+                }
+                );
 
         }
 
@@ -317,6 +333,68 @@ const SearchResults = () => {
 
                                         <Grid item xs={12}>
                                             {team11Authors.map((author, index) => {
+                                                return (
+                                                    <Grid container key={index} spacing={2}>
+                                                        <Grid item xs={12}>
+                                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                                    <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+                                                                    <div>
+                                                                        <Typography variant="h6" align="left">@{author.displayName}</Typography>
+                                                                    </div>
+                                                                </div>
+
+                                                                <Button variant="contained" onClick={() => { navigate(`/profile/${encodeURIComponent(author.id)}`) }}>View</Button>
+
+                                                                {/* Need to redo friend request logic for remote authors */}
+                                                            </div>
+                                                        </Grid>
+
+                                                        <Grid item xs={12}>
+                                                            <Divider />
+                                                        </Grid>
+
+
+                                                    </Grid>
+                                                )
+                                            })}
+                                        </Grid>
+                                    </Grid>
+                                </>
+                            }
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <Divider />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <Typography variant="h6" align="left" sx={{ marginBottom: "10px" }}>Remote Team 13 Authors</Typography>
+
+                        <Card>
+
+                            {(team13Authors === null) &&
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <CircularProgress />
+                                    </Grid>
+                                </Grid>
+                            }
+
+                            {(team13Authors !== null && team13Authors.length === 0) &&
+                                <>
+                                    <PagesIcon sx={{ fontSize: "60px" }} />
+                                    <Typography variant="h6" component="h2" sx={{ textAlign: "center" }}>No remote team 13 results.</Typography>
+                                </>
+                            }
+
+                            {(team13Authors !== null && team13Authors.length > 0) &&
+                                <>
+                                    <Grid container spacing={2}>
+
+                                        <Grid item xs={12}>
+                                            {team13Authors.map((author, index) => {
                                                 return (
                                                     <Grid container key={index} spacing={2}>
                                                         <Grid item xs={12}>
