@@ -173,7 +173,7 @@ const NewPost = () => {
             await createAPIEndpoint(`authors/${userID}/posts`)
                 .post(data)
                 .then(res => {
-                    let id = res.data._id;
+                    let id = res.data.id;
                     let origin = res.data.id;
                     let source = res.data.source;
                     let displayName = res.data.author.displayName;
@@ -188,7 +188,7 @@ const NewPost = () => {
                                     myAuthorData = res.data;
                                     data = {
                                         "type": "post",
-                                        "summary": displayName+"shared a post!",
+                                        "summary": displayName+" shared a post!",
                                         "author": {
                                             "type": "author",
                                             "id": myAuthorData.id,
@@ -244,7 +244,7 @@ const NewPost = () => {
                                                 description: "Could not post to your followers' inboxes. Please try again later.",
                                             });
                                         }
-                                        break;  //only one follower for now, for testing
+                                        
                                     }
                                 })
                             }
