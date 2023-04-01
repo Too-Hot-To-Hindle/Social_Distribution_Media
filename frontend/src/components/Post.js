@@ -77,7 +77,6 @@ const Post = ({
             createAPIEndpoint(`authors/${userID}`)
                 .get()
                 .then(res => {
-                    console.log(res.data)
                     setMyAuthorData(res.data)
                 })
                 .catch(err => {
