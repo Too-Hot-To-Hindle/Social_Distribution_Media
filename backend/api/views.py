@@ -20,6 +20,8 @@ from .models import Author, Post, Comment, Like, Inbox, Follow
 from .utils import extract_uuid_if_url
 from .utils import is_remote_url
 from .utils import get_remote_url
+from .utils import extract_id_if_url_group_6
+from .utils import extract_id_if_url_group_10
 from .connections import RemoteConnection, RemoteServerError, Remote404
 
 import traceback
@@ -84,7 +86,16 @@ class AuthorDetail(APIView):
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
 
             try:
                 response = remote.connection.get_single_author(author_id)
@@ -180,6 +191,8 @@ class Followers(APIView):
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
+
+            # TODO: Group 6 does not use UUID's for their object IDs...
             author_id = extract_uuid_if_url('author', author_id)
 
             try:
@@ -1021,7 +1034,13 @@ class InboxDetail(APIView):
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
+            
+            # Group 6 does not use UUID's for their object IDs
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
 
             object = request.data
             match object['type']:
@@ -1320,6 +1339,7 @@ class RemoteGetAllAuthors(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# DON'T LOOK AT / USE THESE:
 class RemoteSendToInbox(APIView):
     def post(self, request, remote_url):
         """Extra endpoint to help proxy requests to remote servers to send to inbox"""
