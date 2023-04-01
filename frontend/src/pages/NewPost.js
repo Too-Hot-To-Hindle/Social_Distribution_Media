@@ -44,19 +44,9 @@ const NewPost = () => {
 
     const [userID, setUserID] = useState(null);
 
-    const [followerIDs, setFollowerIDs] = useState([]);
-    const [inboxesUpdated, setInboxesUpdated] = useState(-1);
-
     useEffect(() => {
         setUserID(localStorage.getItem('author_id'))
     }, [])
-
-    useEffect(() => {
-        if (inboxesUpdated == 0){
-            console.log("inboxes update:",inboxesUpdated);
-            navigate(`/profile`);
-        }
-    }, [inboxesUpdated])
 
     const handleFileSelect = (event) => {
         setImageFile(event.target.files[0]);
@@ -76,7 +66,6 @@ const NewPost = () => {
 
     const handleAutoShareChange = (event) => {
         setShare(event.target.value);
-        console.log(share);
     };
 
     const uploadTextPost = async () => {
@@ -85,7 +74,6 @@ const NewPost = () => {
             var data;
             // if post is markdown, make a markdown type post in backend
             if (isMarkdown(postContent)) {
-                console.log("IS MARKDOWN");
                 data = {
                     title: postTitle,
                     description: postDescription,
@@ -403,7 +391,7 @@ const NewPost = () => {
                                 description: 'Could not retrieve your follower details. Please try again later.',
                             });
                         }
-                    }
+                    } 
                     setUpload(false);
                     navigate(`/profile`);
                 }
@@ -682,6 +670,26 @@ const NewPost = () => {
                             <Grid item xs={12}>
                                 <Divider />
                             </Grid>
+
+                            <Grid item xs={12}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="autoshare-label">Share?</InputLabel>
+                                    <Select
+                                        label="Privacy"
+                                        value={share}
+                                        onChange={handleAutoShareChange}
+                                    >
+                                        <MenuItem value={true}>Share Post Automatically on Creation</MenuItem>
+                                        <MenuItem value={false}>Don't Share</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            
+
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+                            
 
                             <Grid item xs={12}>
                                 <Typography variant="body1" fontWeight="500" align="left">Content Preview</Typography>
