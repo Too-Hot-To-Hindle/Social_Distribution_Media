@@ -173,28 +173,19 @@ const NewPost = () => {
             await createAPIEndpoint(`authors/${userID}/posts`)
                 .post(data)
                 .then(res => {
-                    console.log(res.data);
                     let id = res.data._id;
                     let origin = res.data.id;
                     let source = res.data.source;
                     let displayName = res.data.author.displayName;
-                    console.log(displayName);
-                    console.log(id);
-                    console.log(origin);
-                    console.log(source);
                     alert("");
                     setUpload(false);
                     if (share) {
-                        console.log("share is true");
                         var myAuthorData;
                             try {
                                 createAPIEndpoint(`authors/${userID}`)
                                 .get()
                                 .then(res => {
-                                    console.log(res.data.followers);
                                     myAuthorData = res.data;
-                                    console.log(res.data);
-                                    console.log("SOURCE:",source);
                                     data = {
                                         "type": "post",
                                         "summary": displayName+"shared a post!",
@@ -227,7 +218,7 @@ const NewPost = () => {
                                             "content": contentToBe,
                                             "categories": postCategories.replace(/\s/g, '').split(','),
                                             "count": 0,
-                                            "comments": id + "/comments", // might not work
+                                            "comments": id + "/comments",
                                             "commentsSrc": {},
                                             "visibility": selectedPrivacy,
                                             "unlisted": unlisted,
@@ -240,7 +231,6 @@ const NewPost = () => {
                                             console.log("ME");
                                             continue;
                                         }
-                                        console.log(ID);
                                         console.log("REQUEST:",`authors/${ID}/inbox`);
                                         try {
                                             createAPIEndpoint(`authors/${ID}/inbox`)
@@ -254,7 +244,7 @@ const NewPost = () => {
                                                 description: "Could not post to your followers' inboxes. Please try again later.",
                                             });
                                         }
-                                        break;
+                                        break;  //only one follower for now, for testing
                                     }
                                 })
                             }
