@@ -42,9 +42,19 @@ const NewPost = () => {
 
     const [userID, setUserID] = useState(null);
 
+    const [followerIDs, setFollowerIDs] = useState([]);
+    const [inboxesUpdated, setInboxesUpdated] = useState(-1);
+
     useEffect(() => {
         setUserID(localStorage.getItem('author_id'))
     }, [])
+
+    useEffect(() => {
+        if (inboxesUpdated == 0){
+            console.log("inboxes update:",inboxesUpdated);
+            navigate(`/profile`);
+        }
+    }, [inboxesUpdated])
 
     const handleFileSelect = (event) => {
         setImageFile(event.target.files[0]);
@@ -107,7 +117,7 @@ const NewPost = () => {
                     unlisted: unlisted
                 }
 
-
+                
                 createAPIEndpoint(`authors/${userID}/posts`)
                     .post(data)
                     .then(res => {
@@ -152,10 +162,26 @@ const NewPost = () => {
                 unlisted: unlisted
             }
 
+            var myAuthorData;
+            try {
+                myAuthorData = await createAPIEndpoint(`authors/${userID}`)
+                .get()
+                .then(res => {
+                    console.log(res.data.followers);
+                    setFollowerIDs(res.data.followers);
+                })
+            }
+            catch (err) {
+                toast.error('An error has occurred.', {
+                    description: 'Could not retrieve your follower details. Please try again later.',
+                });
+            }
+
+
             createAPIEndpoint(`authors/${userID}/posts`)
                 .post(data)
                 .then(res => {
-                    navigate(`/profile/${userID}`)
+                    alert("");
                     setUpload(false)
                 })
                 .catch(err => {
@@ -163,6 +189,20 @@ const NewPost = () => {
                         description: 'Your post could not be created at this time. Please try again later.',
                     });
                 });
+
+
+            //following logic needs to be handled in another useffect? - followerIDs disappearing
+            console.log(followerIDs);                
+            console.log("LENGTH:",followerIDs.length);
+            setInboxesUpdated(followerIDs.length);
+            for (const follower of followerIDs) {
+                console.log(follower.id);
+                await createAPIEndpoint(`authors/${encodeURIComponent(follower.id)}/inbox`).post(data)
+                .then(res =>{
+                    console.log(res.data);
+                    setInboxesUpdated(inboxesUpdated-1);
+                })
+            }
         }
     }
 
