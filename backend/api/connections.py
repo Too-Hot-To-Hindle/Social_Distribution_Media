@@ -1664,7 +1664,7 @@ class Team10Connection():
             "count": body.get("object", {}).get("count", 0),
             "comments": body.get("object", {}).get("comments", []),
             "commentsSrc": body.get("object", {}).get("commentsSrc", {}),
-            "published": body.get("object", {}).get("published", ""),
+            "published": "2023-03-28T04:42:14.478355Z",
             "visibility": "VISIBLE",
             "unlisted": body.get("object", {}).get("unlisted", False),
         }
