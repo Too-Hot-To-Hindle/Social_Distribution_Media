@@ -26,6 +26,8 @@ const NewPost = () => {
     const navigate = useNavigate();
 
     const [uploading, setUpload] = useState(false);
+    const [sharing, setSharing] = useState(false);
+    const [share,setShare] = useState(true)
     const [postType, setPostType] = useState(null);
     const [postTitle, setPostTitle] = useState("");
     const [postDescription, setPostDescription] = useState("");
@@ -70,6 +72,11 @@ const NewPost = () => {
 
     const handlePrivacyChange = (event) => {
         setSelectedPrivacy(event.target.value);
+    };
+
+    const handleAutoShareChange = (event) => {
+        setShare(event.target.value);
+        console.log(share);
     };
 
     const uploadTextPost = async () => {
@@ -162,47 +169,120 @@ const NewPost = () => {
                 unlisted: unlisted
             }
 
-            var myAuthorData;
-            try {
-                myAuthorData = await createAPIEndpoint(`authors/${userID}`)
-                .get()
-                .then(res => {
-                    console.log(res.data.followers);
-                    setFollowerIDs(res.data.followers);
-                })
-            }
-            catch (err) {
-                toast.error('An error has occurred.', {
-                    description: 'Could not retrieve your follower details. Please try again later.',
-                });
-            }
 
-
-            createAPIEndpoint(`authors/${userID}/posts`)
+            await createAPIEndpoint(`authors/${userID}/posts`)
                 .post(data)
                 .then(res => {
+                    console.log(res.data);
+                    let id = res.data._id;
+                    let origin = res.data.id;
+                    let source = res.data.source;
+                    let displayName = res.data.author.displayName;
+                    console.log(displayName);
+                    console.log(id);
+                    console.log(origin);
+                    console.log(source);
                     alert("");
-                    setUpload(false)
-                })
+                    setUpload(false);
+                    if (share) {
+                        console.log("share is true");
+                        var myAuthorData;
+                            try {
+                                createAPIEndpoint(`authors/${userID}`)
+                                .get()
+                                .then(res => {
+                                    console.log(res.data.followers);
+                                    myAuthorData = res.data;
+                                    console.log(res.data);
+                                    console.log("SOURCE:",source);
+                                    data = {
+                                        "type": "post",
+                                        "summary": displayName+"shared a post!",
+                                        "author": {
+                                            "type": "author",
+                                            "id": myAuthorData.id,
+                                            "host": myAuthorData.host,
+                                            "displayName": myAuthorData.displayName,
+                                            "url": myAuthorData.url,
+                                            "github": myAuthorData.github,
+                                            "profileImage": myAuthorData.profileImage
+                                        },
+                                        "object": {
+                                            "type": "post",
+                                            "author": {
+                                                "type": "author",
+                                                "id": myAuthorData.id,
+                                                "host": myAuthorData.host,
+                                                "displayName": myAuthorData.displayName,
+                                                "url": myAuthorData.url,
+                                                "github": myAuthorData.github,
+                                                "profileImage": myAuthorData.profileImage
+                                            },
+                                            "id": id,
+                                            "title": postTitle,
+                                            "source": source,
+                                            "origin": origin,
+                                            "description": postDescription,
+                                            "contentType": contentTypeToBe,
+                                            "content": contentToBe,
+                                            "categories": postCategories.replace(/\s/g, '').split(','),
+                                            "count": 0,
+                                            "comments": id + "/comments", // might not work
+                                            "commentsSrc": {},
+                                            "visibility": selectedPrivacy,
+                                            "unlisted": unlisted,
+                                        }
+                                    }
+                                    console.log("DATA:",data);
+
+                                    for (let ID of res.data.followers){
+                                        if (ID == myAuthorData.id) {
+                                            console.log("ME");
+                                            continue;
+                                        }
+                                        console.log(ID);
+                                        console.log("REQUEST:",`authors/${ID}/inbox`);
+                                        try {
+                                            createAPIEndpoint(`authors/${ID}/inbox`)
+                                            .post(data)
+                                            .then(res => {
+                                                console.log("RESPONSE:",res.data);
+                                            })
+                                        }
+                                        catch (err) {
+                                            toast.error('An error has occurred.', {
+                                                description: "Could not post to your followers' inboxes. Please try again later.",
+                                            });
+                                        }
+                                        break;
+                                    }
+                                })
+                            }
+                        catch (err) {
+                            toast.error('An error has occurred.', {
+                                description: 'Could not retrieve your follower details. Please try again later.',
+                            });
+                        
+            
+            
+                        }
+
+                    }
+                
+                    alert("")
+                    navigate(`/profile`);
+                }
+                )
                 .catch(err => {
                     toast.error('An error has occurred.', {
                         description: 'Your post could not be created at this time. Please try again later.',
                     });
                 });
 
+            
 
-            //following logic needs to be handled in another useffect? - followerIDs disappearing
-            console.log(followerIDs);                
-            console.log("LENGTH:",followerIDs.length);
-            setInboxesUpdated(followerIDs.length);
-            for (const follower of followerIDs) {
-                console.log(follower.id);
-                await createAPIEndpoint(`authors/${encodeURIComponent(follower.id)}/inbox`).post(data)
-                .then(res =>{
-                    console.log(res.data);
-                    setInboxesUpdated(inboxesUpdated-1);
-                })
-            }
+
+            
         }
     }
 
@@ -290,6 +370,24 @@ const NewPost = () => {
                                     >
                                         <MenuItem value={'PUBLIC'}>Public</MenuItem>
                                         <MenuItem value={'FRIEND'}>Friends Only</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Divider />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="autoshare-label">Share?</InputLabel>
+                                    <Select
+                                        label="Privacy"
+                                        value={share}
+                                        onChange={handleAutoShareChange}
+                                    >
+                                        <MenuItem value={true}>Share Post Automatically on Creation</MenuItem>
+                                        <MenuItem value={false}>Don't Share</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
