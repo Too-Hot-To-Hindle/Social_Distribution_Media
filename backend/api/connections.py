@@ -1188,25 +1188,25 @@ class Team10Connection():
 
     # URL: ://service/authors/{AUTHOR_ID}/followers
     def get_author_followers(self, author_id):
-        url = self.base_url + "authors/" + author_id + "/followers"
-        response = self.session.get(url)
+        url = self.base_url + "api/authors/" + author_id + "/followers"
+        response = self.session.get(url, headers={"Authorization": "Token E579D1E284A7C283C9E2E74C6C2F001D977186FA"})
 
         # if the author is not found, throw an exception
         if response.status_code == 404:
             raise Remote404("Author with id " + author_id +
-                            " not found on remote server: https://group-13-epic-app.herokuapp.com/api/")
+                            " not found on remote server: https://socialdistcmput404.herokuapp.com/api/")
 
         # if the server returns an error, throw an exception
         elif response.status_code != 200:
             raise RemoteServerError("Error getting followers for author with id " + author_id +
-                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
+                                    " from remote server: https://socialdistcmput404.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         else:
             try:
                 response_followers = response.json().get("items", [])
                 if response_followers is None:
                     raise RemoteServerError("Error getting followers for author with id " + author_id +
-                                            " from remote server: https://group-13-epic-app.herokuapp.com/api/. Response body was empty.")
+                                            " from remote server: https://socialdistcmput404.herokuapp.com/api/. Response body was empty.")
 
                 else:
                     cleaned_followers = []
@@ -1228,13 +1228,12 @@ class Team10Connection():
 
             except Exception as e:
                 raise RemoteServerError("Error getting followers for author with id " + author_id +
-                                        " from remote server: https://group-13-epic-app.herokuapp.com/api/. Exception: " + str(e))
+                                        " from remote server: https://socialdistcmput404.herokuapp.com/api/. Exception: " + str(e))
 
     # URL: ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     def check_if_follower(self, author_id, follower_id):
-        url = self.base_url + "authors/" + author_id + "/followers/" + follower_id
-        print(url)
-        response = self.session.get(url)
+        url = self.base_url + "api/authors/" + author_id + "/followers/" + follower_id
+        response = self.session.get(url, headers={"Authorization": "Token E579D1E284A7C283C9E2E74C6C2F001D977186FA"})
 
         if response.status_code != 200:
             return {
@@ -1248,25 +1247,25 @@ class Team10Connection():
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}
     def get_single_post(self, author_id, post_id):
-        url = self.base_url + "authors/" + author_id + "/posts/" + post_id
-        response = self.session.get(url)
+        url = self.base_url + "api/authors/" + author_id + "/posts/" + post_id
+        response = self.session.get(url, headers={"Authorization": "Token E579D1E284A7C283C9E2E74C6C2F001D977186FA"})
 
         # if the author/post is not found, throw an exception
         if response.status_code == 404:
             raise Remote404("Post with id " + post_id + " from author with id " + author_id +
-                            " not found on remote server: https://group-13-epic-app.herokuapp.com/api/")
+                            " not found on remote server: https://socialdistcmput404.herokuapp.com/api/")
 
         # if the server returns an error, throw an exception
         elif response.status_code != 200:
             raise RemoteServerError("Error getting post with id " + post_id + " from author with id " + author_id +
-                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
+                                    " from remote server: https://socialdistcmput404.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         else:
             try:
                 response_post = response.json()
                 if response_post is None:
-                    # TODO: handle error
-                    pass
+                    raise RemoteServerError("Error getting post with id " + post_id + " from author with id " +
+                                            author_id + " from remote server: https://socialdistcmput404.herokuapp.com/api/. Response body was empty.")
 
                 else:
                     comments = []
@@ -1324,18 +1323,18 @@ class Team10Connection():
 
             except Exception as e:
                 raise RemoteServerError("Error getting post with id " + post_id + " from author with id " + author_id +
-                                        " from remote server: https://group-13-epic-app.herokuapp.com/api/; exception " + str(e) + " was thrown.")
+                                        " from remote server: https://socialdistcmput404.herokuapp.com/api/; exception " + str(e) + " was thrown.")
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/
     def get_recent_posts(self, author_id):
-        url = self.base_url + "authors/" + author_id + "/posts"
+        url = self.base_url + "api/authors/" + author_id + "/posts"
 
         # handle pagination
         # start at page 1, loop until no items are returned - in which case our server throws a 404
         page = 1
         posts = []
         while True:
-            response = self.session.get(url, params={"page": page, "size": 10})
+            response = self.session.get(url, params={"page": page, "size": 10}, headers={"Authorization": "Token E579D1E284A7C283C9E2E74C6C2F001D977186FA"})
 
             # no need to handle the 404 using an exception, just return the posts we have/or the empty array
             if response.status_code == 404:
@@ -1343,12 +1342,12 @@ class Team10Connection():
 
             elif response.status_code != 200:
                 raise RemoteServerError("Error getting recent posts from author with id " + author_id +
-                                        " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
+                                        " from remote server: https://socialdistcmput404.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
             response_posts = response.json()
             if response_posts is None:
                 raise RemoteServerError("Error getting recent posts from author with id " + author_id +
-                                        " from remote server: https://group-13-epic-app.herokuapp.com/api/. Response body was empty.")
+                                        " from remote server: https://socialdistcmput404.herokuapp.com/api/. Response body was empty.")
 
             items = response_posts.get("items", [])
 
@@ -1427,12 +1426,12 @@ class Team10Connection():
         # if the post doesn't exist, or isn't an image, throw a 404 exception
         if response.status_code == 404:
             raise Remote404("Post with id " + post_id + " from author with id " + author_id +
-                            " from remote server: https://group-13-epic-app.herokuapp.com/api/ does not exist, or is not an image.")
+                            " from remote server: https://socialdistcmput404.herokuapp.com/api/ does not exist, or is not an image.")
 
         # if the server returns an error, throw an exception
         elif response.status_code != 200:
             raise RemoteServerError("Error getting image post with id " + post_id + " from author with id " + author_id +
-                                    " from remote server: https://group-13-epic-app.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
+                                    " from remote server: https://socialdistcmput404.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
         # otherwise, return the raw image data and the content type
         else:

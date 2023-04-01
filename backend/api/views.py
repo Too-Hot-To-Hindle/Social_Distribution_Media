@@ -192,8 +192,15 @@ class Followers(APIView):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
 
-            # TODO: Group 6 does not use UUID's for their object IDs...
-            author_id = extract_uuid_if_url('author', author_id)
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
 
             try:
                 response = remote.connection.get_author_followers(author_id)
@@ -246,9 +253,27 @@ class FollowersDetail(APIView):
         if is_remote_url(author_id) and is_remote_url(foreign_author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
-            foreign_author_id = extract_uuid_if_url(
-                'author', foreign_author_id)
+            
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
+
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (foreign_author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                foreign_author_id = extract_id_if_url_group_6('author', foreign_author_id)
+            elif (foreign_author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                foreign_author_id = extract_id_if_url_group_10('author', foreign_author_id)
+            else:
+                foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
 
             try:
                 response = remote.connection.check_if_follower(
@@ -262,9 +287,27 @@ class FollowersDetail(APIView):
         if is_remote_url(author_id) and not is_remote_url(foreign_author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
-            foreign_author_id = extract_uuid_if_url(
-                'author', foreign_author_id)
+            
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
+
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (foreign_author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                foreign_author_id = extract_id_if_url_group_6('author', foreign_author_id)
+            elif (foreign_author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                foreign_author_id = extract_id_if_url_group_10('author', foreign_author_id)
+            else:
+                foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
 
             try:
                 response = remote.connection.check_if_follower(
@@ -277,9 +320,28 @@ class FollowersDetail(APIView):
         # case 3: author_id is local, foreign_author_id is remote
         if not is_remote_url(author_id) and is_remote_url(foreign_author_id):
             # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-            author_id = extract_uuid_if_url('author', author_id)
-            foreign_author_id = extract_uuid_if_url(
-                'author', foreign_author_id)
+            
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
+
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (foreign_author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                foreign_author_id = extract_id_if_url_group_6('author', foreign_author_id)
+            elif (foreign_author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                foreign_author_id = extract_id_if_url_group_10('author', foreign_author_id)
+            else:
+                foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
+
             if not (author_id and foreign_author_id):
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -302,9 +364,28 @@ class FollowersDetail(APIView):
         # case 4: author_id and foreign_author_id are both local
         if not is_remote_url(author_id) and not is_remote_url(foreign_author_id):
             # Extract a uuid if id was given in the form http://somehost/authors/<uuid>
-            author_id = extract_uuid_if_url('author', author_id)
-            foreign_author_id = extract_uuid_if_url(
-                'author', foreign_author_id)
+            
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
+
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (foreign_author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                foreign_author_id = extract_id_if_url_group_6('author', foreign_author_id)
+            elif (foreign_author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                foreign_author_id = extract_id_if_url_group_10('author', foreign_author_id)
+            else:
+                foreign_author_id = extract_uuid_if_url('author', foreign_author_id)
+
             if not (author_id and foreign_author_id):
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -410,7 +491,16 @@ class Posts(APIView):
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
+
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
 
             try:
                 response = remote.connection.get_recent_posts(author_id)
@@ -506,7 +596,16 @@ class PostDetail(APIView):
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-            author_id = extract_uuid_if_url('author', author_id)
+            
+            # Group 6 does not use UUID's for their object IDs
+            # Nor does Group 10
+            # So we need to extract those specially
+            if (author_id.startswith("https://cmput404-group6-instatonne.herokuapp.com/")):
+                author_id = extract_id_if_url_group_6('author', author_id)
+            elif (author_id.startswith("https://socialdistcmput404.herokuapp.com/")):
+                author_id = extract_id_if_url_group_10('author', author_id)
+            else:
+                author_id = extract_uuid_if_url('author', author_id)
 
             try:
                 response = remote.connection.get_single_post(
