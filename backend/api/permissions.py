@@ -1,9 +1,6 @@
 from rest_framework import permissions
-from rest_framework.exceptions import PermissionDenied
 
 from .models import Author
-
-from .models import Post
 
 from pprint import pprint
 
@@ -21,16 +18,6 @@ class AllowedRemote(permissions.BasePermission):
             or request.method == 'POST' and view.get_view_name() in REMOTE_POST_ALLOWED_VIEWS
         return not is_remote_node or (is_remote_node and is_remote_endpoint)
     
-class IsOwner(permissions.BasePermission):
-    """
-    Custom permission to only allow owners of an object to edit it.
-    """
-
-    def has_object_permission(self, request, view, obj: Post):
-        requestor = Author.objects.filter(displayName=request.user).first()
-        # object access is only allowed to owner
-        return obj.author == requestor
-    
 class IsOwnerOrFriend(permissions.BasePermission):
     """
     Custom permission to only allow owners or followers of an object to view it.
@@ -42,6 +29,9 @@ class IsOwnerOrFriend(permissions.BasePermission):
 
         # set the is_friend flag so we can use to filter GET requests in the view
         request.is_friend = obj == requestor or obj.followers.filter(pk=requestor._id).exists()
+
+        # set the is_owner flag for limiting creation of posts to only owner
+        request.is_owner = obj == requestor
 
         # return true so we don't block the request
         return True
