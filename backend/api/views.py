@@ -478,7 +478,8 @@ class Posts(APIView):
 
     pagination_class = StandardResultsSetPagination
 
-    # sets custom flag (request.is_friend) to true if requesting user is friend of author or is the author 
+    # sets custom flag (request.is_friend) to true if requesting user is friend of author or is the author
+    # or sets custom flag (request.is_owner) to true if requesting user == author_id
     permission_classes = [IsOwnerOrFriend]
 
     # @friend_check
@@ -655,7 +656,7 @@ class PostDetail(APIView):
                 post = Post.objects.get(pk=post_id)
 
                 # if requestor is not a friend and the post visibility is set to friends, return 403
-                if not request.is_friend and post.visibility == "FRIENDS":
+                if not request.is_friend and post.visibility != "PUBLIC":
                     return Response(status=status.HTTP_403_FORBIDDEN)
                 
                 serializer = PostSerializer(post)
@@ -878,6 +879,8 @@ class Comments(APIView):
 
     pagination_class = StandardResultsSetPagination
 
+    permission_classes = [IsOwnerOrFriend]
+
     @extend_schema(
         parameters=[
             docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
@@ -926,6 +929,12 @@ class Comments(APIView):
             if not (author_id and post_id):
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
+            # if the post is not public and requestor is not follower, return 403
+            req_post = get_object_or_404(Post, pk=post_id)
+            self.check_object_permissions(request, req_post.author)
+            if not request.is_friend and req_post.visibility != "PUBLIC":
+                return Response(status=status.HTTP_403_FORBIDDEN)
+
             try:
                 # comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
                 comments = Comment.objects.filter(
@@ -964,6 +973,12 @@ class Comments(APIView):
     def post(self, request, author_id, post_id):
         """Add a comment (comment object in body) to {post_id} posted by {author_id}."""
 
+        # if the post is not public and requestor is not follower, return 403
+        req_post = get_object_or_404(Post, pk=post_id)
+        self.check_object_permissions(request, req_post.author)
+        if not request.is_friend and req_post.visibility != "PUBLIC":
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         try:
             # TODO: Fix get comments above now that these are gone
             # request.data parses all request bodies, not just form data
@@ -980,6 +995,8 @@ class Comments(APIView):
 
 
 class PostLikes(APIView):
+
+    permission_classes = [IsOwnerOrFriend]
 
     @extend_schema(
         parameters=[
@@ -1024,6 +1041,12 @@ class PostLikes(APIView):
             post_id = extract_uuid_if_url('post', post_id)
             if not (author_id and post_id):
                 return Response(status=status.HTTP_404_NOT_FOUND)
+            
+            # if the post is not public and requestor is not follower, return 403
+            req_post = get_object_or_404(Post, pk=post_id)
+            self.check_object_permissions(request, req_post.author)
+            if not request.is_friend and req_post.visibility != "PUBLIC":
+                return Response(status=status.HTTP_403_FORBIDDEN)
 
             try:
                 if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
@@ -1040,6 +1063,8 @@ class PostLikes(APIView):
 
 class CommentLikes(APIView):
 
+    permission_classes = [IsOwnerOrFriend]
+
     @extend_schema(
         parameters=[
             docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
@@ -1054,7 +1079,7 @@ class CommentLikes(APIView):
         },
         tags=['Likes', 'Remote API'],
     )
-    def get(self, request_id, author_id, post_id, comment_id):
+    def get(self, request, author_id, post_id, comment_id):
         """Get a list of likes on {comment_id} for {post_id} posted by {author_id}. Supports remote authors; to make proxied requests to an external server, provide the full ID of the external author URL encoded in place of {author_id}, whereas {post_id} and {comment_id} needs to remain the UUID/identifier only (non-url)."""
 
         if is_remote_url(author_id):
@@ -1088,6 +1113,12 @@ class CommentLikes(APIView):
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
             try:
+                # check if requestor has permission to view post
+                req_post = get_object_or_404(Post, pk=post_id)
+                self.check_object_permissions(request, req_post.author)
+                if not request.is_friend and req_post.visibility != "PUBLIC":
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+
                 if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists() and Comment.objects.filter(pk=comment_id).exists()):
                     print(comment_id)
                     print(Author.objects.filter(pk=author_id).exists(), Post.objects.filter(
