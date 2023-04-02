@@ -303,7 +303,7 @@ const Friends = () => {
                                                         
                                                         
                                                         <Button variant="contained" endIcon={<CloseIcon />} onClick={() => { removeFriend(follower) }}>
-                                                        Remove Friend
+                                                        Remove Follower
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -330,7 +330,7 @@ const Friends = () => {
 
                                                     <div style={{ display: "flex", alignItems: "center" }}>
                                                     <Button variant="contained" endIcon={<CloseIcon />} onClick={() => { removeFriend(follower) }}>
-                                                        Remove Friend
+                                                        Remove Follower
                                                      </Button>
                                                     </div>
                                                 </div>
