@@ -175,7 +175,18 @@ const Friends = () => {
     }
 
     const removeFriend = (friend) => {
-        console.log("REMOVING FRIEND",friend);
+        createAPIEndpoint(`authors/${userID}/followers/${friend._id}`)
+            .delete()
+            .then(res => {
+                //console.log(res.data);
+                window.location.reload();
+            })
+        .catch(err => {
+            toast.error('An error has occurred.', {
+                description: 'Could not remove this friend. Please try again later.',
+            });
+        })
+
     }
 
     return (
