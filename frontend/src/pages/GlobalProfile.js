@@ -9,7 +9,7 @@ import Layout from "../components/layouts/Layout";
 import Post from "../components/Post";
 
 // Material UI elements
-import { Grid, Card, Typography, CircularProgress, Chip, Divider, Dialog, DialogContent, DialogTitle, DialogActions, Button, TextField } from "@mui/material";
+import { Avatar, Grid, Card, Typography, CircularProgress, Chip, Divider, Dialog, DialogContent, DialogTitle, DialogActions, Button, TextField } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -29,7 +29,6 @@ const getPostIDFromURL = (url) => {
 
     if (url.includes("posts")) {
         const urlSplit = url.split("/")
-        console.log(urlSplit[urlSplit.length - 1])
         return urlSplit[urlSplit.length - 1]
     }
 }
@@ -81,6 +80,9 @@ const GlobalProfile = () => {
     const [sentFollowRequest, setSentFollowRequest] = useState(false);
     const [sendingFollowRequest, setSendingFollowRequest] = useState(false);
 
+    const [profileImage, setProfileImage] = useState("");
+    const [editingProfileImage, setEditingProfileImage] = useState(false);
+
     // useEffect to get own username and user ID from localStorage
     useEffect(() => {
         setOwnUsername(localStorage.getItem('username'))
@@ -94,6 +96,7 @@ const GlobalProfile = () => {
                 .get()
                 .then(res => {
                     setOwnAuthorDetails(res.data)
+                    setProfileImage(res.data.profileImage)
                 })
                 .catch(err => {
                     setError(true)
@@ -299,6 +302,33 @@ const GlobalProfile = () => {
             })
     }
 
+    async function saveNewProfilePhoto() {
+
+        const data = {
+            id: ownAuthorDetails.id,
+            host: ownAuthorDetails.host,
+            displayName: ownAuthorDetails.displayName,
+            url: ownAuthorDetails.url,
+            github: ownAuthorDetails.github,
+            profileImage: profileImage
+        }
+
+        console.log(data)
+
+        createAPIEndpoint(`authors/${encodeURIComponent(ownAuthorDetails.id)}`)
+            .post(data)
+            .then(res => {
+                // reload page
+                window.location.reload();
+            })
+            .catch(err => {
+                toast.error('An error has occurred.', {
+                    description: 'Your profile photo could not be saved at this time. Please try again later.',
+                });
+            })
+
+    }
+
     return (
         <>
             <Layout>
@@ -372,6 +402,39 @@ const GlobalProfile = () => {
                     </DialogActions>
                 </Dialog>
 
+                <Dialog open={editingProfileImage} style={{ padding: "20px" }} maxWidth="xl">
+                    <DialogTitle>Change Profile Image</DialogTitle>
+
+                    <DialogContent>
+                        <Grid container spacing={2}>
+                            {ownAuthorDetails !== null &&
+                                <>
+                                    <Grid item xs={12}>
+                                        <Grid
+                                            container
+                                            spacing={0}
+                                            direction="column"
+                                            alignItems="center"
+                                            justifyContent="center"
+                                        >
+                                            <Avatar alt={ownAuthorDetails.displayName} src={profileImage} style={{ width: "300px", height: "300px", marginLeft: "50px", marginRight: "50px", marginTop: "20px", marginBottom: "20px" }} />
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid item xs={12}>
+                                        <TextField fullWidth value={profileImage} label="URL to Image" onChange={(e) => { setProfileImage(e.target.value) }}></TextField>
+                                    </Grid>
+
+                                    <Grid item xs={12}>
+                                        <Button disabled={profileImage === ""} variant="contained" fullWidth onClick={() => { saveNewProfilePhoto() }}>Save</Button>
+                                    </Grid>
+                                </>
+                            }
+                        </Grid>
+                    </DialogContent>
+
+                </Dialog>
+
                 <Grid container spacing={2}>
                     {loading &&
                         <Grid item xs={12}>
@@ -396,12 +459,17 @@ const GlobalProfile = () => {
                                 <Card>
                                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                                         <div style={{ display: "flex", alignItems: "center" }}>
-                                            <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
+                                            <Avatar src={authorDetails.profileImage} alt={authorDetails.displayName} style={{width: "40px", height: "40px", marginRight: "10px"}}/>
                                             <Typography variant="h6" align="left">@{authorDetails.displayName}</Typography>
                                         </div>
 
                                         <Chip label={authorServer} />
                                     </div>
+
+                                    {/* if author whose page we're looking at has the id of our own author, allow edit functionality */}
+                                    {authorDetails.id === ownAuthorDetails.id &&
+                                        <Button variant="contained" onClick={()=> {setEditingProfileImage(true)}}>Change Profile Photo</Button>
+                                    }
                                 </Card>
                             </Grid>
 

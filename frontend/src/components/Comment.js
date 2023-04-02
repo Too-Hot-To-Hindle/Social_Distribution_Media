@@ -1,5 +1,5 @@
 // Material UI components
-import { Typography, Grid, Divider } from "@mui/material";
+import { Typography, Grid, Divider, Avatar } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';

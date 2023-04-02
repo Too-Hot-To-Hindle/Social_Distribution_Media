@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import { createAPIEndpoint } from '../api';
 
 // Material UI components
-import { Card, Typography, Grid, Divider, IconButton, Button, TextField, Box, CircularProgress } from "@mui/material";
+import { Card, Typography, Grid, Divider, IconButton, Button, TextField, Box, CircularProgress, Avatar } from "@mui/material";
 
 // Material UI icons
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
