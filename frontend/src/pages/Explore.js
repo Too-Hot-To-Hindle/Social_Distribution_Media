@@ -11,6 +11,7 @@ import { Card, Typography, Grid, CircularProgress, Alert } from '@mui/material';
 
 // Material UI icons
 import PagesIcon from '@mui/icons-material/Pages';
+import { all } from "axios";
 
 // Helper functions
 // getPostIDFromURL
@@ -51,34 +52,25 @@ const Explore = () => {
             const getPosts = async () => {
                 if (userID) {
                     try {
-                        await createAPIEndpoint(`authors`).get()
-                        .then(res => {
-                            console.log(res.data.items);
-                            for (let author of res.data.items){
-                                console.log(author._id);
-                                try {
-                                    createAPIEndpoint(`authors/${author._id}/posts`)
-                                    .get()
-                                    .then(res => {
-                                        console.log(res.data);
-                                        for (let post of res.data.items){
-                                            posts.push(post)
-                                            setPosts(posts);
-                                            console.log(posts);
-                                        }
-                                        
-                                        
-                                    })
-                                }
-                                catch (err) {
-                                    toast.error('An error has occurred.', {
-                                        description: "Could not retrieve posts at this time. Please try again later.",
-                                    })
+                        const response = await createAPIEndpoint(`authors?page=1&size=10`).get()
+                        
+                        var allPosts = []
+                        for (let author of response.data.items) {
+                            try {
+                                const response = await createAPIEndpoint(`authors/${author._id}/posts`).get()
+                                for (const individualPost of response.data.items) {
+                                    allPosts.push(individualPost)
                                 }
                             }
-                            setLoading(false);
-                                                   
-                    })
+                            catch (err) {
+                                toast.error('An error has occurred.', {
+                                    description: "Could not retrieve posts at this time. Please try again later.",
+                                })
+                            }
+                        }
+
+                        setPosts(allPosts);
+                        setLoading(false);
                     }
                     catch (err) {
                         toast.error('An error has occurred.', {
