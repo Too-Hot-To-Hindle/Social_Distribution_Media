@@ -60,74 +60,34 @@ const Stream = () => {
     useEffect(() => {
         const getInboxItems = async () => {
             if (userID) {
-                var response;
                 try {
-                    response = await createAPIEndpoint(`authors/${userID}/inbox`).get()
+                    await createAPIEndpoint(`authors/${userID}/inbox`).get()
+                    .then(res => {
+                        setInboxItems(res.data.items);
+                        try{
+                            createAPIEndpoint(`authors/${userID}/inbox`).delete()
+                            .then(res => {
+                                setLoading(false);
+                            })
+                        }
+                        catch(err) {
+                            toast.error('An error has occurred.', {
+                                description: 'Could not delete inbox at this time. Please try again later.',
+                            });
+                        }                        
+                })
                 }
                 catch (err) {
                     toast.error('An error has occurred.', {
                         description: 'Could not retrieve inbox at this time. Please try again later.',
                     });
                 }
-                setInboxItems(response.data.items);
-                setLoading(false);
+                
             }
         }
 
         getInboxItems();
     }, [userID])
-
-
-    // useEffect(() => {
-    //     const getAuthors = async () => {
-    //         if (userID) {
-
-    //             await createAPIEndpoint(`authors/${userID}`).get()
-    //                 .then(res => {
-    //                     setPostAuthorIDs(res.data.following);
-    //                     if (res.data.following.length > 0) {
-    //                         console.log("length greater than 0")
-
-    //                     } else {
-    //                         //TO DO
-    //                         console.log("no posts");
-    //                     }
-    //                 })
-    //                 .catch(err => {
-    //                     console.log(err)
-    //                 });
-    //             setAuthorsLoaded(true);
-
-    //         }
-
-    //     }
-    //     getAuthors();
-    // }, [userID]);
-
-
-    // useEffect(() => {
-    //     let allPosts = [];
-    //     const getPosts = async () => {
-    //         if (authorsLoaded){
-    //             for (const postAuthor of postAuthorIDs){
-    //                 await createAPIEndpoint(`authors/${postAuthor}/posts`)
-    //                 .get()
-    //                 .then(res => {
-    //                     for (const index in res.data.items){
-    //                         allPosts.push(res.data.items[index]);
-    //                     }
-    //                 })
-    //                 .catch(err => {
-    //                     console.log(err)
-    //                 });
-    //             }
-    //             setPosts(allPosts);
-    //             setLoading(false);
-
-    //         }
-    //     }
-    //     getPosts();
-    // },[postAuthorIDs])
 
 
     return (
