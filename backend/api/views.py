@@ -526,6 +526,7 @@ class Posts(APIView):
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
             try:
+                # get all posts if the requestor is a friend, otherwise only get public posts
                 posts = Post.objects.filter(author_id=author_id) if is_friend_loc else Post.objects.filter(author_id=author_id, visibility="PUBLIC")
 
                 paginator = self.pagination_class()
@@ -1537,6 +1538,6 @@ def is_friend_local(user, author_id):
         author = Author.objects.filter(pk=author_id).first()
         print(requestor._id)
         print(author.followers.all())
-        is_friend = author.followers.filter(pk=requestor._id).exists()
+        is_friend = author.followers.filter(pk=requestor._id).exists() or requestor._id == author._id
 
     return is_friend
