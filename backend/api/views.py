@@ -1,6 +1,8 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -24,6 +26,7 @@ from .utils import extract_id_if_url_group_6
 from .utils import extract_id_if_url_group_10
 from .connections import RemoteConnection, RemoteServerError, Remote404
 from .decorators import friend_check
+from .permissions import IsOwnerOrFriend
 
 import traceback
 import uuid
@@ -475,6 +478,9 @@ class Posts(APIView):
 
     pagination_class = StandardResultsSetPagination
 
+    # sets custom flag (request.is_friend) to true if requesting user is friend of author or is the author 
+    permission_classes = [IsOwnerOrFriend]
+
     # @friend_check
     @extend_schema(
         parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
@@ -489,9 +495,6 @@ class Posts(APIView):
     )
     def get(self, request, author_id):
         """Get paginated list of posts by {author_id}, ordered by post date with most recent first. Supports remote authors; to make proxied requests to an external server, provide the full ID of the external author URL encoded in place of {author_id}."""
-
-        # janky 'middleware' to ensure IsAuthenticated is called before this, so we have request.user
-        is_friend_loc = is_friend_local( request.user, author_id )
 
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
@@ -521,13 +524,16 @@ class Posts(APIView):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
             # first, check if the author exists
-            author = Author.objects.filter(pk=author_id)
+            author = Author.objects.filter(pk=author_id).first()
             if not author:
                 return Response(status=status.HTTP_404_NOT_FOUND)
+            
+            # check if requestor is owner or friend of owner
+            self.check_object_permissions(request, author)
 
             try:
                 # get all posts if the requestor is a friend, otherwise only get public posts
-                posts = Post.objects.filter(author_id=author_id) if is_friend_loc else Post.objects.filter(author_id=author_id, visibility="PUBLIC")
+                posts = Post.objects.filter(author_id=author_id) if request.is_friend else Post.objects.filter(author_id=author_id, visibility="PUBLIC")
 
                 paginator = self.pagination_class()
 
@@ -564,6 +570,12 @@ class Posts(APIView):
         author_id = extract_uuid_if_url('author', author_id)
         if not author_id:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        # check if requestor is author
+        post_author = get_object_or_404(Author, pk=author_id)
+        self.check_object_permissions(request, post_author)
+        if not request.is_owner:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         try:
             serializer = PostSerializer(data=json.loads(request.body))
@@ -583,6 +595,9 @@ class Posts(APIView):
 
 
 class PostDetail(APIView):
+
+    # will checks if 
+    permission_classes = [IsOwnerOrFriend]
 
     @extend_schema(
         parameters=[
@@ -631,10 +646,18 @@ class PostDetail(APIView):
             post_id = extract_uuid_if_url('post', post_id)
             if not (author_id and post_id):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+            author = get_object_or_404(Author, pk=author_id)
+            # check if requestor is owner or friend of owner
+            self.check_object_permissions(request, author)
 
             try:
-                # NOTE: Should we do anything with author_id?
                 post = Post.objects.get(pk=post_id)
+
+                # if requestor is not a friend and the post visibility is set to friends, return 403
+                if not request.is_friend and post.visibility == "FRIENDS":
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+                
                 serializer = PostSerializer(post)
                 return Response(serializer.data)
             except Exception as e:
@@ -672,6 +695,12 @@ class PostDetail(APIView):
         try:
             serializer = PostSerializer(data=json.loads(request.body))
             if serializer.is_valid():
+                req_post = get_object_or_404(Post, pk=post_id, author___id=author_id)
+                # check if requesting user is author of post
+                self.check_object_permissions(request, req_post.author)
+                if not request.is_owner:
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+
                 updated = Post.objects.filter(
                     pk=post_id, author___id=author_id).update(**serializer.data)
                 if updated > 0:
@@ -708,6 +737,12 @@ class PostDetail(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            req_post = get_object_or_404(Post, pk=post_id, author___id=author_id)
+            # check if requesting user is author of post
+            self.check_object_permissions(request, req_post.author)
+            if not request.is_owner:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+
             deleted = Post.objects.filter(
                 pk=post_id, author___id=author_id).delete()
             if deleted[0] > 0:
@@ -745,10 +780,17 @@ class PostDetail(APIView):
         post_id = extract_uuid_if_url('post', post_id)
         if not (author_id and post_id):
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        # can't create a post on behalf of another author
+        post_author = get_object_or_404(Author, pk=author_id)
+        self.check_object_permissions(request, post_author)
+        if not request.is_owner:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         try:
             serializer = PostSerializer(data=json.loads(request.body))
             if serializer.is_valid():
+
                 post = Post.objects.create(
                     **serializer.data, pk=post_id, author_id=author_id)
                 serializer = PostSerializer(post)
@@ -1531,13 +1573,3 @@ class RemoteSendLike(APIView):
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-def is_friend_local(user, author_id):
-    is_friend = False
-    if user:
-        requestor = Author.objects.filter(displayName=user).first()
-        author = Author.objects.filter(pk=author_id).first()
-        print(requestor._id)
-        print(author.followers.all())
-        is_friend = author.followers.filter(pk=requestor._id).exists() or requestor._id == author._id
-
-    return is_friend
