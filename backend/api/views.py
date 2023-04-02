@@ -23,6 +23,7 @@ from .utils import get_remote_url
 from .utils import extract_id_if_url_group_6
 from .utils import extract_id_if_url_group_10
 from .connections import RemoteConnection, RemoteServerError, Remote404
+from .decorators import friend_check
 
 import traceback
 import uuid
@@ -474,6 +475,7 @@ class Posts(APIView):
 
     pagination_class = StandardResultsSetPagination
 
+    # @friend_check
     @extend_schema(
         parameters=[docs.EXTEND_SCHEMA_PARAM_AUTHOR_ID,
                     docs.EXTEND_SCHEMA_PARAM_PAGE, docs.EXTEND_SCHEMA_PARAM_SIZE],
@@ -488,10 +490,18 @@ class Posts(APIView):
     def get(self, request, author_id):
         """Get paginated list of posts by {author_id}, ordered by post date with most recent first. Supports remote authors; to make proxied requests to an external server, provide the full ID of the external author URL encoded in place of {author_id}."""
 
+        is_friend = False
+        if request.user:
+            requestor = Author.objects.filter(displayName=request.user).first()
+            author = Author.objects.filter(pk=author_id).first()
+            if not author:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            is_friend = requestor in author.followers.all()
+
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
             remote = RemoteConnection(remote_url)
-
+                
             # Group 6 does not use UUID's for their object IDs
             # Nor does Group 10
             # So we need to extract those specially

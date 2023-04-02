@@ -43,3 +43,7 @@ env/
 .envrc
 .tool-versions
 ENV_DIR
+backend/team10_cache.sqlite
+backend/team11_cache.sqlite
+backend/team13_cache.sqlite
+backend/teamTEST_cache.sqlite
