@@ -490,13 +490,8 @@ class Posts(APIView):
     def get(self, request, author_id):
         """Get paginated list of posts by {author_id}, ordered by post date with most recent first. Supports remote authors; to make proxied requests to an external server, provide the full ID of the external author URL encoded in place of {author_id}."""
 
-        is_friend = False
-        if request.user:
-            requestor = Author.objects.filter(displayName=request.user).first()
-            author = Author.objects.filter(pk=author_id).first()
-            if not author:
-                return Response(status=status.HTTP_404_NOT_FOUND)
-            is_friend = requestor in author.followers.all()
+        # janky 'middleware' to ensure IsAuthenticated is called before this, so we have request.user
+        is_friend_loc = is_friend_local( request.user, author_id )
 
         if is_remote_url(author_id):
             remote_url = get_remote_url(author_id)
@@ -1533,3 +1528,14 @@ class RemoteSendLike(APIView):
         except Exception as e:
             traceback.print_exc()
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def is_friend_local(user, author_id):
+    is_friend = False
+    if user:
+        requestor = Author.objects.filter(displayName=user).first()
+        author = Author.objects.filter(pk=author_id).first()
+        print(requestor._id)
+        print(author.followers.all())
+        is_friend = author.followers.filter(pk=requestor._id).exists()
+
+    return is_friend
