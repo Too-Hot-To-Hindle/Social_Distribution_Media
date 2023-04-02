@@ -526,7 +526,7 @@ class Posts(APIView):
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
             try:
-                posts = is_friend_loc if Post.objects.filter(author_id=author_id) else Post.objects.filter(author_id=author_id, visibility="PUBLIC")
+                posts = Post.objects.filter(author_id=author_id) if is_friend_loc else Post.objects.filter(author_id=author_id, visibility="PUBLIC")
 
                 paginator = self.pagination_class()
 
