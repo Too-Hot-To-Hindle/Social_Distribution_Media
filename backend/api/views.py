@@ -695,7 +695,7 @@ class PostDetail(APIView):
         try:
             serializer = PostSerializer(data=json.loads(request.body))
             if serializer.is_valid():
-                req_post = get_object_or_404(Post, pk=post_id, author___id=author_id)
+                req_post = get_object_or_404(Post, pk=post_id)
                 # check if requesting user is author of post
                 self.check_object_permissions(request, req_post.author)
                 if not request.is_owner:
@@ -737,7 +737,7 @@ class PostDetail(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            req_post = get_object_or_404(Post, pk=post_id, author___id=author_id)
+            req_post = get_object_or_404(Post, pk=post_id)
             # check if requesting user is author of post
             self.check_object_permissions(request, req_post.author)
             if not request.is_owner:
