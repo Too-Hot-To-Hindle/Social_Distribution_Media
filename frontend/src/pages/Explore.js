@@ -106,7 +106,10 @@ const Explore = () => {
     return (
         <>
             <Layout>
-            {console.log(posts)}
+
+            <Alert severity="info" sx={{ marginBottom: "20px" }}>
+                    <Typography align="left">The Explore page displays posts from the top 10 authors on our site! To see posts only from users you follow, go to your Stream.</Typography>
+                </Alert>
                 {loading && (
                     <Card>
                         <CircularProgress sx={{ margin: "auto" }} />
