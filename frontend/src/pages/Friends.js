@@ -13,6 +13,7 @@ import { Card, Typography, Grid, Button, Alert, Divider, Chip, CircularProgress 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
+import {IconButton} from "@mui/material";
 
 const Friends = () => {
 
@@ -173,6 +174,10 @@ const Friends = () => {
             })
     }
 
+    const removeFriend = (friend) => {
+        console.log("REMOVING FRIEND",friend);
+    }
+
     return (
         <>
             <Layout>
@@ -273,16 +278,22 @@ const Friends = () => {
                                                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                                                     <div style={{ display: "flex", alignItems: "center" }}>
                                                         <AccountCircleIcon sx={{ fontSize: "40px", color: "#F5F5F5", marginRight: "10px" }} />
-                                                        <div>
+                                                        <span>
                                                             <Typography variant="h6" align="left">@{follower.displayName}</Typography>
-                                                        </div>
+                                                        </span>
+                                                        <span style={{paddingLeft: "10px"}}>
+                                                            <Chip label="True Friend" />
+                                                        
+                                                        </span>
                                                     </div>
+                                                   
 
                                                     <div style={{ display: "flex", alignItems: "center" }}>
-                                                        <Chip label="True Friend" sx={{ marginRight: "10px" }} />
-                                                        {/* <IconButton>
-                                                            <CloseIcon />
-                                                        </IconButton> */}
+                                                        
+                                                        
+                                                        <Button variant="contained" endIcon={<CloseIcon />} onClick={() => { removeFriend(follower) }}>
+                                                        Remove Friend
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             </Grid>
@@ -307,9 +318,9 @@ const Friends = () => {
                                                     </div>
 
                                                     <div style={{ display: "flex", alignItems: "center" }}>
-                                                        {/* <IconButton>
-                                                            <CloseIcon />
-                                                        </IconButton> */}
+                                                    <Button variant="contained" endIcon={<CloseIcon />} onClick={() => { removeFriend(follower) }}>
+                                                        Remove Friend
+                                                     </Button>
                                                     </div>
                                                 </div>
                                             </Grid>
