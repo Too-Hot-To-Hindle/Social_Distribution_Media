@@ -285,7 +285,7 @@ const Post = ({
                     {/* TODO: BASE64 text only? */}
 
                     {/* Image post content */}
-                    {(type === "image/png;base64" || type === "image/jpeg;base64") &&
+                    {(type === "image/png;base64" || type === "image/jpeg;base64" || type === "image/jpg;base64") &&
                         <Grid item xs={12}>
                             <Box sx={{ backgroundColor: "#343540", minHeight: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                 <img src={content} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />

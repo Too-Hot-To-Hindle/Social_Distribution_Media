@@ -20,7 +20,6 @@ class RemoteServerError(Exception):
 
 class RemoteConnection():
     def __init__(self, remote_base_url):
-        print(remote_base_url)
         if (remote_base_url == "https://social-distribution-media-2.herokuapp.com/api/"):
             self.connection = TeamCloneConnection(
                 username="joshdoe",  # read from .env
@@ -593,6 +592,10 @@ class Team6Connection():
 
     # URL: ://service/authors/
     def get_authors(self):
+        print("using following auth:")
+        print(self.username)
+        print(self.password)
+
         url = self.base_url + "authors?page=1&size=5000"
 
         authors = []

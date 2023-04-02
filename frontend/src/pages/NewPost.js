@@ -298,6 +298,9 @@ const NewPost = () => {
                 } else if (imageFile.type === "image/jpeg") {
                     contentTypeToBe = "image/jpeg;base64";
                     contentToBe = imageBase64;
+                } else if (imageFile.type === "image/jpg") {
+                    contentTypeToBe = "image/jpg;base64";
+                    contentToBe = imageBase64;
                 }
             } else if (imageType === "url") {
                 contentTypeToBe = "text/markdown";

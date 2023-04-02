@@ -101,6 +101,7 @@ class Post(models.Model):
     BASE64 = 'application/base64'
     BASE64_PNG = 'image/png;base64'
     BASE64_JPEG = 'image/jpeg;base64'
+    BASE64_JPG = 'image/jpg;base64'
 
     VISIBILITY_CHOICES = [
         (PUBLIC, 'Public'),
@@ -113,6 +114,7 @@ class Post(models.Model):
         (BASE64, 'Base 64 string'),
         (BASE64_PNG, 'Base 64 string of PNG image'),
         (BASE64_JPEG, 'Base 64 string of JPEG image'),
+        (BASE64_JPG, 'Base 64 string of JPG image')
     ]
 
     type = 'post'

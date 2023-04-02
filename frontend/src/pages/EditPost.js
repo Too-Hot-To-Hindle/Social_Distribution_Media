@@ -86,7 +86,7 @@ const EditPost = () => {
                             setUnlisted(res.data.unlisted)
 
                             
-                            if (res.data.contentType === "image/png;base64" || res.data.contentType === "image/jpeg;base64") {
+                            if (res.data.contentType === "image/png;base64" || res.data.contentType === "image/jpeg;base64" || res.data.contentType === "image/jpg;base64") {
                                 // if res.data begins with 'http', consider it a linked image
                                 if (res.data.content.startsWith('http')) {
                                     setImageType("url")
@@ -223,6 +223,9 @@ const EditPost = () => {
                 } else if (imageFile.type === "image/jpeg") {
                     contentTypeToBe = "image/jpeg;base64";
                     contentToBe = imageBase64;
+                } else if (imageFile.type === "image/jpg") {
+                    contentTypeToBe = "image/jpg;base64";
+                    contentToBe = imageBase64;
                 }
             } else if (imageType === "url") {
                 contentTypeToBe = "text/markdown";
@@ -278,7 +281,7 @@ const EditPost = () => {
                         {(postData !== null && belongsToUser) && (
                             <>
                                 {/* Image File Post */}
-                                {(postType === 'image/png;base64' || postType === 'image/jpeg;base64') && (
+                                {(postType === 'image/png;base64' || postType === 'image/jpeg;base64' || postType === "image/jpg;base64") && (
                                     <Grid container spacing={2}>
                                         <Grid item xs={12}>
                                             <Typography variant="h6" align="left">Edit Post</Typography>
