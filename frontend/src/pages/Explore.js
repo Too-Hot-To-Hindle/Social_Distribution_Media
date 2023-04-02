@@ -31,6 +31,21 @@ const getPostIDFromURL = (url) => {
     }
 }
 
+function shuffle(array) {
+    let currentIndex = array.length,  randomIndex;
+
+    while (currentIndex != 0) {
+
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex], array[currentIndex]];
+    }
+  
+    return array;
+}  
+
 
 
 const Explore = () => {
@@ -38,8 +53,7 @@ const Explore = () => {
     
         const [userID, setUserID] = useState(null);
         const [posts, setPosts] = useState([]);
-    
-        //const [posts, setPosts] = useState(null);
+
 
         // useEffect to get the username and user ID from local storage
         useEffect(() => {
@@ -68,7 +82,8 @@ const Explore = () => {
                                 })
                             }
                         }
-
+                        //allPosts.sort(sortByDate);
+                        shuffle(allPosts);
                         setPosts(allPosts);
                         setLoading(false);
                     }
