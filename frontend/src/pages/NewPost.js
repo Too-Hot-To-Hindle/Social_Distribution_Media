@@ -36,6 +36,8 @@ const NewPost = () => {
     const [selectedPrivacy, setSelectedPrivacy] = useState('Public');
     const [unlisted, setUnlisted] = useState(false);
 
+    const [myAuthorFollowers, setMyAuthorFollowers] = useState([]);
+
     // image specific state hooks
     const [imageType, setImageType] = useState("upload");
     const [imageFile, setImageFile] = useState(null);
@@ -44,9 +46,29 @@ const NewPost = () => {
 
     const [userID, setUserID] = useState(null);
 
+    // useEffect to get the author id from local storage
     useEffect(() => {
         setUserID(localStorage.getItem('author_id'))
     }, [])
+
+    // useEffect to get the author's followers
+    useEffect(() => {
+        if (userID) {
+            try {
+                createAPIEndpoint(`authors/${userID}/followers`)
+                    .get()
+                    .then(res => {
+                        setMyAuthorFollowers(res.data.items);
+                    })
+            }
+            catch (err) {
+                toast.error('An error has occurred.', {
+                    description: 'Could not retrieve your follower details. Please try again later.',
+                });
+            }
+        }
+    }, [userID])
+
 
     const handleFileSelect = (event) => {
         setImageFile(event.target.files[0]);
@@ -141,9 +163,9 @@ const NewPost = () => {
                                             }
                                         }
 
-                                        for (let ID of res.data.followers){
+                                        for (let follower of myAuthorFollowers){
                                             try {
-                                                createAPIEndpoint(`authors/${ID}/inbox`)
+                                                createAPIEndpoint(`authors/${encodeURIComponent(follower.id)}/inbox`)
                                                 .post(data)
                                                 .then(res => {
                                                     //console.log("RESPONSE:",res.data);
@@ -243,9 +265,9 @@ const NewPost = () => {
                                         }
                                     }
 
-                                    for (let ID of res.data.followers){
+                                    for (let follower of myAuthorFollowers){
                                         try {
-                                            createAPIEndpoint(`authors/${ID}/inbox`)
+                                            createAPIEndpoint(`authors/${encodeURIComponent(follower.id)}/inbox`)
                                             .post(data)
                                             .then(res => {
                                                 //console.log("RESPONSE:",res.data);
@@ -371,9 +393,9 @@ const NewPost = () => {
                                         }
                                     }
                                     
-                                    for (let ID of res.data.followers){
+                                    for (let follower of myAuthorFollowers){
                                         try {
-                                            createAPIEndpoint(`authors/${ID}/inbox`)
+                                            createAPIEndpoint(`authors/${encodeURIComponent(follower.id)}/inbox`)
                                             .post(data)
                                             .then(res => {
                                                 //console.log("RESPONSE:",res.data);

@@ -238,9 +238,13 @@ const Post = ({
                             }
 
                             {!hideEditButton &&
-                                <IconButton onClick={() => { navigate(`/${authorID}/post/${id}/edit`) }}>
-                                    <EditIcon />
-                                </IconButton>
+                                <>
+                                    {authorDisplayName === username &&
+                                        <IconButton onClick={() => { navigate(`/${authorID}/post/${id}/edit`) }}>
+                                            <EditIcon />
+                                        </IconButton>
+                                    }
+                                </>
                             }
                         </div>
                     </Grid>
