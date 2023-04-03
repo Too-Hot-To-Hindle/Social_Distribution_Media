@@ -2378,6 +2378,11 @@ class Team11Connection():
     def send_post(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox/"
 
+        # need to strip out "data" portion of image before sending
+        content = body.get("object", {}).get("content", "")
+        if content.startswith("data"):
+            content = content.split(",")[1]
+
         cleaned_body = {
             "@context": body.get("@context") if body.get("@context") != "" else "https://google.com",
             "summary": body.get("summary") if body.get("summary") != "" else None,
@@ -2399,7 +2404,7 @@ class Team11Connection():
                 "origin": body.get("object", {}).get("origin") if body.get("object", {}).get("origin") != "" else None,
                 "description": body.get("object", {}).get("description") if body.get("object", {}).get("description") != "" else None,
                 "contentType": body.get("object", {}).get("contentType") if body.get("object", {}).get("contentType") != "" else None,
-                "content": body.get("object", {}).get("content") if body.get("object", {}).get("content") != "" else None,
+                "content": content,
                 "author": {
                     "type": body.get("object", {}).get("author", {}).get("type") if body.get("object", {}).get("author", {}).get("type") != "" else None,
                     "id": body.get("object", {}).get("author", {}).get("id") if body.get("object", {}).get("author", {}).get("id") != "" else None,
