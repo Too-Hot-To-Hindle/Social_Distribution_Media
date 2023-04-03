@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { createAPIEndpoint } from '../api';
+import { toast } from 'sonner';
 
 // Material UI components
 import { Card, Typography, Grid, Divider, IconButton, Button, TextField, Box, CircularProgress, Avatar } from "@mui/material";
@@ -26,6 +27,22 @@ const isMarkdownImage = (str) => {
 // extractMarkdownImageURL extracts the image URL from a markdown image
 const extractMarkdownImageURL = (str) => {
     return str.substring(str.indexOf('(') + 1, str.indexOf(')'));
+}
+
+// getPostIDFromURL
+// takes in a URL, say of example https://social-distribution-media.herokuapp.com/author/abc123/posts/def456
+// and returns the post ID, here, def456
+const getPostIDFromURL = (url) => {
+    // make sure "posts" is in url
+    // if last character in string is a '/', remove it first
+    if (url[url.length - 1] === "/") {
+        url = url.slice(0, -1)
+    }
+
+    if (url.includes("posts")) {
+        const urlSplit = url.split("/")
+        return urlSplit[urlSplit.length - 1]
+    }
 }
 
 const Post = ({
@@ -102,14 +119,16 @@ const Post = ({
     const handleDelete = () => {
         if (userID) {
             setDeleting(true);
-            createAPIEndpoint(`authors/${userID}/posts/${id}`)
+            createAPIEndpoint(`authors/${encodeURIComponent(userID)}/posts/${getPostIDFromURL(id)}`)
                 .delete()
                 .then(res => {
-                    navigate("/profile");
+                    navigate(`/profile/${encodeURIComponent(userID)}`);
                 })
                 .catch(err => {
-                    // TODO: Add in error handling
-                    console.log(err)
+                    toast.error('An error has occurred.', {
+                        description: 'Could not delete post at this time. Please try again later.',
+                    });
+                    setDeleting(false)
                 });
         }
     }
