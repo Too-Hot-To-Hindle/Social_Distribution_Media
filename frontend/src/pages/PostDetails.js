@@ -131,6 +131,8 @@ const PostDetails = () => {
             .then(res => {
                 setCommentsLoading(false)
                 setComments(res.data.items)
+                console.log("comments")
+                console.log(res.data.items)
                 getAllCommentLikes(res.data.items)
             })
             .catch(err => {

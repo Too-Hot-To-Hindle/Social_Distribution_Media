@@ -1445,33 +1445,27 @@ class Team10Connection():
     def get_comments(self, author_id, post_id):
         url = self.base_url + "api/authors/" + author_id + "/posts/" + post_id + "/comments"
 
-        # handle pagination
-        # start at page 1, loop until no items are returned - in which case our server throws a 404
+        # DON'T DO PAGINATION FOR THEM -- IT'S BORKNE
         page = 1
         comments = []
-        while True:
-            response = self.session.get(url, params={"page": page, "size": 10}, headers={"Authorization": "Token E579D1E284A7C283C9E2E74C6C2F001D977186FA"})
+        
+        response = self.session.get(url, headers={"Authorization": "Token E579D1E284A7C283C9E2E74C6C2F001D977186FA"})
 
-            # no need to handle the 404 using an exception, just return the comments we have/or the empty list
-            if response.status_code == 404:
-                break
+        # no need to handle the 404 using an exception, just return the comments we have/or the empty list
+        if response.status_code == 404:
+            raise Remote404("Post with id " + post_id + " from author with id " + author_id + " from remote server: https://socialdistcmput404.herokuapp.com/api/ does not exist.")
 
-            elif response.status_code != 200:
-                raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id +
-                                        " from remote server: https://socialdistcmput404.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id +
+                                    " from remote server: https://socialdistcmput404.herokuapp.com/api/; status code " + str(response.status_code) + " was received in response.")
 
-            response_comments = response.json()
-            if response_comments is None:
-                raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id +
-                                        " from remote server: https://socialdistcmput404.herokuapp.com/api/; no JSON was received in response.")
+        response_comments = response.json()
+        if response_comments is None:
+            raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id +
+                                    " from remote server: https://socialdistcmput404.herokuapp.com/api/; no JSON was received in response.")
 
-            items = response_comments.get("items", [])
-            if len(items) == 0:
-                break
-
-            else:
-                comments.extend(items)
-                page += 1
+        items = response_comments.get("items", [])
+        comments.extend(items)
 
         cleaned_comments = []
         for comment in comments:
@@ -1486,7 +1480,7 @@ class Team10Connection():
                     "github": comment.get("author", {}).get("github", ""),
                     "profileImage": comment.get("author", {}).get("profileImage", ""),
                 },
-                "comment": comment.get("content", ""),
+                "comment": comment.get("comment", "Empty comment."),
                 "contentType": comment.get("contentType", ""),
                 "published": comment.get("published", ""),
                 "id": comment.get("id", ""),
@@ -1643,6 +1637,11 @@ class Team10Connection():
     def send_post(self, author_id, body):
         url = self.base_url + "api/authors/" + author_id + "/inbox/"
 
+        # need to strip out "data" portion of image before sending
+        content = body.get("object", {}).get("content", "")
+        if content.startswith("data"):
+            content = content.split(",")[1]
+
         cleaned_body = {
             "@context": "https://www.w3.org/ns/activitystreams",
             "summary": body.get("summary", ""),
@@ -1653,7 +1652,7 @@ class Team10Connection():
             "origin": "https://social-distribution-media.herokuapp.com",
             "description": body.get("object", {}).get("description", ""),
             "contentType": body.get("object", {}).get("contentType", ""),
-            "content": body.get("object", {}).get("content", ""),
+            "content": content,
             "author": {
                 "type": body.get("object", {}).get("author", {}).get("type", "").lower(),
                 "id": body.get("object", {}).get("author", {}).get("id", ""),
@@ -1737,7 +1736,7 @@ class Team10Connection():
         cleaned_body = {
             "id": body.get("object", {}).get("id", ""),
             "type": "comment",
-            "content": body.get("object", {}).get("comment", ""),
+            "comment": body.get("object", {}).get("comment", ""),
             "contentType": body.get("object", {}).get("contentType", ""),
             "author": {
                 "id": body.get("actor", {}).get("id", ""),
@@ -2944,7 +2943,7 @@ class Team13Connection():
                 raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id +
                                         " from remote server: https://group-13-epic-app.herokuapp.com/api/; no JSON was received in response.")
 
-            items = response_comments.get("items", [])
+            items = response_comments.get("comments", [])
             if len(items) == 0:
                 break
 
@@ -2952,9 +2951,30 @@ class Team13Connection():
                 comments.extend(items)
                 page += 1
 
+        cleaned_comments = []
+        for comment in comments:
+            new_comment = {
+                "type": comment.get("type", ""),
+                "author": {
+                    "type": comment.get("author", {}).get("type", ""),
+                    "id": comment.get("author", {}).get("id", ""),
+                    "host": comment.get("author", {}).get("host", ""),
+                    "displayName": comment.get("author", {}).get("displayName", "Unknown"),
+                    "url": comment.get("author", {}).get("url", ""),
+                    "github": comment.get("author", {}).get("github", ""),
+                    "profileImage": comment.get("author", {}).get("profileImage", ""),
+                },
+                "comment": comment.get("comment", ""),
+                "contentType": comment.get("contentType", ""),
+                "published": comment.get("published", ""),
+                "id": comment.get("id", ""),
+            }
+
+            cleaned_comments.append(new_comment)
+
         return {
             "type": "comments",
-            "items": comments
+            "items": cleaned_comments
         }
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes

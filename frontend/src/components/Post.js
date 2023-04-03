@@ -69,7 +69,7 @@ const Post = ({
         setUsername(localStorage.getItem('username'))
         setUserID(localStorage.getItem('author_id'))
     }, [])
-    
+
 
     // get currently logged in author information
     useEffect(() => {
@@ -145,7 +145,7 @@ const Post = ({
                         },
                         "object": id
                     }
-                    
+
                 }
 
                 createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/inbox`)
@@ -288,7 +288,12 @@ const Post = ({
                     {(type === "image/png;base64" || type === "image/jpeg;base64" || type === "image/jpg;base64") &&
                         <Grid item xs={12}>
                             <Box sx={{ backgroundColor: "#343540", minHeight: "300px", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <img src={content} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
+                                {/* id "data" not already in content string, add it */}
+                                {content.substring(0, 4) !== "data"
+                                    ? <img src={`data:${type},${content}`} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
+                                    : <img src={content} alt="Preview" style={{ maxHeight: "90%", maxWidth: "90%", borderRadius: "5px", margin: "20px" }} />
+
+                                }
                             </Box>
                         </Grid>
                     }
