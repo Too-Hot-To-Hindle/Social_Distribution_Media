@@ -1026,75 +1026,109 @@ class Team6Connection():
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
     def get_comment_likes(self, author_id, post_id, comment_id):
-        url = self.base_url + "authors/" + author_id + "/posts/" + \
-            post_id + "/comments/" + comment_id + "/likes"
+        url = self.base_url + "authors/" + author_id + "/posts/" + post_id + "/comments/" + comment_id + "/likes"
+
+        likes = []
+
         response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+        # no need to handle the 404 using an exception, just return the likes we have/or the empty list
+        if response.status_code == 404:
+            likes = []
 
-        else:
-            response = response.json()
-            if response is None:
-                # TODO: handle error
-                pass
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting likes for post with id " + post_id + " from author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
-            else:
-                likes = []
-                for like in response:
-                    likes.append({
-                        "type": like.get("type", "N/A"),
-                        "summary": like.get("summary", "N/A"),
-                        "author": {
-                            "type": like.get("author", {}).get("type", "N/A"),
-                            "id": like.get("author", {}).get("id", "N/A"),
-                            "host": like.get("author", {}).get("host", "N/A"),
-                            "displayName": like.get("author", {}).get("displayName", "N/A"),
-                            "url": like.get("author", {}).get("url", "N/A"),
-                            "github": like.get("author", {}).get("github", "N/A"),
-                            "profileImage": like.get("author", {}).get("profileImage", "N/A"),
-                        },
-                        "object": like.get("object", "N/A"),
-                    })
+        response_likes = response.json()
+        if response_likes is None:
+            raise RemoteServerError("Error getting likes for post with id " + post_id + " from author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; no JSON was received in response.")
 
-                return likes
+        items = response_likes.get("items", [])
+        likes.extend(items)
+
+        cleaned_likes = []
+        for like in likes:
+            # need to try to parse the author
+            if like.get("author") != None:
+                try:
+                    author_parsed = json.loads(like.get("author", "").replace("'", '"'))
+                except:
+                    author_parsed = {}
+
+            cleaned_likes.append({
+                "summary": like.get("summary", ""),
+                "type": like.get("type", "").lower(),
+                "author": {
+                    "type": author_parsed.get("type", ""),
+                    "id": author_parsed.get("id", ""),
+                    "host": author_parsed.get("host", ""),
+                    "displayName": author_parsed.get("displayName", "Unknown"),
+                    "url": author_parsed.get("url", ""),
+                    "github": author_parsed.get("github", ""),
+                    "profileImage": author_parsed.get("profileImage", "")
+                },
+                "object": like.get("object", "")
+            })
+
+        return {
+            "type": "likes",
+            "items": cleaned_likes
+        }
 
     # URL: ://service/authors/{hostencoded}/authors/{AUTHOR_ID}/liked
     def get_author_liked(self, author_id):
         url = self.base_url + "authors/" + author_id + "/liked"
+
+        likes = []
+
         response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+        # no need to handle the 404 using an exception, just return the likes we have/or the empty list
+        if response.status_code == 404:
+            likes = []
 
-        else:
-            response = response.json()
-            if response is None:
-                # TODO: handle error
-                pass
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting likes for author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
-            else:
-                likes = []
-                for like in response:
-                    likes.append({
-                        "type": like.get("type", "N/A"),
-                        "author": {
-                            "type": like.get("author", {}).get("type", "N/A"),
-                            "id": like.get("author", {}).get("id", "N/A"),
-                            "host": like.get("author", {}).get("host", "N/A"),
-                            "displayName": like.get("author", {}).get("displayName", "N/A"),
-                            "url": like.get("author", {}).get("url", "N/A"),
-                            "github": like.get("author", {}).get("github", "N/A"),
-                            "profileImage": like.get("author", {}).get("profileImage", "N/A"),
-                        },
-                        "object": like.get("object", "N/A"),
-                    })
+        response_likes = response.json()
+        if response_likes is None:
+            raise RemoteServerError("Error getting likes for author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; no JSON was received in response.")
 
-                return likes
+        items = response_likes.get("items", [])
+        likes.extend(items)
+
+        cleaned_likes = []
+        for like in likes:
+            # need to try to parse the author
+            if like.get("author") != None:
+                try:
+                    author_parsed = json.loads(like.get("author", "").replace("'", '"'))
+                except:
+                    author_parsed = {}
+
+            cleaned_likes.append({
+                "summary": like.get("summary", ""),
+                "type": like.get("type", "").lower(),
+                "author": {
+                    "type": author_parsed.get("type", ""),
+                    "id": author_parsed.get("id", ""),
+                    "host": author_parsed.get("host", ""),
+                    "displayName": author_parsed.get("displayName", "Unknown"),
+                    "url": author_parsed.get("url", ""),
+                    "github": author_parsed.get("github", ""),
+                    "profileImage": author_parsed.get("profileImage", "")
+                },
+                "object": like.get("object", "")
+            })
+
+        return {
+            "type": "likes",
+            "items": cleaned_likes
+        }
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_post(self, author_id, body):
@@ -1166,11 +1200,13 @@ class Team6Connection():
                 "displayName": body.get("author", {}).get("displayName", ""),
                 "url": body.get("author", {}).get("url", ""),
                 "github": body.get("author", {}).get("github", ""),
-                "profileImage": body.get("author", {}).get("profileImage, """),
+                "profileImage": body.get("author", {}).get("profileImage", ""),
             },
             "object": body.get("object", {}).get("object", "")
         }
 
+        print("attempted to send like:")
+        print(body.get("author", {}).get("profileImage, """))
         print(cleaned_body)
 
         response = self.session.post(url=url, json=cleaned_body)
@@ -1235,6 +1271,9 @@ class Team6Connection():
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_follow(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox/"
+
+        print(body)
+        
         response = self.session.post(url=url, json=body)
 
         if response.status_code != 200 and response.status_code != 201 and response.status_code != 204:
@@ -1931,6 +1970,7 @@ class Team10Connection():
             "actor": body.get("actor", ""),
             "object": body.get("object", "")
         }
+
 
         response = self.session.post(url=url, json=cleaned_body, headers={"Authorization": "Token E579D1E284A7C283C9E2E74C6C2F001D977186FA"})
 

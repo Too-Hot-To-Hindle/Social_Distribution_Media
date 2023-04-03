@@ -39,8 +39,13 @@ const getPostIDFromURL = (url) => {
 const checkIfFollower = (authorFollowerDetails, ownUserID) => {
     if (authorFollowerDetails) {
         for (let i = 0; i < authorFollowerDetails.length; i++) {
-            if (authorFollowerDetails[i].id.includes(ownUserID)) {
-                return true
+            try {
+                if (authorFollowerDetails[i].id.includes(ownUserID)) {
+                    return true
+                }
+            }
+            catch (err) {
+                return false
             }
         }
         return false
@@ -459,7 +464,7 @@ const GlobalProfile = () => {
                                 <Card>
                                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                                         <div style={{ display: "flex", alignItems: "center" }}>
-                                            <Avatar src={authorDetails.profileImage} alt={authorDetails.displayName} style={{width: "40px", height: "40px", marginRight: "10px"}}/>
+                                            <Avatar src={authorDetails.profileImage} alt={authorDetails.displayName} style={{ width: "40px", height: "40px", marginRight: "10px" }} />
                                             <Typography variant="h6" align="left">@{authorDetails.displayName}</Typography>
                                         </div>
 
@@ -468,7 +473,7 @@ const GlobalProfile = () => {
 
                                     {/* if author whose page we're looking at has the id of our own author, allow edit functionality */}
                                     {authorDetails.id === ownAuthorDetails.id &&
-                                        <Button variant="contained" onClick={()=> {setEditingProfileImage(true)}}>Change Profile Photo</Button>
+                                        <Button variant="contained" onClick={() => { setEditingProfileImage(true) }}>Change Profile Photo</Button>
                                     }
                                 </Card>
                             </Grid>
