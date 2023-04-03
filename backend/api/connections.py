@@ -663,35 +663,44 @@ class Team6Connection():
         url = self.base_url + "authors/" + author_id + "/followers"
         response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+        # if the author is not found, throw an exception
+        if response.status_code == 404:
+            raise Remote404("Author with id " + author_id +
+                            " not found on remote server: https://cmput404-group6-instatonne.herokuapp.com/")
+
+        # if the server returns an error, throw an exception
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting followers for author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            response_followers = response.json()
-            if response_followers is None:
-                # TODO: handle error
-                pass
+            try:
+                response_followers = response.json().get("items", [])
+                if response_followers is None:
+                    raise RemoteServerError("Error getting followers for author with id " + author_id +
+                                            " from remote server: https://cmput404-group6-instatonne.herokuapp.com/. Response body was empty.")
 
-            else:
-                cleaned_followers = []
-                for author in response_followers:
-                    # TODO: set default value for missing field?
-                    cleaned_followers.append({
-                        "type": author.get("type", "N/A"),
-                        "id": author.get("id", "N/A"),
-                        "url": author.get("url", "N/A"),
-                        "host": author.get("host", "N/A"),
-                        "displayName": author.get("displayName", "N/A"),
-                        "github": author.get("github", "N/A"),
-                        "profileImage": author.get("profileImage", "N/A"),
-                    })
+                else:
+                    cleaned_followers = []
+                    for author in response_followers:
+                        cleaned_followers.append({
+                            "type": author.get("type"),
+                            "id": author.get("id"),
+                            "url": author.get("url"),
+                            "host": author.get("host"),
+                            "displayName": author.get("displayName"),
+                            "github": author.get("github"),
+                            "profileImage": author.get("profileImage"),
+                        })
 
-                return {
-                    "type": "followers",
-                    "items": cleaned_followers
-                }
+                    return {
+                        "type": "followers",
+                        "items": cleaned_followers
+                    }
+
+            except Exception as e:
+                raise RemoteServerError("Error getting followers for author with id " + author_id +
+                                        " from remote server: https://cmput404-group6-instatonne.herokuapp.com/. Exception: " + str(e))
 
     # URL: ://service/authors/{AUTHOR_ID}/followers/{hostencoded}/authors/{FOREIGN_AUTHOR_ID}
     def check_if_follower(self, author_id, follower_id):
@@ -719,144 +728,166 @@ class Team6Connection():
         url = self.base_url + "authors/" + author_id + "/posts/" + post_id
         response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+        # if the author/post is not found, throw an exception
+        if response.status_code == 404:
+            raise Remote404("Post with id " + post_id + " from author with id " + author_id +
+                            " not found on remote server: https://cmput404-group6-instatonne.herokuapp.com/")
+
+        # if the server returns an error, throw an exception
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting post with id " + post_id + " from author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            response_post = response.json()
-            if response_post is None:
-                # TODO: handle error
-                pass
+            try:
+                response_post = response.json()
+                if response_post is None:
+                    # TODO: handle error
+                    pass
 
-            else:
-                comments = []
-                for comment in response_post.get("commentsSrc", {}).get("comments", []):
-                    comments.append({
-                        "type": comment.get("type", "N/A"),
+                else:
+                    comments = []
+                    for comment in response_post.get("commentsSrc", {}).get("comments", []):
+                        comments.append({
+                            "type": comment.get("type", ""),
+                            "author": {
+                                "type": comment.get("author", {}).get("type", ""),
+                                "id": comment.get("author", {}).get("id", ""),
+                                "host": comment.get("author", {}).get("host", ""),
+                                "displayName": comment.get("author", {}).get("displayName", ""),
+                                "url": comment.get("author", {}).get("url", ""),
+                                "github": comment.get("author", {}).get("github", ""),
+                                "profileImage": comment.get("author", {}).get("profileImage", ""),
+                            },
+                            "comment": comment.get("comment", ""),
+                            "contentType": comment.get("contentType", ""),
+                            "published": comment.get("published", ""),
+                            "id": comment.get("id", ""),
+                        })
+
+                    return {
+                        "type": response_post.get("type", ""),
+                        "title": response_post.get("title", ""),
+                        "id": response_post.get("id", ""),
+                        "source": response_post.get("source", ""),
+                        "origin": response_post.get("origin", ""),
+                        "description": response_post.get("description", ""),
+                        "contentType": response_post.get("contentType", ""),
+                        "content": response_post.get("content", ""),
                         "author": {
-                            "type": comment.get("author", {}).get("type", "N/A"),
-                            "id": comment.get("author", {}).get("id", "N/A"),
-                            "host": comment.get("author", {}).get("host", "N/A"),
-                            "displayName": comment.get("author", {}).get("displayName", "N/A"),
-                            "url": comment.get("author", {}).get("url", "N/A"),
-                            "github": comment.get("author", {}).get("github", "N/A"),
-                            "profileImage": comment.get("author", {}).get("profileImage", "N/A"),
+                            "type": response_post.get("author", {}).get("type", ""),
+                            "id": response_post.get("author", {}).get("id", ""),
+                            "host": response_post.get("author", {}).get("host", ""),
+                            "displayName": response_post.get("author", {}).get("displayName", ""),
+                            "url": response_post.get("author", {}).get("url", ""),
+                            "github": response_post.get("author", {}).get("github", ""),
+                            "profileImage": response_post.get("author", {}).get("profileImage", ""),
                         },
-                        "comment": comment.get("comment", "N/A"),
-                        "contentType": comment.get("contentType", "N/A"),
-                        "published": comment.get("published", "N/A"),
-                        "id": comment.get("id", "N/A"),
-                    })
+                        "categories": response_post.get("categories", ""),
+                        "count": response_post.get("count", ""),
+                        "comments": response_post.get("comments", ""),
+                        "commentsSrc": {
+                            "type": response_post.get("commentsSrc", {}).get("type", ""),
+                            "page": response_post.get("commentsSrc", {}).get("page", 1),
+                            "size": response_post.get("commentsSrc", {}).get("size", 0),
+                            "post": response_post.get("commentsSrc", {}).get("post", response_post.get("id", "")),
+                            "id": response_post.get("commentsSrc", {}).get("id", response_post.get("id", "") + "/comments"),
+                            "comments": comments
+                        },
+                        "published": response_post.get("published", ""),
+                        "visibility": response_post.get("visibility", ""),
+                        "unlisted": response_post.get("unlisted", ""),
+                    }
 
-                return {
-                    "type": response_post.get("type", "N/A"),
-                    "title": response_post.get("title", "N/A"),
-                    "id": response_post.get("id", "N/A"),
-                    "source": response_post.get("source", "N/A"),
-                    "origin": response_post.get("origin", "N/A"),
-                    "description": response_post.get("description", "N/A"),
-                    "contentType": response_post.get("contentType", "N/A"),
-                    "content": response_post.get("content", "N/A"),
-                    "author": {
-                        "type": response_post.get("author", {}).get("type", "N/A"),
-                        "id": response_post.get("author", {}).get("id", "N/A"),
-                        "host": response_post.get("author", {}).get("host", "N/A"),
-                        "displayName": response_post.get("author", {}).get("displayName", "N/A"),
-                        "url": response_post.get("author", {}).get("url", "N/A"),
-                        "github": response_post.get("author", {}).get("github", "N/A"),
-                        "profileImage": response_post.get("author", {}).get("profileImage", "N/A"),
-                    },
-                    "categories": response_post.get("categories", "N/A"),
-                    "count": response_post.get("count", "N/A"),
-                    "comments": response_post.get("comments", "N/A"),
-                    "commentsSrc": {
-                        "type": response_post.get("commentsSrc", {}).get("type", "comments"),
-                        "page": response_post.get("commentsSrc", {}).get("page", 1),
-                        "size": response_post.get("commentsSrc", {}).get("size", 0),
-                        "post": response_post.get("commentsSrc", {}).get("post", response_post.get("id", "N/A")),
-                        "id": response_post.get("commentsSrc", {}).get("id", response_post.get("id", "N/A") + "/comments"),
-                        "comments": comments
-                    },
-                    "published": response_post.get("published", "N/A"),
-                    "visibility": response_post.get("visibility", "N/A"),
-                    "unlisted": response_post.get("unlisted", "N/A"),
-                }
+            except Exception as e:
+                raise RemoteServerError("Error getting post with id " + post_id + " from author with id " + author_id +
+                                        " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; exception " + str(e) + " was thrown.")
 
     # URL: ://service/authors/{AUTHOR_ID}/posts
     def get_recent_posts(self, author_id):
         url = self.base_url + "authors/" + author_id + "/posts"
-        response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+        # NOT PAGINATED!
+        page = 1
+        posts = []
+        response = self.session.get(url, params={"page": page, "size": 100})
 
-        else:
-            response_posts = response.json()
-            if response_posts is None:
-                # TODO: handle error
-                pass
+        # no need to handle the 404 using an exception, just return the posts we have/or the empty array
+        if response.status_code == 404:
+            raise Remote404("Author with id " + author_id + " not found on remote server: https://cmput404-group6-instatonne.herokuapp.com/")
 
-            else:
-                posts = []
-                for post in response_posts:
-                    comments = []
-                    for comment in post.get("commentsSrc", {}).get("comments", []):
-                        comments.append({
-                            "type": comment.get("type", "N/A"),
-                            "author": {
-                                "type": comment.get("author", {}).get("type", "N/A"),
-                                "id": comment.get("author", {}).get("id", "N/A"),
-                                "host": comment.get("author", {}).get("host", "N/A"),
-                                "displayName": comment.get("author", {}).get("displayName", "N/A"),
-                                "url": comment.get("author", {}).get("url", "N/A"),
-                                "github": comment.get("author", {}).get("github", "N/A"),
-                                "profileImage": comment.get("author", {}).get("profileImage", "N/A"),
-                            },
-                            "comment": comment.get("comment", "N/A"),
-                            "contentType": comment.get("contentType", "N/A"),
-                            "published": comment.get("published", "N/A"),
-                            "id": comment.get("id", "N/A"),
-                        })
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting recent posts from author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
-                    posts.append({
-                        "type": post.get("type", "N/A"),
-                        "title": post.get("title", "N/A"),
-                        "id": post.get("id", "N/A"),
-                        "source": post.get("source", "N/A"),
-                        "origin": post.get("origin", "N/A"),
-                        "description": post.get("description", "N/A"),
-                        "contentType": post.get("contentType", "N/A"),
-                        "content": post.get("content", "N/A"),
-                        "author": {
-                            "type": post.get("author", {}).get("type", "N/A"),
-                            "id": post.get("author", {}).get("id", "N/A"),
-                            "host": post.get("author", {}).get("host", "N/A"),
-                            "displayName": post.get("author", {}).get("displayName", "N/A"),
-                            "url": post.get("author", {}).get("url", "N/A"),
-                            "github": post.get("author", {}).get("github", "N/A"),
-                            "profileImage": post.get("author", {}).get("profileImage", "N/A"),
-                        },
-                        "categories": post.get("categories", "N/A"),
-                        "count": post.get("count", "N/A"),
-                        "comments": post.get("comments", "N/A"),
-                        "commentsSrc": {
-                            "type": post.get("commentsSrc", {}).get("type", "comments"),
-                            "page": post.get("commentsSrc", {}).get("page", 1),
-                            "size": post.get("commentsSrc", {}).get("size", 0),
-                            "post": post.get("commentsSrc", {}).get("post", post.get("id", "N/A")),
-                            "id": post.get("commentsSrc", {}).get("id", post.get("id", "N/A") + "/comments"),
-                            "comments": comments
-                        },
-                        "published": post.get("published", "N/A"),
-                        "visibility": post.get("visibility", "N/A"),
-                        "unlisted": post.get("unlisted", "N/A"),
-                    })
+        response_posts = response.json()
+        if response_posts is None:
+            raise RemoteServerError("Error getting recent posts from author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/. Response body was empty.")
 
-                return posts
+        items = response_posts.get("items", [])
+
+        posts.extend(items)
+
+        cleaned_posts = []
+        for post in posts:
+            comments = []
+            for comment in post.get("commentsSrc", {}).get("comments", []):
+                comments.append({
+                    "type": comment.get("type", ""),
+                    "author": {
+                        "type": comment.get("author", {}).get("type", ""),
+                        "id": comment.get("author", {}).get("id", ""),
+                        "host": comment.get("author", {}).get("host", ""),
+                        "displayName": comment.get("author", {}).get("displayName", ""),
+                        "url": comment.get("author", {}).get("url", ""),
+                        "github": comment.get("author", {}).get("github", ""),
+                        "profileImage": comment.get("author", {}).get("profileImage", ""),
+                    },
+                    "comment": comment.get("comment", ""),
+                    "contentType": comment.get("contentType", ""),
+                    "published": comment.get("published", ""),
+                    "id": comment.get("id", ""),
+                })
+
+            cleaned_posts.append({
+                "type": post.get("type", ""),
+                "title": post.get("title", ""),
+                "id": post.get("id", ""),
+                "source": post.get("source", ""),
+                "origin": post.get("origin", ""),
+                "description": post.get("description", ""),
+                "contentType": post.get("contentType", ""),
+                "content": post.get("content", ""),
+                "author": {
+                    "type": post.get("author", {}).get("type", ""),
+                    "id": post.get("author", {}).get("id", ""),
+                    "host": post.get("author", {}).get("host", ""),
+                    "displayName": post.get("author", {}).get("displayName", ""),
+                    "url": post.get("author", {}).get("url", ""),
+                    "github": post.get("author", {}).get("github", ""),
+                    "profileImage": post.get("author", {}).get("profileImage", ""),
+                },
+                "categories": post.get("categories", ""),
+                "count": post.get("count", 0),
+                "comments": post.get("comments", ""),
+                "commentsSrc": {
+                    "type": post.get("commentsSrc", {}).get("type", ""),
+                    "page": post.get("commentsSrc", {}).get("page", 1),
+                    "size": post.get("commentsSrc", {}).get("size", 0),
+                    "post": post.get("commentsSrc", {}).get("post", ""),
+                    "id": post.get("commentsSrc", {}).get("id", post.get("id", "") + "/comments"),
+                    "comments": comments
+                },
+                "published": post.get("published", ""),
+                "visibility": post.get("visibility", ""),
+                "unlisted": post.get("unlisted", ""),
+            })
+
+        return {
+            "type": "posts",
+            "items": cleaned_posts,
+        }
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/image
     def get_image_post(self, author_id, post_id):
@@ -867,80 +898,131 @@ class Team6Connection():
     def get_comments(self, author_id, post_id):
 
         url = self.base_url + "authors/" + author_id + "/posts/" + post_id + "/comments"
-        response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            if response.status_code == 404:
-                return []
+        # NOT PAGINATED
+        # start at page 1, loop until no items are returned - in which case our server throws a 404
+        page = 1
+        comments = []
+        response = self.session.get(url, params={"page": page, "size": 100})
 
+        # no need to handle the 404 using an exception, just return the comments we have/or the empty list
+        if response.status_code == 404:
+            raise Remote404("Comments for post with id " + post_id + " from author with id " + author_id + " not found on remote server: https://cmput404-group6-instatonne.herokuapp.com/")
+
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
+
+        response_comments = response.json()
+        if response_comments is None:
+            raise RemoteServerError("Error getting comments for post with id " + post_id + " from author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; no JSON was received in response.")
+
+        items = response_comments.get("comments", [])
+
+        comments.extend(items)
+
+        cleaned_comments = []
+        for comment in comments:
+            if comment.get("author", {}).get("error url") != None:
+                try:
+                    author_parsed = json.loads(comment.get("author", {}).get("error url", "").replace("'", '"'))
+                except:
+                    author_parsed = {}
+
+                new_comment = {
+                    "type": comment.get("type", ""),
+                    "author": {
+                        "type": author_parsed.get("type", ""),
+                        "id": author_parsed.get("id", ""),
+                        "host": author_parsed.get("host", ""),
+                        "displayName": author_parsed.get("displayName", "Unknown"),
+                        "url": author_parsed.get("url", ""),
+                        "github": author_parsed.get("github", ""),
+                        "profileImage": author_parsed.get("profileImage", ""),
+                    },
+                    "comment": comment.get("comment", ""),
+                    "contentType": comment.get("contentType", ""),
+                    "published": comment.get("published", ""),
+                    "id": comment.get("id", ""),
+                }
             else:
-                pass
+                new_comment = {
+                    "type": comment.get("type", ""),
+                    "author": {
+                        "type": comment.get("author", {}).get("type", ""),
+                        "id": comment.get("author", {}).get("id", ""),
+                        "host": comment.get("author", {}).get("host", ""),
+                        "displayName": comment.get("author", {}).get("displayName", "Unknown"),
+                        "url": comment.get("author", {}).get("url", ""),
+                        "github": comment.get("author", {}).get("github", ""),
+                        "profileImage": comment.get("author", {}).get("profileImage", ""),
+                    },
+                    "comment": comment.get("comment", ""),
+                    "contentType": comment.get("contentType", ""),
+                    "published": comment.get("published", ""),
+                    "id": comment.get("id", ""),
+                }
 
-        else:
-            response = response.json()
-            if response is None:
-                # TODO: handle error
-                pass
+            cleaned_comments.append(new_comment)
 
-            else:
-                comments = []
-                for comment in response:
-                    comments.append({
-                        "type": comment.get("type", "N/A"),
-                        "id": comment.get("id", "N/A"),
-                        "author": {
-                            "type": comment.get("author", {}).get("type", "N/A"),
-                            "id": comment.get("author", {}).get("id", "N/A"),
-                            "host": comment.get("author", {}).get("host", "N/A"),
-                            "displayName": comment.get("author", {}).get("displayName", "N/A"),
-                            "url": comment.get("author", {}).get("url", "N/A"),
-                            "github": comment.get("author", {}).get("github", "N/A"),
-                            "profileImage": comment.get("author", {}).get("profileImage", "N/A"),
-                        },
-                        "comment": comment.get("comment", "N/A"),
-                        "contentType": comment.get("contentType", "N/A"),
-                        "published": comment.get("published", "N/A"),
-                    })
-
-                return comments
+        return {
+            "type": "comments",
+            "items": cleaned_comments
+        }
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
     def get_post_likes(self, author_id, post_id):
         url = self.base_url + "authors/" + author_id + "/posts/" + post_id + "/likes"
+
+        likes = []
+
         response = self.session.get(url)
 
-        if response.status_code != 200:
-            # TODO: handle error
-            # look in cache?
-            pass
+        # no need to handle the 404 using an exception, just return the likes we have/or the empty list
+        if response.status_code == 404:
+            likes = []
 
-        else:
-            response = response.json()
-            if response is None:
-                # TODO: handle error
-                pass
+        elif response.status_code != 200:
+            raise RemoteServerError("Error getting likes for post with id " + post_id + " from author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
-            else:
-                likes = []
-                for like in response:
-                    likes.append({
-                        "type": like.get("type", "N/A"),
-                        "summary": like.get("summary", "N/A"),
-                        "author": {
-                            "type": like.get("author", {}).get("type", "N/A"),
-                            "id": like.get("author", {}).get("id", "N/A"),
-                            "host": like.get("author", {}).get("host", "N/A"),
-                            "displayName": like.get("author", {}).get("displayName", "N/A"),
-                            "url": like.get("author", {}).get("url", "N/A"),
-                            "github": like.get("author", {}).get("github", "N/A"),
-                            "profileImage": like.get("author", {}).get("profileImage", "N/A"),
-                        },
-                        "object": like.get("object", "N/A"),
-                    })
+        response_likes = response.json()
+        if response_likes is None:
+            raise RemoteServerError("Error getting likes for post with id " + post_id + " from author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; no JSON was received in response.")
 
-                return likes
+        items = response_likes.get("items", [])
+        likes.extend(items)
+
+        cleaned_likes = []
+        for like in likes:
+            # need to try to parse the author
+            if like.get("author") != None:
+                try:
+                    author_parsed = json.loads(like.get("author", "").replace("'", '"'))
+                except:
+                    author_parsed = {}
+
+            cleaned_likes.append({
+                "summary": like.get("summary", ""),
+                "type": like.get("type", "").lower(),
+                "author": {
+                    "type": author_parsed.get("type", ""),
+                    "id": author_parsed.get("id", ""),
+                    "host": author_parsed.get("host", ""),
+                    "displayName": author_parsed.get("displayName", "Unknown"),
+                    "url": author_parsed.get("url", ""),
+                    "github": author_parsed.get("github", ""),
+                    "profileImage": author_parsed.get("profileImage", "")
+                },
+                "object": like.get("object", "")
+            })
+
+        return {
+            "type": "likes",
+            "items": cleaned_likes
+        }
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
     def get_comment_likes(self, author_id, post_id, comment_id):
