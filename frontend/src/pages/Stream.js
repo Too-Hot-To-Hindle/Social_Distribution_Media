@@ -138,6 +138,7 @@ const Stream = () => {
                                         hideShareButton={true}
                                         hideDeleteButton={true}
                                         hideLink={true}
+                                        hideDetailsButton={true}
                                     />
                                 )}
                             </Grid>

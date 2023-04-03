@@ -342,7 +342,7 @@ const PostDetails = () => {
                                 {!commentsLoading && comments.length > 0 &&
                                     comments.map((comment) => (
                                         <Grid item xs={12}>
-                                            <Comment username={comment.author.displayName} content={comment.comment} likes={commentLikes} id={comment.id} />
+                                            <Comment username={comment.author.displayName} content={comment.comment} likes={commentLikes} id={comment.id} myAuthorData={myProfile} commenterID={comment.author.id}/>
                                         </Grid>
                                     ))
                                 }
