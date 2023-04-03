@@ -592,9 +592,6 @@ class Team6Connection():
 
     # URL: ://service/authors/
     def get_authors(self):
-        print("using following auth:")
-        print(self.username)
-        print(self.password)
 
         url = self.base_url + "authors?page=1&size=5000"
 
@@ -1020,18 +1017,57 @@ class Team6Connection():
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_post(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox/"
-        response = self.session.post(url=url, json=body)
 
-        if response.status_code != 200 and response.status_code != 201:
-            # TODO: handle error
-            # look in cache?
-            print("error occurred")
-            pass
+        cleaned_body = {
+            "type": body.get("object", {}).get("type", "").lower(),
+            "id": body.get("object", {}).get("id", ""),
+            "title": body.get("object", {}).get("title", ""),
+            "source": body.get("object", {}).get("source", ""),
+            "origin": body.get("object", {}).get("origin", ""),
+            "description": body.get("object", {}).get("description", ""),
+            "contentType": body.get("object", {}).get("contentType", ""),
+            "content": body.get("object", {}).get("content", ""),
+            "author": {
+                "type": body.get("object", {}).get("author", {}).get("type", "").lower(),
+                "id": body.get("object", {}).get("author", {}).get("id", ""),
+                "host": body.get("object", {}).get("author", {}).get("host", ""),
+                "displayName": body.get("object", {}).get("author", {}).get("displayName", ""),
+                "url": body.get("object", {}).get("author", {}).get("url", ""),
+                "github": body.get("object", {}).get("author", {}).get("github", ""),
+                "profileImage": body.get("object", {}).get("author", {}).get("profileImage", ""),
+            },
+            "categories": body.get("object", {}).get("categories", []),
+            "count": body.get("object", {}).get("count", 0),
+            "comments": body.get("object", {}).get("comments", []),
+            "commentsSrc": body.get("object", {}).get("commentsSrc", {}),
+            "published": body.get("object", {}).get("published", ""),
+            "visibility": body.get("object", {}).get("visibility", ""),
+            "unlisted": body.get("object", {}).get("unlisted", False),
+        }
+
+        print(cleaned_body)
+
+        response = self.session.post(url=url, json=cleaned_body)
+
+        if response.status_code != 200 and response.status_code != 201 and response.status_code != 204:
+            raise RemoteServerError("Error sending post to author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            # might wanna return something, parse the response...
-            print("sent remotely!")
-            return response.json()
+            try:
+                response_json = response.json()
+                return response_json
+
+            # if there was an issue parsing the JSON response but we still got a 200/201/204, it's likely that we sent
+            # the post successfully, and don't need to parse the response
+            except Exception as e:
+                if response.status_code == 200 or response.status_code == 201 or response.status_code == 204:
+                    return {"success": True}
+
+                else:
+                    print("Error parsing response from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " +
+                          str(response.status_code) + " was received in response.")
+                    return None
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_like(self, author_id, body):
@@ -1039,19 +1075,21 @@ class Team6Connection():
 
         # Team 6's like POST body is a little different, less redundant w/ the object field, no context attribute
         cleaned_body = {
-            "summary": body.get("summary") if body.get("summary") != "" else None,
-            "type": body.get("type") if body.get("type") != "" else None,
+            "summary": body.get("summary", ""),
+            "type": body.get("type", ""),
             "author": {
-                "type": body.get("author", {}).get("type") if body.get("author", {}).get("type") != "" else None,
-                "id": body.get("author", {}).get("id") if body.get("author", {}).get("id") != "" else None,
-                "host": body.get("author", {}).get("host") if body.get("author", {}).get("host") != "" else None,
-                "displayName": body.get("author", {}).get("displayName") if body.get("author", {}).get("displayName") != "" else None,
-                "url": body.get("author", {}).get("url") if body.get("author", {}).get("url") != "" else None,
-                "github": body.get("author", {}).get("github") if body.get("author", {}).get("github") != "" else None,
-                "profileImage": body.get("author", {}).get("profileImage") if body.get("author", {}).get("profileImage") != "" else None,
+                "type": body.get("author", {}).get("type", ""),
+                "id": body.get("author", {}).get("id", ""),
+                "host": body.get("author", {}).get("host", ""),
+                "displayName": body.get("author", {}).get("displayName", ""),
+                "url": body.get("author", {}).get("url", ""),
+                "github": body.get("author", {}).get("github", ""),
+                "profileImage": body.get("author", {}).get("profileImage, """),
             },
-            "object": body.get("object", {}).get("object") if body.get("object", {}).get("object") != "" else None
+            "object": body.get("object", {}).get("object", "")
         }
+
+        print(cleaned_body)
 
         response = self.session.post(url=url, json=cleaned_body)
 
@@ -1079,34 +1117,63 @@ class Team6Connection():
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_comment(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox/"
-        response = self.session.post(url=url, json=body)
 
-        if response.status_code != 201:
-            # TODO: handle error
-            # look in cache?
-            print("error occurred")
-            pass
+        cleaned_comment = {
+            "type": "comment",
+            "contentType": body.get("object", {}).get("contentType", ""),
+            "comment": body.get("object", {}).get("comment", ""),
+            "author": body.get("object", {}).get("author", {}),
+            "post": body.get("object", {}).get("id", "").split("/comments/")[0]
+        }
+
+        print(cleaned_comment)
+
+        response = self.session.post(url=url, json=cleaned_comment)
+
+        if response.status_code != 200 and response.status_code != 201 and response.status_code != 204:
+            raise RemoteServerError("Error sending post to author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            # might wanna return something, parse the response...
-            print("sent remotely!")
-            return response.json()
+            try:
+                response_json = response.json()
+                return response_json
+
+            # if there was an issue parsing the JSON response but we still got a 200/201, it's likely that we sent
+            # the post successfully, and don't need to parse the response
+            except Exception as e:
+                if response.status_code == 200 or response.status_code == 201 or response.status_code == 204:
+                    return None
+
+                else:
+                    print("Error parsing response from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " +
+                          str(response.status_code) + " was received in response.")
+                    return None
 
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_follow(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox/"
         response = self.session.post(url=url, json=body)
 
-        if response.status_code != 201:
-            # TODO: handle error
-            # look in cache?
-            print("error occurred")
-            pass
+        if response.status_code != 200 and response.status_code != 201 and response.status_code != 204:
+            raise RemoteServerError("Error sending follow to author with id " + author_id +
+                                    " from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " + str(response.status_code) + " was received in response.")
 
         else:
-            # might wanna return something, parse the response...
-            print("sent remotely!")
-            return response.json()
+            try:
+                response_json = response.json()
+                return response_json
+
+            # if there was an issue parsing the JSON response but we still got a 200/201, it's likely that we sent
+            # the post successfully, and don't need to parse the response
+            except Exception as e:
+                if response.status_code == 200 or response.status_code == 201 or response.status_code == 204:
+                    return {"success": True}
+
+                else:
+                    print("Error parsing response from remote server: https://cmput404-group6-instatonne.herokuapp.com/; status code " +
+                          str(response.status_code) + " was received in response.")
+                    return None
 
 
 class Team10Connection():
@@ -3016,7 +3083,7 @@ class Team13Connection():
                     "type": like.get("author", {}).get("type") if like.get("author", {}).get("type") != None else "",
                     "id": like.get("author", {}).get("id") if like.get("author", {}).get("id") != None else "",
                     "host": like.get("author", {}).get("host") if like.get("author", {}).get("host") != None else "",
-                    "displayName": like.get("author", {}).get("displayName") if like.get("author", {}).get("displayName") != None else "",
+                    "displayName": like.get("author", {}).get("displayName") if like.get("author", {}).get("displayName") != None else "Unknown",
                     "url": like.get("author", {}).get("url") if like.get("author", {}).get("url") != None else "",
                     "github": like.get("author", {}).get("github") if like.get("author", {}).get("github") != None else "",
                     "profileImage": like.get("author", {}).get("profileImage") if like.get("author", {}).get("profileImage") != None else "",
@@ -3182,7 +3249,16 @@ class Team13Connection():
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_like(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox"
-        response = self.session.post(url=url, json=body)
+
+        cleaned_like = {
+            "type": "Like",
+            "author": body.get("author", {}).get("id", ""),
+            "object": body.get("object", {}).get("object", ""),
+        }
+
+        print(cleaned_like)
+
+        response = self.session.post(url=url, json=cleaned_like)
 
         if response.status_code != 200 and response.status_code != 201:
             raise RemoteServerError("Error sending post to author with id " + author_id +
@@ -3207,7 +3283,18 @@ class Team13Connection():
     # URL: ://service/authors/{AUTHOR_ID}/inbox/
     def send_comment(self, author_id, body):
         url = self.base_url + "authors/" + author_id + "/inbox"
-        response = self.session.post(url=url, json=body)
+
+        cleaned_comment = {
+            "type": "comment",
+            "contentType": body.get("object", {}).get("contentType", ""),
+            "comment": body.get("object", {}).get("comment", ""),
+            "author": body.get("object", {}).get("author", {}).get("id", ""),
+            "post": body.get("object", {}).get("id", "").split("/comments/")[0]
+        }
+
+        print(cleaned_comment)
+
+        response = self.session.post(url=url, json=cleaned_comment)
 
         if response.status_code != 200 and response.status_code != 201:
             raise RemoteServerError("Error sending post to author with id " + author_id +
