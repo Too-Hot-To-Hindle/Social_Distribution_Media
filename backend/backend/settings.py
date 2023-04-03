@@ -94,7 +94,8 @@ CORS_ALLOWED_ORIGINS = [
     'https://cmput404-group6-instatonne.herokuapp.com',
     'https://t20-social-distribution.herokuapp.com',
     'https://social-distribution-media-2.herokuapp.com',
-    'https://socialdistcmput404.herokuapp.com'
+    'https://socialdistcmput404.herokuapp.com',
+    'https://epic-app.vercel.app'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -102,7 +103,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://cmput404-group6-instatonne.herokuapp.com',
     'https://t20-social-distribution.herokuapp.com',
     'https://social-distribution-media-2.herokuapp.com',
-    'https://socialdistcmput404.herokuapp.com'
+    'https://socialdistcmput404.herokuapp.com',
+    'https://epic-app.vercel.app'
 ]
 
 CORS_ALLOW_CREDENTIALS = True
