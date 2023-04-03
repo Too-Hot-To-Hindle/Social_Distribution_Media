@@ -26,7 +26,6 @@ from .utils import get_remote_url
 from .utils import extract_id_if_url_group_6
 from .utils import extract_id_if_url_group_10
 from .connections import RemoteConnection, RemoteServerError, Remote404
-from .decorators import friend_check
 from .permissions import IsOwnerOrFriend
 
 import traceback
