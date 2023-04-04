@@ -562,6 +562,9 @@ class Posts(APIView):
             404: OpenApiResponse(
                 description="The author does not exist",
             ),
+            403: OpenApiResponse(
+                description="The requestor is not authorized for this request",
+            )
         },
     )
     def post(self, request, author_id):
@@ -576,7 +579,7 @@ class Posts(APIView):
         post_author = get_object_or_404(Author, pk=author_id)
         self.check_object_permissions(request, post_author)
         if not request.is_owner:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response("The requestor is not authorized for this request", status=status.HTTP_403_FORBIDDEN)
 
         try:
             serializer = PostSerializer(data=json.loads(request.body))
@@ -610,6 +613,9 @@ class PostDetail(APIView):
             404: OpenApiResponse(
                 description="The author or post does not exist",
             ),
+            403: OpenApiResponse(
+                description="The requestor is not authorized for this request",
+            )
         },
         tags=['Posts', 'Remote API']
     )
@@ -657,7 +663,7 @@ class PostDetail(APIView):
 
                 # if requestor is not a friend and the post visibility is set to friends, return 403
                 if not request.is_friend and post.visibility != "PUBLIC":
-                    return Response(status=status.HTTP_403_FORBIDDEN)
+                    return Response("The requestor is not authorized for this request", status=status.HTTP_403_FORBIDDEN)
                 
                 serializer = PostSerializer(post)
                 return Response(serializer.data)
@@ -682,6 +688,9 @@ class PostDetail(APIView):
             404: OpenApiResponse(
                 description="The author or post does not exist",
             ),
+            403: OpenApiResponse(
+                description="The requestor is not authorized for this request",
+            )
         },
     )
     def post(self, request, author_id, post_id):
@@ -700,7 +709,7 @@ class PostDetail(APIView):
                 # check if requesting user is author of post
                 self.check_object_permissions(request, req_post.author)
                 if not request.is_owner:
-                    return Response(status=status.HTTP_403_FORBIDDEN)
+                    return Response("The requestor is not authorized for this request", status=status.HTTP_403_FORBIDDEN)
 
                 updated = Post.objects.filter(
                     pk=post_id, author___id=author_id).update(**serializer.data)
@@ -726,6 +735,9 @@ class PostDetail(APIView):
             404: OpenApiResponse(
                 description="The author or post does not exist",
             ),
+            403: OpenApiResponse(
+                description="The requestor is not authorized for this request",
+            )
         },
     )
     def delete(self, request, author_id, post_id):
@@ -742,7 +754,7 @@ class PostDetail(APIView):
             # check if requesting user is author of post
             self.check_object_permissions(request, req_post.author)
             if not request.is_owner:
-                return Response(status=status.HTTP_403_FORBIDDEN)
+                return Response("The requestor is not authorized for this request", status=status.HTTP_403_FORBIDDEN)
 
             deleted = Post.objects.filter(
                 pk=post_id, author___id=author_id).delete()
@@ -771,6 +783,9 @@ class PostDetail(APIView):
             404: OpenApiResponse(
                 description="The author or post does not exist",
             ),
+            403: OpenApiResponse(
+                description="The requestor is not authorized for this request",
+            )
         },
     )
     def put(self, request, author_id, post_id):
@@ -786,7 +801,7 @@ class PostDetail(APIView):
         post_author = get_object_or_404(Author, pk=author_id)
         self.check_object_permissions(request, post_author)
         if not request.is_owner:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response("The requestor is not authorized for this request", status=status.HTTP_403_FORBIDDEN)
 
         try:
             serializer = PostSerializer(data=json.loads(request.body))
@@ -893,6 +908,9 @@ class Comments(APIView):
             404: OpenApiResponse(
                 description="The author or post does not exist",
             ),
+            403: OpenApiResponse(
+                description="The requestor is not authorized for this request",
+            )
         },
         tags=["Comments", "Remote API"],
     )
@@ -933,7 +951,7 @@ class Comments(APIView):
             req_post = get_object_or_404(Post, pk=post_id)
             self.check_object_permissions(request, req_post.author)
             if not request.is_friend and req_post.visibility != "PUBLIC":
-                return Response(status=status.HTTP_403_FORBIDDEN)
+                return Response("The requestor is not authorized for this request", status=status.HTTP_403_FORBIDDEN)
 
             try:
                 # comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
@@ -968,6 +986,9 @@ class Comments(APIView):
             404: OpenApiResponse(
                 description="The author or post does not exist",
             ),
+            403: OpenApiResponse(
+                description="The requestor is not authorized for this request",
+            )
         },
     )
     def post(self, request, author_id, post_id):
@@ -977,7 +998,7 @@ class Comments(APIView):
         req_post = get_object_or_404(Post, pk=post_id)
         self.check_object_permissions(request, req_post.author)
         if not request.is_friend and req_post.visibility != "PUBLIC":
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response("The requestor is not authorized for this request", status=status.HTTP_403_FORBIDDEN)
 
         try:
             # TODO: Fix get comments above now that these are gone
@@ -1008,6 +1029,9 @@ class PostLikes(APIView):
             404: OpenApiResponse(
                 description="The author or post does not exist",
             ),
+            403: OpenApiResponse(
+                description="The requestor is not authorized for this request",
+            )
         },
         tags=['Likes', 'Remote API'],
     )
@@ -1046,7 +1070,7 @@ class PostLikes(APIView):
             req_post = get_object_or_404(Post, pk=post_id)
             self.check_object_permissions(request, req_post.author)
             if not request.is_friend and req_post.visibility != "PUBLIC":
-                return Response(status=status.HTTP_403_FORBIDDEN)
+                return Response("The requestor is not authorized for this request", status=status.HTTP_403_FORBIDDEN)
 
             try:
                 if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists()):
@@ -1076,6 +1100,9 @@ class CommentLikes(APIView):
             404: OpenApiResponse(
                 description="The author, post, or comment does not exist",
             ),
+            403: OpenApiResponse(
+                description="The requestor is not authorized for this request",
+            )
         },
         tags=['Likes', 'Remote API'],
     )
@@ -1117,7 +1144,7 @@ class CommentLikes(APIView):
                 req_post = get_object_or_404(Post, pk=post_id)
                 self.check_object_permissions(request, req_post.author)
                 if not request.is_friend and req_post.visibility != "PUBLIC":
-                    return Response(status=status.HTTP_403_FORBIDDEN)
+                    return Response("The requestor is not authorized for this request", status=status.HTTP_403_FORBIDDEN)
 
                 if not (Author.objects.filter(pk=author_id).exists() and Post.objects.filter(pk=post_id).exists() and Comment.objects.filter(pk=comment_id).exists()):
                     print(comment_id)
