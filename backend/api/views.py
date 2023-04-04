@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
@@ -25,7 +26,6 @@ from .utils import get_remote_url
 from .utils import extract_id_if_url_group_6
 from .utils import extract_id_if_url_group_10
 from .connections import RemoteConnection, RemoteServerError, Remote404
-from .decorators import friend_check
 from .permissions import IsOwnerOrFriend
 
 import traceback
@@ -955,8 +955,12 @@ class Comments(APIView):
 
             try:
                 # comments = Comment.objects.filter(_post_author_id=author_id, _post_id=post_id)
+                req_user = get_object_or_404(Author, user=request.user)
+                # filter comments based on the comment author's followers OR if the author is the requestor.
                 comments = Comment.objects.filter(
-                    id__contains=f'{author_id}/posts/{post_id}')
+                    Q(author__followers___id__contains=req_user._id) | Q(author=req_user),
+                    id__contains=f'{author_id}/posts/{post_id}'
+                )
                 paginator = self.pagination_class()
 
                 page = paginator.paginate_queryset(
