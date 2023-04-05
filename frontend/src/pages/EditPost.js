@@ -158,8 +158,6 @@ const EditPost = () => {
                 data = {
                     title: postTitle,
                     description: postDescription,
-                    source: "https://google.com",
-                    origin: "https://google.com",
                     contentType: "text/markdown",
                     content: postContent,
                     categories: postCategories.replace(/\s/g, '').split(','),
@@ -186,8 +184,6 @@ const EditPost = () => {
                 data = {
                     title: postTitle,
                     description: postDescription,
-                    source: "https://google.com",
-                    origin: "https://google.com",
                     contentType: "text/plain",
                     content: postContent,
                     categories: postCategories.replace(/\s/g, '').split(','),
@@ -235,8 +231,6 @@ const EditPost = () => {
             data = {
                 title: postTitle,
                 description: postDescription,
-                source: "https://google.com",
-                origin: "https://google.com",
                 contentType: contentTypeToBe,
                 content: contentToBe,
                 categories: postCategories.replace(/\s/g, '').split(','),
