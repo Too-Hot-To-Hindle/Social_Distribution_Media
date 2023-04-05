@@ -170,7 +170,7 @@ const EditPost = () => {
                 createAPIEndpoint(`authors/${userID}/posts/${postID}`)
                     .post(data)
                     .then(res => {
-                        navigate("/profile")
+                        navigate(`/profile/${userID}`)
                         setUpload(false)
                     })
                     .catch(err => {
@@ -198,7 +198,7 @@ const EditPost = () => {
                 createAPIEndpoint(`authors/${userID}/posts/${postID}`)
                     .post(data)
                     .then(res => {
-                        navigate("/profile")
+                        navigate(`/profile/${userID}`)
                         setUpload(false)
                     })
                     .catch(err => {
@@ -247,7 +247,7 @@ const EditPost = () => {
             createAPIEndpoint(`authors/${userID}/posts/${postID}`)
                 .post(data)
                 .then(res => {
-                    navigate("/profile")
+                    navigate(`/profile/${userID}`)
                     setUpload(false)
                 })
                 .catch(err => {

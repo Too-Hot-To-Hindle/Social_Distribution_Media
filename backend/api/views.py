@@ -1022,13 +1022,13 @@ class CommentLikes(APIView):
             else:
                 author_id = extract_uuid_if_url('author', author_id)
 
-            try:
-                response = remote.connection.get_comment_likes(
-                    author_id, post_id, comment_id)
-                return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            #try:
+            response = remote.connection.get_comment_likes(
+                author_id, post_id, comment_id)
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
 
-            except Exception as e:
-                return Response(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # except Exception as e:
+            #     return Response(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         else:
             # Extract a uuid if id was given in the form http://somehost/authors/<uuid>

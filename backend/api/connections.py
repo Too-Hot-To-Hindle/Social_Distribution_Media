@@ -1483,8 +1483,8 @@ class Team10Connection():
                         "type": response_post.get("type", ""),
                         "title": response_post.get("title", ""),
                         "id": response_post.get("id", ""),
-                        "source": response_post.get("source", ""),
-                        "origin": response_post.get("origin", ""),
+                        "source": response_post.get("source") if response_post.get("source") != "" else "Unknown",
+                        "origin": response_post.get("origin") if response_post.get("origin") != "" else "Unknown",
                         "description": response_post.get("description", ""),
                         "contentType": response_post.get("contentType", ""),
                         "content": response_post.get("content", ""),
@@ -1728,8 +1728,8 @@ class Team10Connection():
 
     # URL: ://service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
     def get_comment_likes(self, author_id, post_id, comment_id):
-        url = self.base_url + "authors/" + author_id + "/posts/" + \
-            post_id + "api/comments/" + comment_id + "/likes"
+        url = self.base_url + "api/authors/" + author_id + "/posts/" + \
+            post_id + "/comments/" + comment_id + "/likes"
 
         likes = []
 

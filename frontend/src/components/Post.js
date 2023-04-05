@@ -259,7 +259,7 @@ const Post = ({
                             {!hideEditButton &&
                                 <>
                                     {authorDisplayName === username &&
-                                        <IconButton onClick={() => { navigate(`/${authorID}/post/${id}/edit`) }}>
+                                        <IconButton onClick={() => { navigate(`/${myAuthorData["_id"]}/post/${getPostIDFromURL(id)}/edit`) }}>
                                             <EditIcon />
                                         </IconButton>
                                     }
@@ -377,7 +377,7 @@ const Post = ({
                             </Grid>
 
                             <Grid item xs={12}>
-                                <TextField fullWidth label="Shareable Link" value={`https://social-distribution-media.herokuapp.com/${encodeURIComponent(authorID)}/post/${encodeURIComponent(id)}`}></TextField>
+                                <TextField fullWidth label="Shareable Link" value={`https://social-distribution-media.herokuapp.com/${encodeURIComponent(authorID)}/post/${encodeURIComponent(getPostIDFromURL(id))}`}></TextField>
                             </Grid>
                         </>
                     }

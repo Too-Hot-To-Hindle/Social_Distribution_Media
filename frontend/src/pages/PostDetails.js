@@ -19,6 +19,15 @@ import Layout from "../components/layouts/Layout";
 import Post from "../components/Post";
 import Comment from "../components/Comment";
 
+// Helper functions
+// getCommentIDFromURL
+// takes in a URL, say of example https://social-distribution-media.herokuapp.com/author/abc123/posts/def456/comments/ghi789/likes/
+// and returns the comment ID, here, ghi789
+const getCommentIDFromURL = (url) => {
+    const splitURL = url.split('/')
+    return splitURL[splitURL.length - 1]
+}
+
 const PostDetails = () => {
 
     const { authorID, postID } = useParams()
@@ -109,7 +118,7 @@ const PostDetails = () => {
             for (let comment of comments) {
                 var response;
                 try {
-                    response = await createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/posts/${encodeURIComponent(postID)}/comments/${encodeURIComponent(comment.id)}/likes`).get()
+                    response = await createAPIEndpoint(`authors/${encodeURIComponent(authorID)}/posts/${encodeURIComponent(postID)}/comments/${encodeURIComponent(getCommentIDFromURL(comment.id))}/likes`).get()
                 }
                 catch (err) {
                     toast.error('An error has occurred.', {
