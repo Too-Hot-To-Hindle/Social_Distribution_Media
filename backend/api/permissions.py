@@ -17,3 +17,21 @@ class AllowedRemote(permissions.BasePermission):
         is_remote_endpoint = request.method == 'GET' and view.get_view_name() in REMOTE_GET_ALLOWED_VIEWS \
             or request.method == 'POST' and view.get_view_name() in REMOTE_POST_ALLOWED_VIEWS
         return not is_remote_node or (is_remote_node and is_remote_endpoint)
+    
+class IsOwnerOrFriend(permissions.BasePermission):
+    """
+    Custom permission to only allow owners or followers of an object to view it.
+    """
+
+    def has_object_permission(self, request, view, obj: Author):
+        # object access is allowed to owner or friends
+        requestor = Author.objects.filter(displayName=request.user).first()
+
+        # set the is_friend flag so we can use to filter GET requests in the view
+        request.is_friend = obj == requestor or obj.followers.filter(pk=requestor._id).exists()
+
+        # set the is_owner flag for limiting creation of posts to only owner
+        request.is_owner = obj == requestor
+
+        # return true so we don't block the request
+        return True

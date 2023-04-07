@@ -517,7 +517,7 @@ const NewPost = () => {
                                         onChange={handlePrivacyChange}
                                     >
                                         <MenuItem value={'PUBLIC'}>Public</MenuItem>
-                                        <MenuItem value={'FRIEND'}>Friends Only</MenuItem>
+                                        <MenuItem value={'FRIENDS'}>Friends Only</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
