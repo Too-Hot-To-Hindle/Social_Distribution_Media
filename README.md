@@ -2,7 +2,7 @@
 
 # Social_Distribution_Media
 
-See below section **Project Part 1 Summary** for project progress thus far.
+See below section **Project Part 3 Summary** for project progress thus far.
 
 [Deployed App](https://social-distribution-media.herokuapp.com/) | [API Documentation](https://social-distribution-media.herokuapp.com/api/schema/swagger-ui/)
 
