@@ -229,3 +229,127 @@ The following endpoints are confirmed to be working with **Group 6's instance**:
 Overall project has been designed with simplicity and ease of use in mind, pulling inspiration from other popular social networking sites. Plans were created and followed for frontend development, and backend development for this project part was designed to follow as closely to spec as possible with careful consideration for feature extension. 
 
 One particular piece from this project part that plays into this design mantra is the backend proxy feature set. Detailed further on this [Notion document](https://www.notion.so/Project-Part-2-4baf94b2e18e4bf8a57fa2b98f7a91de?pvs=4), the proxy feature allows requests to be made to the backend where an applicable author ID properly URL encoded for a remote server node passed in as a path parameter to a supported endpoint has the backend communicate with the remote node, parse and serialize responses properly matching their spec, and patches back the response as if you were asking only our server. This greatly faciliated remote integration with our frontend application -- since the endpoint to search all authors was the only one that needed a specially developed endpoint -- and the rest just worked in integration. 
+
+-----
+
+# Project Part 3 - Summary
+## Total Project
+- Coordinates and connects with 4 other groups and a cloned instance of our own server. 
+- Posts with embedded images (via Markdown) are visible.
+- Image posts are visible.
+
+## Code Base
+- 90% of requirements are implemented. Code is clean and commented where necessary. 
+- 41/43 = 95.34%. With this, we allowed some buffer in case of a random bug or another groups connection goes dark so that we remain above the 90% threshold.
+- **41/43** user stories completed (both frontend and backend), with progress made towards multiple others:
+    - As a server admin, I want to share public images with users on other servers.
+    - As an author, I want to befriend remote authors.
+    - As a server admin, I don't want to do heavy setup to get the posts of my author's friends.
+    - As a server admin, I want to be able to add nodes to share with.
+    - As a server admin, I want to be able to remove nodes and stop sharing with them.
+    - As a server admin, node to node connections can be authenticated with HTTP Basic Auth.
+    - As a server admin, I can limit nodes connecting to me via authentication.
+    - As a server admin, I can disable the node to node interfaces for connections that are not authenticated!
+    - As an author, I want a consistent identity per server.
+    - As an author I should be able to browse the public posts of everyone.
+    - As an author, I want to like posts that I can access.
+    - As an author, I want to befriend local authors.
+    - As a server admin, I want a restful interface for most operations.
+    - As an author, when I befriend someone (they accept my friend request) I follow them, only when the other author befriends me do I count as a real friend – a bi-directional follow is a true friend.
+    - As an author, I want to know if I have friend requests.
+    - As an author, I want to use my web browser to manage my profile.
+    - As an author, my server will know about my friends.
+    - As an author, I want to be able to delete my own public posts.
+    - As a server admin, I want to host multiple authors on my server.
+    - As an author, I want to be able to use my web browser to manage/author my posts.
+    - As a server admin, I want to be able to add, modify, and remove authors.
+    - As an author, I want to make public posts.
+    - As an author, posts I create can link to images.
+    - As an author, I want to edit public posts.
+    - As an author, posts I make can be in plain text.
+    - As a server admin, images can be hosted on my server.
+    - As an author, posts I create can be images.
+    - As an authors, posts I create can be in CommonMark.
+    - As an author, I want to be able to make posts that are unlisted, that are publicly shareable by URI alone (or for embedding images)
+    - As an author, I want to comment on posts I can access
+    - As an author, other cannot modify my public posts
+    - As an author, I can share other author's public posts.
+    - As an author, I can re-share other author's friend posts to my friends.
+    - As an author, posts I create can be private to another author
+    - As an author, posts I create can be private to my friends
+    - As an author, I should be able to browse the public posts of everyone
+    - As an author, I want a consistent identity per server
+    - As an author, I want to post posts to my "stream"
+    - As an author, comments on friend posts are private only to me the author
+    - As an author, I want un-befriend local and remote authors
+    - As an author, when someone sends me a friends only-post I want to see the likes
+    - As an author, when someone sends me a friends only-post I want to see the likes.
+
+- **User stories left out since we hit 90% threshold:**
+    - As a server admin, I want to optionally be able to allow users to sign up but require my OK to finally be on my server
+    - As an author, I want to pull in my GitHub activity to my stream
+
+## UI
+- UI is tested and works well, integrates with our user stories nicely. 
+- Planning remains tied to our Figma diagram we put together in the first project part. 
+
+## Web Service Coordination
+- Web service proxy functionality is in its final form, with caching functionality built-in if needed.
+- Connection to the web service of:
+    - a cloned deployment of our web service
+    - Group 6's service
+    - Group 10's service
+    - Group 11's service
+    - Group 13's service
+- The following endpoints were tested and confirmed to work with each:
+    - GET All Authors ✅
+    - GET Single Author ✅
+    - GET Author Followers ✅
+    - GET Check If Follower ✅
+    - GET Single Post ✅
+    - GET Author Recent Posts ✅
+    - GET Check If Image Post ✅
+    - GET Post Comments ✅
+    - GET Post Likes ✅
+    - GET Comment Likes ✅
+    - GET Author Liked ✅
+    - POST Send Post ✅
+    - POST Send Follow Request ✅
+    - POST Send Like ✅
+    - POST Send Comment ✅
+
+## Web Service API & Documentation
+- Documented is linked aboved; has been updated over the course of the sprint with new functionality. 
+- Examples are included where required (ie. for POST requests) -- most notably for the POST /inbox endpoint, where it can be ambiguous between groups the request body format.
+
+## Test Cases
+- Test cases exist for both backend (using the built in Django test runner), frontend (using Jest), and in our Postman collection.
+
+## Tool Use
+- Git was consistently used for CI/CD, collaboration, and organization.
+- Pull requests were used for larger changes to codebase.
+- GitHub Project board and Issues are up to date with project progress.
+
+## Design
+- Both backend and frontend followed tried and true design patterns.
+    - Backend most notably followed an object-oriented-esque pattern designing serializers for remote connections.
+    - Frontend most notably followed a page-by-page and reusable component design.
+
+## Adhering to Standards
+- All endpoints with sample request responses and request bodies were implemented as written in original project documentation. 
+- Remainder of endpoints were written in an attempt to futher follow this model (most evidently seen in the POST /inbox examples, where an example was given for follow requests, and we tried to follow this for likes, comments, and posts by including the whole object in the object field).
+
+## Addresssing Feedback
+- We made an effort to follow advice from TA over course of semester -- tried some new things with our serializer classes but ended up sticking to our orignal design pattern.
+- Followed his advice for some React best practice, helped with some react-router-dom related things.
+
+## Presentation
+- Within time, outfits coordinated, bananaman theme followed, showed teamwork, followed practiced script, and promoted our application!
+
+## Video Demo
+- Can be found [here](https://youtu.be/OnOKN7GfFXU), on YouTube.
+- Under 2 minutes, showing off most critical functionality of application.
+
+## AJAX
+- Uses AJAX everywhere in frontend, thanks to React and its useState hooks.
+- Little instances where a page reload is required.
