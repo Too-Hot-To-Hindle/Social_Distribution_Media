@@ -24,8 +24,11 @@ class IsOwnerOrFriend(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj: Author):
-        # object access is allowed to owner or friends
-        requestor = Author.objects.filter(displayName=request.user).first()
+        if (Author.objects.get(user__username=request.user).remote):
+            requestor = Author.objects.get(user__username=request.user)
+        else:
+            # object access is allowed to owner or friends
+            requestor = Author.objects.filter(displayName=request.user).first()
 
         # set the is_friend flag so we can use to filter GET requests in the view
         request.is_friend = obj == requestor or obj.followers.filter(pk=requestor._id).exists()
